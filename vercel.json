@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "cd backend && python manage.py collectstatic --noinput --clear",
   "builds": [
     {
       "src": "api/index.py",

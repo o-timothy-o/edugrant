@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "vercel-build": "cd backend && python manage.py collectstatic --noinput --clear"
+  }
+}

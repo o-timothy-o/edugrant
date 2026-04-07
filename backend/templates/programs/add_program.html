@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Program{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub">
+        <a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> ›
+        <a href="{% url 'program_list' %}" class="review-breadcrumb">Programs</a> ›
+        Add Program
+      </p>
+      <h1 class="admin-dashboard-title">Add New Program</h1>
+    </div>
+  </div>
+
+  <form method="post" class="prog-form">
+    {% csrf_token %}
+
+    <!-- Program details card -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h2>Program Details</h2>
+      </div>
+
+      <div class="prog-form-grid">
+        <div class="prog-form-group">
+          <label class="prog-label">Program Name *</label>
+          {{ form.name }}
+          {% if form.name.errors %}
+          <p class="prog-field-error">{{ form.name.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="prog-form-group">
+          <label class="prog-label">Program Type *</label>
+          {{ form.program_type }}
+          {% if form.program_type.errors %}
+          <p class="prog-field-error">{{ form.program_type.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div class="prog-form-group">
+          <label class="prog-label">Status</label>
+          {{ form.status }}
+        </div>
+
+        <div class="prog-form-group">
+          <label class="prog-label">Application Frequency</label>
+          {{ form.application_frequency }}
+          <p class="prog-field-hint">e.g. "Once per year", "Per batch"</p>
+        </div>
+
+        <div class="prog-form-group prog-form-group-full">
+          <label class="prog-label">Description</label>
+          {{ form.description }}
+          <p class="prog-field-hint">Shown to applicants on the programs list page.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Document requirements card -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h2>Document Requirements</h2>
+        <button type="button" class="btn btn-outline btn-sm" id="addRowBtn">+ Add Row</button>
+      </div>
+
+      {{ formset.management_form }}
+
+      <div class="prog-req-table-wrap">
+        <table class="admin-table prog-req-table" id="reqTable">
+          <thead>
+            <tr>
+              <th>Document Name</th>
+              <th>Required</th>
+              <th>Display Order</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody id="reqTableBody">
+            {% for req_form in formset %}
+            <tr class="prog-req-row">
+              <td>{{ req_form.name }}</td>
+              <td class="prog-req-check">{{ req_form.required }}</td>
+              <td class="prog-req-order">{{ req_form.display_order }}</td>
+              <td class="prog-req-delete">
+                {% if req_form.instance.pk %}{{ req_form.DELETE }}{% endif %}
+              </td>
+              {% for hidden in req_form.hidden_fields %}{{ hidden }}{% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="prog-form-actions">
+      <a href="{% url 'program_list' %}" class="btn btn-outline">Cancel</a>
+      <button type="submit" class="btn btn-primary">Create Program</button>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+  document.getElementById('addRowBtn').addEventListener('click', function () {
+    var tbody = document.getElementById('reqTableBody');
+    var totalForms = document.getElementById('id_documentrequirement_set-TOTAL_FORMS');
+    var formCount = parseInt(totalForms.value);
+
+    var newRow = document.createElement('tr');
+    newRow.className = 'prog-req-row';
+    newRow.innerHTML =
+      '<td><input type="text" name="documentrequirement_set-' + formCount + '-name" maxlength="128" class="prog-input"></td>' +
+      '<td class="prog-req-check"><input type="checkbox" name="documentrequirement_set-' + formCount + '-required" checked></td>' +
+      '<td class="prog-req-order"><input type="number" name="documentrequirement_set-' + formCount + '-display_order" value="0" min="0" class="prog-input-sm"></td>' +
+      '<td class="prog-req-delete"></td>' +
+      '<input type="hidden" name="documentrequirement_set-' + formCount + '-id" value="">' +
+      '<input type="hidden" name="documentrequirement_set-' + formCount + '-program" value="">';
+
+    tbody.appendChild(newRow);
+    totalForms.value = formCount + 1;
+  });
+</script>
+{% endblock %}

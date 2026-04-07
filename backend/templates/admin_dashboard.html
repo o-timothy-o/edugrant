@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <h1 class="admin-dashboard-title">Dashboard Overview</h1>
+      <p class="admin-dashboard-sub">CAYDO Carmona, Cavite – Scholarship Management System</p>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="admin-stats-row">
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background: rgba(124,58,237,0.1);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87m6-4a4 4 0 11-8 0 4 4 0 018 0zm6 4a4 4 0 10-5.47-3.87"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Total Applicants</p>
+        <p class="admin-stat-value">{{ total_applicants }}</p>
+        <p class="admin-stat-caption">Registered accounts</p>
+      </div>
+    </div>
+
+    {% for pc in program_counts %}
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background: rgba(124,58,237,0.08);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6M4 6h16M4 10h4m-4 4h4m-4 4h4"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">{{ pc.program.name }} Applications</p>
+        <p class="admin-stat-value">{{ pc.count }}</p>
+        <p class="admin-stat-caption">{{ pc.program.get_program_type_display }}</p>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background: rgba(22,163,74,0.1);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Total Applications</p>
+        <p class="admin-stat-value">{{ total_applications }}</p>
+        <p class="admin-stat-caption">All programs combined</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="admin-main-grid">
+
+    <!-- Recent Applications -->
+    <div class="admin-card admin-card-wide">
+      <div class="admin-card-header">
+        <h2>Recent Applications</h2>
+        <a href="/admin/programs/application/" class="admin-view-all">View All</a>
+      </div>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Program</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in recent_applications %}
+          <tr>
+            <td>
+              <p class="admin-applicant-name">{{ app.applicant.get_full_name|default:app.applicant.username }}</p>
+              <p class="admin-applicant-email">{{ app.applicant.email }}</p>
+            </td>
+            <td>
+              <span class="app-program-pill {% if app.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
+                {{ app.program.name }}
+              </span>
+            </td>
+            <td><span class="app-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+            <td class="admin-date">{{ app.created_at|date:"M j, Y" }}</td>
+            <td>
+              <a href="{% url 'programs:application_review' application_id=app.id %}" class="admin-action-link">
+                {% if app.status == 'submitted' or app.status == 'for_review' %}Review{% else %}View{% endif %}
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="admin-empty">No applications yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Status Summary -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h2>Application Status</h2>
+      </div>
+      <div class="admin-status-list">
+        <div class="admin-status-row">
+          <span class="app-status-badge status-submitted">Submitted</span>
+          <span class="admin-status-count">{{ status_counts.submitted }}</span>
+        </div>
+        <div class="admin-status-row">
+          <span class="app-status-badge status-for_review">For Review</span>
+          <span class="admin-status-count">{{ status_counts.for_review }}</span>
+        </div>
+        <div class="admin-status-row">
+          <span class="app-status-badge status-approved">Approved</span>
+          <span class="admin-status-count">{{ status_counts.approved }}</span>
+        </div>
+        <div class="admin-status-row">
+          <span class="app-status-badge status-rejected">Rejected</span>
+          <span class="admin-status-count">{{ status_counts.rejected }}</span>
+        </div>
+        <div class="admin-status-row">
+          <span class="app-status-badge status-draft">Draft</span>
+          <span class="admin-status-count">{{ status_counts.draft }}</span>
+        </div>
+      </div>
+
+      <div class="admin-card-header" style="margin-top: 28px;">
+        <h2>Programs</h2>
+      </div>
+      <div class="admin-program-bars">
+        {% if total_applications > 0 %}
+        {% for pc in program_counts %}
+        <div class="admin-program-bar-row">
+          <span class="admin-program-bar-label">{{ pc.program.name }}</span>
+          <div class="admin-program-bar-track">
+            <div class="admin-program-bar-fill {% if pc.program.name == 'SPARK' %}spark-bar{% else %}sinag-bar{% endif %}"
+              style="width: {% widthratio pc.count total_applications 100 %}%"></div>
+          </div>
+          <span class="admin-program-bar-count">{{ pc.count }}</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="admin-empty">No applications yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

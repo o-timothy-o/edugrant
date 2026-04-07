@@ -1,0 +1,26 @@
+from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path, include
+
+from accounts.views import StaffLoginView
+from .views import home, admin_dashboard_view, applicants_list_view, reports_view, program_list_view, add_program_view, edit_program_view, delete_program_view
+
+urlpatterns = [
+    path("", home, name="home"),
+    path("dashboard/", admin_dashboard_view, name="admin_dashboard"),
+    path("applicants/", applicants_list_view, name="applicants_list"),
+    path("reports/", reports_view, name="reports"),
+    path("manage/programs/", program_list_view, name="program_list"),
+    path("manage/programs/add/", add_program_view, name="add_program"),
+    path("manage/programs/<int:program_id>/edit/", edit_program_view, name="edit_program"),
+    path("manage/programs/<int:program_id>/delete/", delete_program_view, name="delete_program"),
+    # Hidden staff login — not linked from the public site
+    path("caydo-portal/", StaffLoginView.as_view(), name="staff_login"),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("accounts.urls")),
+    path("programs/", include("programs.urls")),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

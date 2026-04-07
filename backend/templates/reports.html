@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub"><a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> › Reports</p>
+      <h1 class="admin-dashboard-title">Reports & Analytics</h1>
+    </div>
+  </div>
+
+  <!-- Summary stat cards -->
+  <div class="admin-stats-row">
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background: rgba(124,58,237,0.1);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Total Submitted</p>
+        <p class="admin-stat-value">{{ total_applications }}</p>
+        <p class="admin-stat-caption">Excluding drafts</p>
+      </div>
+    </div>
+
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background: rgba(22,163,74,0.1);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Approved</p>
+        <p class="admin-stat-value">{{ total_approved }}</p>
+        <p class="admin-stat-caption">All programs</p>
+      </div>
+    </div>
+
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background: rgba(220,38,38,0.08);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Rejected</p>
+        <p class="admin-stat-value">{{ total_rejected }}</p>
+        <p class="admin-stat-caption">All programs</p>
+      </div>
+    </div>
+
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background: rgba(217,119,6,0.1);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#d97706" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Pending Review</p>
+        <p class="admin-stat-value">{{ total_pending }}</p>
+        <p class="admin-stat-caption">Submitted + For review</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly submissions chart + Screening outcomes side by side -->
+  <div class="admin-main-grid">
+
+    <!-- Monthly chart -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h2>Applications Over Time</h2>
+        <span class="report-chart-sub">by month submitted</span>
+      </div>
+      {% if monthly_data %}
+      <div class="report-bar-chart">
+        {% for d in monthly_data %}
+        <div class="report-bar-col">
+          <div class="report-bar-wrap">
+            <span class="report-bar-value">{{ d.count }}</span>
+            <div class="report-bar-fill" style="height: {{ d.pct }}%;"></div>
+          </div>
+          <span class="report-bar-label">{{ d.month_label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="admin-empty">No submitted applications yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Screening outcomes -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h2>Screening Outcomes</h2>
+      </div>
+      {% if screening_total > 0 %}
+      <div class="report-donut-wrap">
+        <div class="report-donut">
+          <svg viewBox="0 0 36 36" class="report-donut-svg">
+            <!-- background circle -->
+            <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#f3f4f6" stroke-width="3.5"/>
+            <!-- pass arc -->
+            <circle cx="18" cy="18" r="15.9155" fill="none"
+              stroke="#16a34a" stroke-width="3.5"
+              stroke-dasharray="{{ screening_pass|floatformat:0 }},{{ screening_total }}"
+              stroke-dashoffset="25"
+              stroke-linecap="round"/>
+            <!-- flag arc (offset by pass portion) -->
+            <circle cx="18" cy="18" r="15.9155" fill="none"
+              stroke="#dc2626" stroke-width="3.5"
+              stroke-dasharray="{{ screening_flag|floatformat:0 }},{{ screening_total }}"
+              stroke-dashoffset="{% widthratio screening_pass screening_total 100 %}"
+              stroke-linecap="round"/>
+          </svg>
+          <div class="report-donut-center">
+            <span class="report-donut-total">{{ screening_total }}</span>
+            <span class="report-donut-label">screened</span>
+          </div>
+        </div>
+      </div>
+      <div class="report-legend">
+        <div class="report-legend-row">
+          <span class="report-legend-dot" style="background:#16a34a;"></span>
+          <span class="report-legend-name">Passed</span>
+          <span class="report-legend-count">{{ screening_pass }}</span>
+        </div>
+        <div class="report-legend-row">
+          <span class="report-legend-dot" style="background:#dc2626;"></span>
+          <span class="report-legend-name">Flagged</span>
+          <span class="report-legend-count">{{ screening_flag }}</span>
+        </div>
+      </div>
+      {% else %}
+      <p class="admin-empty">No screening results yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Per-program breakdown -->
+  <div class="report-programs-grid">
+
+    {% for stats in all_program_stats %}
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h2>{{ stats.program.name }}
+          <span class="app-program-pill {% if stats.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}" style="font-size:11px;">
+            {{ stats.program.get_program_type_display }}
+          </span>
+        </h2>
+        <span class="report-chart-sub">{{ stats.total }} total</span>
+      </div>
+      {% if stats.total > 0 %}
+      <div class="report-stat-bars">
+        <div class="report-stat-bar-row">
+          <span class="report-stat-bar-label">Approved</span>
+          <div class="report-stat-bar-track">
+            <div class="report-stat-bar-fill" style="width:{{ stats.approval_rate }}%; background:#16a34a;"></div>
+          </div>
+          <span class="report-stat-bar-rate">{{ stats.approval_rate }}%</span>
+          <span class="report-stat-bar-count">({{ stats.approved }})</span>
+        </div>
+        <div class="report-stat-bar-row">
+          <span class="report-stat-bar-label">Rejected</span>
+          <div class="report-stat-bar-track">
+            <div class="report-stat-bar-fill" style="width:{{ stats.rejection_rate }}%; background:#dc2626;"></div>
+          </div>
+          <span class="report-stat-bar-rate">{{ stats.rejection_rate }}%</span>
+          <span class="report-stat-bar-count">({{ stats.rejected }})</span>
+        </div>
+        <div class="report-stat-bar-row">
+          <span class="report-stat-bar-label">Pending</span>
+          <div class="report-stat-bar-track">
+            <div class="report-stat-bar-fill" style="width:{{ stats.pending_rate }}%; background:#d97706;"></div>
+          </div>
+          <span class="report-stat-bar-rate">{{ stats.pending_rate }}%</span>
+          <span class="report-stat-bar-count">({{ stats.pending }})</span>
+        </div>
+        <div class="report-stat-bar-row">
+          <span class="report-stat-bar-label">Draft</span>
+          <div class="report-stat-bar-track">
+            <div class="report-stat-bar-fill" style="width:{{ stats.draft_rate }}%; background:#9ca3af;"></div>
+          </div>
+          <span class="report-stat-bar-rate">{{ stats.draft_rate }}%</span>
+          <span class="report-stat-bar-count">({{ stats.draft }})</span>
+        </div>
+      </div>
+      {% else %}
+      <p class="admin-empty">No {{ stats.program.name }} applications yet.</p>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="admin-empty">No programs found.</p>
+    {% endfor %}
+
+  </div>
+
+</div>
+{% endblock %}

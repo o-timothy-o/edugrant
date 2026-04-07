@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+<div class="authenticated-landing">
+
+  <div class="gradient-page-header">
+    <h1>My Applications</h1>
+    <p>Track the status of your submitted scholarship applications</p>
+  </div>
+
+  <div class="container">
+    {% if applications %}
+    <div class="applications-table-card">
+      <table class="applications-table">
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th>Type</th>
+            <th>Date Submitted</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr class="app-table-row {% if app.program.name == 'SPARK' %}spark-row-table{% else %}sinag-row-table{% endif %}">
+            <td>
+              <span class="app-program-pill {% if app.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
+                {{ app.program.name }}
+              </span>
+            </td>
+            <td class="app-type">{{ app.program.get_program_type_display }}</td>
+            <td class="app-date">{{ app.created_at|date:"F d, Y" }}</td>
+            <td><span class="app-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span></td>
+            <td class="app-action">
+              <a href="{% url 'programs:application_detail' application_id=app.id %}" class="btn btn-outline btn-sm">View Details</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p class="empty-state-title">No applications yet</p>
+      <p class="empty-state-sub">Once you apply for SPARK or SINAG, your applications will appear here.</p>
+      <a href="{% url 'home' %}" class="btn btn-primary">Browse Programs</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

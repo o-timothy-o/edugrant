@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Django local artifacts
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+
+# Env files
+.env
+backend/.env
+
+# macOS
+.DS_Store
+
+# Claude AI session files
+.claude/
+
+# Non-code folders (not needed in repo)
+UI Screenshots/
+Thesis paper/

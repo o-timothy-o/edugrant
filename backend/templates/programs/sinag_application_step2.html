@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Apply for SINAG - Step 2{% endblock %}
+
+{% block content %}
+<div class="authenticated-landing">
+    <div class="page-header">
+      <div class="header-content">
+        <h1>SHINE Scholarship Program</h1>
+        <p>Supporting Carmona Residents in Their Educational Journey</p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="sub-header">
+        <p>Submit your scholarship requirements online before bringing physical copies on-site</p>
+      </div>
+      <div class="application-form-container sinag-form">
+        <form method="post" action="{% url 'programs:sinag_application_step2' application_id=application.id %}" class="application-form" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-section">
+            <h3>Family Composition of the Applicant</h3>
+            <div class="family-composition-grid">
+              <div class="grid-header">Name</div>
+              <div class="grid-header">Date of Birth</div>
+              <div class="grid-header">Age</div>
+              <div class="grid-header">Sex</div>
+              <div class="grid-header">Relation to child</div>
+              <div class="grid-header">Occupation</div>
+              <div class="grid-header">Income</div>
+              <div class="grid-header">Highest Educ. Attainment</div>
+              {% for i in "123456" %}
+              <div class="grid-cell"><input type="text" name="fam_name_{{i}}"></div>
+              <div class="grid-cell"><input type="text" name="fam_dob_{{i}}"></div>
+              <div class="grid-cell"><input type="text" name="fam_age_{{i}}"></div>
+              <div class="grid-cell"><input type="text" name="fam_sex_{{i}}"></div>
+              <div class="grid-cell"><input type="text" name="fam_relation_{{i}}"></div>
+              <div class="grid-cell"><input type="text" name="fam_occupation_{{i}}"></div>
+              <div class="grid-cell"><input type="text" name="fam_income_{{i}}"></div>
+              <div class="grid-cell"><input type="text" name="fam_education_{{i}}"></div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-section">
+            <h3>Upload Required Documents</h3>
+            <div class="upload-grid-container">
+              <div class="form-group">
+                <label for="cert_of_grad">Certificate of Graduation *</label>
+                <input type="file" id="cert_of_grad" name="cert_of_grad">
+              </div>
+              <div class="form-group">
+                <label for="app_to_prc">Application to PRC *</label>
+                <input type="file" id="app_to_prc" name="app_to_prc">
+              </div>
+              <div class="form-group">
+                <label for="transcript">Transcript of Records *</label>
+                <input type="file" id="transcript" name="transcript">
+              </div>
+              <div class="form-group">
+                <label for="notice_of_admission">Notice of Admission (NOA) * From PRC</label>
+                <input type="file" id="notice_of_admission" name="notice_of_admission">
+              </div>
+              <div class="form-group">
+                <label for="gov_id">Valid Government-Issued ID *</label>
+                <input type="file" id="gov_id" name="gov_id">
+              </div>
+              <div class="form-group">
+                <label for="enrollment_receipt">Enrollment Receipt from Review Center if any</label>
+                <input type="file" id="enrollment_receipt" name="enrollment_receipt">
+              </div>
+              <div class="form-group">
+                <label for="brgy_clearance">Barangay Clearance *</label>
+                <input type="file" id="brgy_clearance" name="brgy_clearance">
+              </div>
+              <div class="form-group">
+                <label for="voters_cert">Voter's Certification of the Applicant</label>
+                <input type="file" id="voters_cert" name="voters_cert">
+              </div>
+              <div class="form-group">
+                <label for="brgy_indigency">Barangay Indigency *</label>
+                <input type="file" id="brgy_indigency" name="brgy_indigency">
+              </div>
+            </div>
+          </div>
+          <div class="before-submitting">
+            <h4>Before Submitting:</h4>
+            <ul>
+              <li>All required documents are uploaded</li>
+              <li>You will receive a confirmation email</li>
+              <li>Bring physical copies to our office</li>
+            </ul>
+            <div class="form-group-checkbox">
+              <input type="checkbox" id="confirmation" name="confirmation">
+              <label for="confirmation">I certify that all information provided is true and correct. I understand this is a one-time registration for Shine.</label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Submit Application</button>
+          </div>
+        </form>
+      </div>
+    </div>
+</div>
+
+{% if application_submitted %}
+{% include "programs/submission_success_modal.html" %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var myModal = new bootstrap.Modal(document.getElementById('submissionSuccessModal'), {
+      keyboard: false
+    });
+    myModal.show();
+  });
+</script>
+{% endif %}
+{% endblock %}

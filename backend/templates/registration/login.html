@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Log In — EduGrant{% endblock %}
+
+{% block content %}
+
+
+<div class="login-container">
+  <div class="login-header">
+    <h1 class="title">Scholarship Grant and Program</h1>
+    <p class="subtitle">Supporting Carmona Residents in Their Educational Journey</p>
+  </div>
+  <div class="login-card">
+    <div class="logo-container">
+      <img src="{% static 'img/edugrant_logo.png' %}" alt="EduGrant Logo" class="logo">
+    </div>
+    <form method="post" action="{% url 'accounts:login' %}" class="login-form">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="id_username">Email</label>
+        {{ form.username }}
+      </div>
+      
+      <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+      </div>
+
+      {% if form.errors %}
+        <div class="form-errors">
+          {% for field, error_list in form.errors.items %}
+            {% for error in error_list %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+      <button type="submit" class="btn btn-primary btn-login">Log In</button>
+
+      <div class="note">
+        <p>Note: Credentials provided by CAYDO after approval</p>
+        <p style="margin-top:6px;"><a href="{% url 'accounts:password_reset' %}" style="font-size:13px;">Forgot your password?</a></p>
+      </div>
+    </form>
+    <div class="signup-link">
+      <p>Don't have an account? <a href="{% url 'accounts:register' %}">Sign Up</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

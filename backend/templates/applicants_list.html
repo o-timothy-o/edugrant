@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Applicants{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub"><a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> › Applicants</p>
+      <h1 class="admin-dashboard-title">Applicants</h1>
+    </div>
+    <span class="applicants-total-badge">{{ total }} application{{ total|pluralize }}</span>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="applicants-filters">
+    <div class="applicants-search-wrap">
+      <svg class="applicants-search-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Search by name or email…" class="applicants-search-input" />
+    </div>
+
+    <select name="program" class="applicants-filter-select">
+      <option value="">All Programs</option>
+      {% for program in programs %}
+      <option value="{{ program.name }}" {% if program_filter == program.name %}selected{% endif %}>{{ program.name }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="status" class="applicants-filter-select">
+      <option value="">All Statuses</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary applicants-filter-btn">Filter</button>
+    {% if search or program_filter or status_filter %}
+    <a href="{% url 'applicants_list' %}" class="btn btn-outline applicants-filter-btn">Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- Table -->
+  <div class="admin-card" style="padding: 0; overflow: hidden;">
+    <table class="admin-table applicants-table">
+      <thead>
+        <tr>
+          <th>Applicant</th>
+          <th>Program</th>
+          <th>Status</th>
+          <th>Screening</th>
+          <th>Date Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+        <tr>
+          <td>
+            <p class="admin-applicant-name">{{ app.applicant.get_full_name|default:app.applicant.username }}</p>
+            <p class="admin-applicant-email">{{ app.applicant.email }}</p>
+          </td>
+          <td>
+            <span class="app-program-pill {% if app.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
+              {{ app.program.name }}
+            </span>
+          </td>
+          <td>
+            <span class="app-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
+          </td>
+          <td>
+            {% if app.screening_result %}
+              {% if app.screening_result.outcome == 'pass' %}
+              <span class="applicants-screening-badge screening-badge-pass">Passed</span>
+              {% else %}
+              <span class="applicants-screening-badge screening-badge-flag">Flagged</span>
+              {% endif %}
+            {% else %}
+              <span class="applicants-screening-badge screening-badge-pending">Pending</span>
+            {% endif %}
+          </td>
+          <td class="admin-date">{{ app.created_at|date:"M j, Y" }}</td>
+          <td class="app-action">
+            <a href="{% url 'programs:application_review' application_id=app.id %}" class="admin-action-link">
+              {% if app.status == 'submitted' or app.status == 'for_review' %}Review{% else %}View{% endif %}
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="admin-empty">No applications found{% if search or program_filter or status_filter %} matching your filters{% endif %}.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

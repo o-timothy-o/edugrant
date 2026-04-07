@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Apply for SINAG - Step 1{% endblock %}
+
+{% block content %}
+<div class="authenticated-landing">
+    <div class="page-header">
+      <div class="header-content">
+        <h1>SHINE Scholarship Program</h1>
+        <p>Supporting Carmona Residents in Their Educational Journey</p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="sub-header">
+        <p>Submit your scholarship requirements online before bringing physical copies on-site</p>
+      </div>
+      <div class="application-form-container sinag-form">
+        <div class="form-header">
+          <img src="{% static 'img/edugrant_logo.png' %}" alt="EduGrant" class="form-logo">
+          <h2>SINAG</h2>
+          <p>Step 2 of 2: Submit Your Application</p>
+        </div>
+        <div class="requirements-section">
+          <h3>REQUIREMENTS TO BE PREPARED AND SUBMITTED:</h3>
+          <ul>
+            <li>FILLED OUT APPLICATION FORM</li>
+            <li>COPY OF CERTIFICATE OF GRADUATION</li>
+            <li>PHOTOCOPY OF TRANSCRIPT OF RECORDS</li>
+            <li>PHOTOCOPY OF VALID GOVERNMENT ISSUED ID (BACK TO BACK)</li>
+            <li>ORIGINAL BARANGAY CLEARANCE</li>
+            <li>ORIGINAL BARANGAY INDIGENCY</li>
+          </ul>
+        </div>
+        <div class="note-section">
+          <p>Note: This is a one-time financial assistance program intended for Carmona residents who have completed their degree and are actively preparing for their license, board, or bar examinations.</p>
+        </div>
+        <form method="post" action="{% url 'programs:sinag_application' %}" class="application-form">
+            {% csrf_token %}
+          <div class="form-section">
+            <h3>PERSONAL INFORMATION OF THE APPLICANT</h3>
+            <div class="grid-container">
+              <div class="form-group">
+                <label for="full_name">Full Name *</label>
+                <input type="text" id="full_name" name="full_name" required value="{{ profile.full_name|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required value="{{ request.user.email|default:'' }}">
+              </div>
+              <div class="form-group full-width">
+                <label for="address">Complete Carmona Address *</label>
+                <input type="text" id="address" name="address" required value="{{ profile.address|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="residency">Years of Residency in Carmona</label>
+                <input type="text" id="residency" name="residency" value="{{ profile.residency_years|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="barangay">Barangay</label>
+                <input type="text" id="barangay" name="barangay" value="{{ profile.barangay|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="gender">Gender</label>
+                <input type="text" id="gender" name="gender" value="{{ profile.gender|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="civil_status">Civil Status</label>
+                <input type="text" id="civil_status" name="civil_status" value="{{ profile.civil_status|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="citizenship">Citizenship</label>
+                <input type="text" id="citizenship" name="citizenship" value="{{ profile.citizenship|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="contact_number">Contact Number</label>
+                <input type="text" id="contact_number" name="contact_number" value="{{ profile.contact_number|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="working">Currently Working?</label>
+                <input type="text" id="working" name="working" value="{{ profile.currently_working|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="religion">Religion</label>
+                <input type="text" id="religion" name="religion" value="{{ profile.religion|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="monthly_income">Monthly Income</label>
+                <input type="text" id="monthly_income" name="monthly_income" value="{{ profile.monthly_income|default:'' }}">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <h3>EDUCATIONAL INFORMATION OF THE APPLICANT</h3>
+            <div class="grid-container">
+              <div class="form-group">
+                <label for="course">Course</label>
+                <input type="text" id="course" name="course" value="{{ application.educational_data.course|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="school">School:</label>
+                <input type="text" id="school" name="school" value="{{ application.educational_data.school|default:'' }}">
+              </div>
+              <div class="form-group full-width">
+                <label for="school_address">School Address:</label>
+                <input type="text" id="school_address" name="school_address" value="{{ application.educational_data.school_address|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="graduation_date">Date of Graduation</label>
+                <input type="text" id="graduation_date" name="graduation_date" value="{{ application.educational_data.graduation_date|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="exam_to_take">Licensure/ Bar / Board exam to take :</label>
+                <input type="text" id="exam_to_take" name="exam_to_take" value="{{ application.educational_data.exam_to_take|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="review_center_enrolled">Enrolled at a review center: 1st take or Retake?</label>
+                <input type="text" id="review_center_enrolled" name="review_center_enrolled" value="{{ application.educational_data.review_center_enrolled|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="review_center">If yes, Kindly indicate the review center</label>
+                <input type="text" id="review_center" name="review_center" value="{{ application.educational_data.review_center|default:'' }}">
+              </div>
+              <div class="form-group">
+                <label for="exam_date">Examination Date:</label>
+                <input type="text" id="exam_date" name="exam_date" value="{{ application.educational_data.exam_date|default:'' }}">
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="schools-attended-grid">
+                <div class="grid-header">Name of Schools Attended (Elementary to College)</div>
+                <div class="grid-header">School Type (Public or Private)</div>
+                <div class="grid-header">School Address</div>
+                <div class="grid-header">Year Started and Year Graduated</div>
+                <div class="grid-header">Honors / Awards Received (If any)</div>
+                
+                {% with s=application.educational_data.schools_attended %}
+                <div class="grid-cell"><input type="text" name="school_name_1" value="{{ s.0.name|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_type_1" value="{{ s.0.type|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_address_1" value="{{ s.0.address|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_year_1" value="{{ s.0.year|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_honors_1" value="{{ s.0.honors|default:'' }}"></div>
+
+                <div class="grid-cell"><input type="text" name="school_name_2" value="{{ s.1.name|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_type_2" value="{{ s.1.type|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_address_2" value="{{ s.1.address|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_year_2" value="{{ s.1.year|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_honors_2" value="{{ s.1.honors|default:'' }}"></div>
+
+                <div class="grid-cell"><input type="text" name="school_name_3" value="{{ s.2.name|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_type_3" value="{{ s.2.type|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_address_3" value="{{ s.2.address|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_year_3" value="{{ s.2.year|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_honors_3" value="{{ s.2.honors|default:'' }}"></div>
+
+                <div class="grid-cell"><input type="text" name="school_name_4" value="{{ s.3.name|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_type_4" value="{{ s.3.type|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_address_4" value="{{ s.3.address|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_year_4" value="{{ s.3.year|default:'' }}"></div>
+                <div class="grid-cell"><input type="text" name="school_honors_4" value="{{ s.3.honors|default:'' }}"></div>
+                {% endwith %}
+            </div>
+        </div>
+          <div class="form-actions">
+            <p class="form-required-note">* Required fields</p>
+            <button type="submit" class="btn btn-primary">Next</button>
+          </div>
+        </form>
+      </div>
+    </div>
+</div>
+{% endblock %}

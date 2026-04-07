@@ -1,0 +1,69 @@
+{% load static %}
+<div class="landing">
+  <section class="hero hero-authenticated">
+    <div class="hero-text">
+      <div class="header-decoration">
+        <img src="{% static 'img/edugrant_logo.png' %}" alt="EduGrant" />
+      </div>
+      <h1>Scholarship Program</h1>
+      <p>Supporting Carmona Residents in Their Educational Journey</p>
+      <p class="sub-text">Submit your scholarship requirements online before bringing physical copies on-site</p>
+    </div>
+  </section>
+
+  <section class="programs">
+    {% for program in featured_programs %}
+      {% if program.name == 'SPARK' %}
+      <div class="program-card spark">
+        <div class="program-label">SPARK</div>
+        <h2>Specialized Program &amp; Advancing Review Knowledge</h2>
+        <div class="who-can-apply">
+          <h3>Who can Apply:</h3>
+          <ul>
+            <li><span class="check">✔</span> Carmona residents who have completed their degree</li>
+            <li><span class="check">✔</span> Preparing for licensure, board, or bar exams</li>
+            <li><span class="check">✔</span> One-time registration only</li>
+          </ul>
+        </div>
+        <a href="{% url 'programs:spark_application' %}" class="btn btn-secondary">APPLY FOR SPARK</a>
+      </div>
+      {% elif program.name == 'SINAG' %}
+      <div class="program-card sinag">
+        <div class="program-label">SINAG</div>
+        <h2>Scholarship, Incentives &amp; Networking in Advancing Graduate Studies</h2>
+        <div class="who-can-apply">
+          <h3>Who can Apply:</h3>
+          <ul>
+            <li><span class="check">✔</span> Carmona residents pursuing Master's or Doctorate</li>
+            <li><span class="check">✔</span> Continuing studies (Law, Medicine, Practitioners)</li>
+            <li><span class="check">✔</span> Unlimited submissions for ongoing support</li>
+          </ul>
+        </div>
+        <a href="{% url 'programs:sinag_application' %}" class="btn btn-secondary">APPLY FOR SINAG</a>
+      </div>
+      {% else %}
+      <div class="program-card generic">
+        <div class="program-label">{{ program.name }}</div>
+        <h2>{{ program.get_program_type_display }}</h2>
+        {% if program.description %}
+        <div class="who-can-apply">
+          <p>{{ program.description }}</p>
+        </div>
+        {% endif %}
+        {% if program.application_frequency %}
+        <p class="program-freq">{{ program.application_frequency }}</p>
+        {% endif %}
+        <a href="{% url 'programs:generic_application_step1' program.id %}" class="btn btn-secondary">APPLY FOR {{ program.name }}</a>
+      </div>
+      {% endif %}
+    {% empty %}
+      <p style="text-align:center;color:var(--text-muted);padding:2rem 0;">No programs are currently accepting applications.</p>
+    {% endfor %}
+  </section>
+
+  {% if total_programs > 3 %}
+  <section class="view-all-programs">
+    <a href="{% url 'programs:program_list_applicant' %}" class="btn btn-outline">View All Programs ({{ total_programs }})</a>
+  </section>
+  {% endif %}
+</div>

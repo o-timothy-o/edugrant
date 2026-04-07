@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Programs{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub"><a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> › Programs</p>
+      <h1 class="admin-dashboard-title">Programs</h1>
+    </div>
+    <a href="{% url 'add_program' %}" class="btn btn-primary">+ Add Program</a>
+  </div>
+
+  <div class="admin-card" style="padding: 0; overflow: hidden;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Frequency</th>
+          <th>Requirements</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for program in programs %}
+        <tr>
+          <td>
+            <p class="admin-applicant-name">{{ program.name }}</p>
+            {% if program.description %}<p class="admin-date" style="margin:0">{{ program.description|truncatechars:60 }}</p>{% endif %}
+          </td>
+          <td>
+            <span class="app-program-pill {% if program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
+              {{ program.get_program_type_display }}
+            </span>
+          </td>
+          <td>
+            <span class="prog-status-badge {% if program.status == 'active' %}prog-active{% else %}prog-closed{% endif %}">
+              {{ program.get_status_display }}
+            </span>
+          </td>
+          <td class="admin-date">{{ program.application_frequency|default:"—" }}</td>
+          <td class="admin-date">{{ program.document_requirements.count }} document{{ program.document_requirements.count|pluralize }}</td>
+          <td class="prog-actions-cell">
+            <a href="{% url 'edit_program' program.id %}" class="btn btn-outline btn-sm">Edit</a>
+            <button type="button" class="btn btn-danger btn-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteModal"
+              data-program-id="{{ program.id }}"
+              data-program-name="{{ program.name }}">
+              Delete
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="admin-empty">No programs yet. <a href="{% url 'add_program' %}">Add the first one.</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(to right,#ef4444,#b91c1c);color:#fff;border-radius:12px 12px 0 0;">
+        <h5 class="modal-title" id="deleteModalLabel">Delete Program</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="padding:24px;">
+        <p>Are you sure you want to delete <strong id="deleteModalProgramName"></strong>?</p>
+        <p style="color:#6b7280;font-size:14px;">This will permanently remove the program and all its document requirements. Applications linked to this program will also be affected.</p>
+      </div>
+      <div class="modal-footer" style="padding:16px 24px;">
+        <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="post" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
+    var btn = event.relatedTarget;
+    var programId = btn.getAttribute('data-program-id');
+    var programName = btn.getAttribute('data-program-name');
+    document.getElementById('deleteModalProgramName').textContent = programName;
+    document.getElementById('deleteForm').action = '/manage/programs/' + programId + '/delete/';
+  });
+</script>
+
+{% endblock %}

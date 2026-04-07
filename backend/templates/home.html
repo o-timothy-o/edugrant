@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Scholarship and Grant Program{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    {% include 'home_authenticated.html' %}
+{% else %}
+<div class="landing">
+  <section class="hero">
+    <div class="hero-text">
+      <p class="hero-eyebrow">Community Affairs and Youth Development Office – Carmona</p>
+      <h1>
+        Scholarship Grants<br />
+        <span class="accent">and Programs</span>
+      </h1>
+      <p class="hero-subtitle">
+        Supporting Carmona residents through SINAG and SPARK scholarship and grant programs,
+        making higher education and professional advancement more accessible.
+      </p>
+      <div class="hero-actions">
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary">Get Started</a>
+        <a href="#" class="btn btn-outline">Contact CAYDO</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="programs">
+    <div class="program-card spark">
+      <div class="program-label">SPARK</div>
+      <h2>Specialized Program &amp; Advancing Review Knowledge</h2>
+      <p class="program-tagline">
+        One-time financial assistance for Carmona residents preparing for professional
+        licensure and board examinations.
+      </p>
+      <div class="program-meta">
+        <h3>Who can apply?</h3>
+        <p>
+          Carmona residents who are enrolled in recognized review centers or preparing
+          for PRC board/licensure examinations and meet CAYDO requirements.
+        </p>
+      </div>
+      <a href="#" class="btn btn-secondary">Learn more</a>
+    </div>
+
+    <div class="program-card sinag">
+      <div class="program-label">SINAG</div>
+      <h2>Scholarship, Incentives &amp; Networking in Advancing Graduate Studies</h2>
+      <p class="program-tagline">
+        Ongoing financial support for residents pursuing graduate or post‑graduate studies
+        in accredited institutions.
+      </p>
+      <div class="program-meta">
+        <h3>Who can apply?</h3>
+        <p>
+          Carmona residents admitted to graduate programs who comply with academic
+          performance and documentary requirements set by CAYDO.
+        </p>
+      </div>
+      <a href="#" class="btn btn-secondary">Learn more</a>
+    </div>
+  </section>
+
+  <section class="coming-soon">
+    <div class="coming-card">
+      <h2>Coming Soon</h2>
+      <p>
+        CAYDO is continuously developing new scholarship and grant opportunities to reach
+        more youth and community members in Carmona.
+      </p>
+    </div>
+  </section>
+
+  <section class="about-strip">
+    <div class="about-text">
+      <p>
+        Carmona, a city in Cavite province under the CALABARZON region, has made youth
+        empowerment and education a priority. Through scholarship and grant initiatives,
+        the local government supports students and professionals in finishing their
+        education and obtaining professional qualifications.
+      </p>
+      <p>
+        The Scholarship and Grant Program, administered by the Community Affairs and Youth
+        Development Office (CAYDO), ensures that assistance is distributed in a transparent
+        and organized manner to qualified residents.
+      </p>
+    </div>
+    <div class="about-stats">
+      <div class="stat">
+        <div class="stat-value">400–500</div>
+        <div class="stat-label">SINAG &amp; SPARK Scholars</div>
+        <div class="stat-caption">Graduate &amp; Board Exam Support</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">2023</div>
+        <div class="stat-label">Program Established</div>
+        <div class="stat-caption">Long‑term investment in education</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="cta-content">
+      <h2>Ready to Start Your Educational Journey?</h2>
+      <p>
+        Join hundreds of Carmona residents benefiting from SINAG and SPARK scholarship programs.
+      </p>
+      <div class="cta-actions">
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary">Get Started</a>
+        <a href="#" class="btn btn-outline-light">Contact CAYDO</a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endif %}
+{% endblock %}
+

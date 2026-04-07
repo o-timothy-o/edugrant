@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Apply for SPARK - Step 2{% endblock %}
+
+{% block content %}
+<div class="authenticated-landing">
+    <div class="page-header">
+      <div class="header-content">
+        <h1>SHINE Scholarship Program</h1>
+        <p>Supporting Carmona Residents in Their Educational Journey</p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="sub-header">
+        <p>Submit your scholarship requirements online before bringing physical copies on-site</p>
+      </div>
+      <div class="application-form-container spark-form">
+        <form method="post" action="{% url 'programs:spark_application_step2' application_id=application.id %}" class="application-form" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-section">
+            <h3>Family Composition of the Applicant</h3>
+            {{ family_composition_forms.management_form }}
+            <div class="family-composition-grid">
+              <div class="grid-header">Name</div>
+              <div class="grid-header">Date of Birth</div>
+              <div class="grid-header">Age</div>
+              <div class="grid-header">Sex</div>
+              <div class="grid-header">Relation to child</div>
+              <div class="grid-header">Occupation</div>
+              <div class="grid-header">Income</div>
+              <div class="grid-header">Highest Educ. Attainment</div>
+              {% for form in family_composition_forms %}
+              <div class="grid-cell">{{ form.name }}</div>
+              <div class="grid-cell">{{ form.date_of_birth }}</div>
+              <div class="grid-cell">{{ form.age }}</div>
+              <div class="grid-cell">{{ form.sex }}</div>
+              <div class="grid-cell">{{ form.relation_to_child }}</div>
+              <div class="grid-cell">{{ form.occupation }}</div>
+              <div class="grid-cell">{{ form.income }}</div>
+              <div class="grid-cell">{{ form.highest_educ_attainment }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-section">
+            <h3>Upload Required Documents</h3>
+            <div class="upload-grid-container">
+              {% for form, req in doc_forms_and_reqs %}
+              <div class="form-group">
+                <label for="{{ form.file.id_for_label }}">{{ req.name }} {% if req.is_required %}*
+                  {% endif %}</label>
+                {{ form.file }}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="before-submitting">
+            <h4>Before Submitting:</h4>
+            <ul>
+              <li>All required documents are uploaded</li>
+              <li>You will receive a confirmation email</li>
+              <li>Bring physical copies to our office</li>
+            </ul>
+            <div class="form-group-checkbox">
+              <input type="checkbox" id="confirmation" name="confirmation" required>
+              <label for="confirmation">I certify that all information provided is true and correct. I understand this is a one-time registration for Shine.</label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Submit Application</button>
+          </div>
+        </form>
+      </div>
+    </div>
+</div>
+
+{% if application_submitted %}
+{% include "programs/submission_success_modal.html" %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var myModal = new bootstrap.Modal(document.getElementById('submissionSuccessModal'), {
+      keyboard: false
+    });
+    myModal.show();
+  });
+</script>
+{% endif %}
+{% endblock %}

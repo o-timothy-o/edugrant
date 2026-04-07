@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Scholarship Programs{% endblock %}
+
+{% block content %}
+<div class="authenticated-landing">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Scholarship Programs</h1>
+      <p>All available CAYDO scholarship and grant programs</p>
+    </div>
+  </div>
+
+  <div class="container">
+    {% if programs %}
+    <div class="all-programs-grid">
+      {% for program in programs %}
+      <div class="all-program-card">
+        <div class="all-program-header">
+          <span class="program-label">{{ program.name }}</span>
+          <span class="all-program-type">{{ program.get_program_type_display }}</span>
+        </div>
+
+        {% if program.description %}
+        <p class="all-program-desc">{{ program.description }}</p>
+        {% endif %}
+
+        {% if program.application_frequency %}
+        <p class="all-program-freq">Frequency: {{ program.application_frequency }}</p>
+        {% endif %}
+
+        <div class="all-program-footer">
+          {% if program.id in user_app_program_ids %}
+            <span class="all-program-pending">Application Pending Review</span>
+          {% elif program.name == 'SPARK' %}
+            <a href="{% url 'programs:spark_application' %}" class="btn btn-secondary">Apply</a>
+          {% elif program.name == 'SINAG' %}
+            <a href="{% url 'programs:sinag_application' %}" class="btn btn-secondary">Apply</a>
+          {% else %}
+            <a href="{% url 'programs:generic_application_step1' program.id %}" class="btn btn-secondary">Apply</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="all-programs-empty">
+      <p>No programs are currently accepting applications. Please check back later.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

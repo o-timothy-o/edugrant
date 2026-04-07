@@ -1,0 +1,211 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import get_user_model
+from django.contrib import messages
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+from programs.models import Application, Program, ScreeningResult
+from programs.forms import ProgramForm, DocumentRequirementFormSet
+
+User = get_user_model()
+
+
+def home(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_dashboard')
+    context = {}
+    if request.user.is_authenticated:
+        context['my_applications'] = Application.objects.filter(
+            applicant=request.user
+        ).select_related('program')
+        active_programs = Program.objects.filter(status='active').order_by('name')
+        context['featured_programs'] = active_programs[:3]
+        context['total_programs'] = active_programs.count()
+    return render(request, "home.html", context)
+
+
+@staff_member_required(login_url="staff_login")
+def applicants_list_view(request):
+    program_filter = request.GET.get('program', '')
+    status_filter = request.GET.get('status', '')
+    search = request.GET.get('q', '').strip()
+
+    applications = Application.objects.select_related('applicant', 'program').order_by('-created_at')
+
+    if program_filter:
+        applications = applications.filter(program__name=program_filter)
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+    if search:
+        applications = applications.filter(
+            applicant__email__icontains=search
+        ) | applications.filter(
+            applicant__first_name__icontains=search
+        ) | applications.filter(
+            applicant__last_name__icontains=search
+        )
+        applications = applications.select_related('applicant', 'program').order_by('-created_at')
+
+    programs = Program.objects.all()
+
+    context = {
+        'applications': applications,
+        'programs': programs,
+        'program_filter': program_filter,
+        'status_filter': status_filter,
+        'search': search,
+        'total': applications.count(),
+        'status_choices': Application.ApplicationStatus.choices,
+    }
+    return render(request, 'applicants_list.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def program_list_view(request):
+    programs = Program.objects.prefetch_related('document_requirements').order_by('name')
+    context = {'programs': programs}
+    return render(request, 'programs/program_list.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def add_program_view(request):
+    if request.method == 'POST':
+        form = ProgramForm(request.POST)
+        if form.is_valid():
+            program = form.save()
+            formset = DocumentRequirementFormSet(request.POST, instance=program)
+            if formset.is_valid():
+                formset.save()
+            messages.success(request, f'Program "{program.name}" created successfully.')
+            return redirect('program_list')
+    else:
+        form = ProgramForm()
+        formset = DocumentRequirementFormSet()
+    context = {'form': form, 'formset': formset}
+    return render(request, 'programs/add_program.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def delete_program_view(request, program_id):
+    program = get_object_or_404(Program, id=program_id)
+    if request.method == 'POST':
+        name = program.name
+        program.delete()
+        messages.success(request, f'Program "{name}" has been deleted.')
+        return redirect('program_list')
+    return redirect('program_list')
+
+
+@staff_member_required(login_url="staff_login")
+def edit_program_view(request, program_id):
+    program = get_object_or_404(Program, id=program_id)
+    if request.method == 'POST':
+        form = ProgramForm(request.POST, instance=program)
+        if form.is_valid():
+            form.save()
+            formset = DocumentRequirementFormSet(request.POST, instance=program)
+            if formset.is_valid():
+                formset.save()
+            messages.success(request, f'Program "{program.name}" updated successfully.')
+            return redirect('program_list')
+    else:
+        form = ProgramForm(instance=program)
+        formset = DocumentRequirementFormSet(instance=program)
+    context = {'form': form, 'formset': formset, 'program': program}
+    return render(request, 'programs/edit_program.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def reports_view(request):
+    # Monthly submissions (non-draft applications grouped by month)
+    monthly_qs = (
+        Application.objects
+        .exclude(status='draft')
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    monthly_data = list(monthly_qs)
+    max_monthly = max((d['count'] for d in monthly_data), default=1)
+    for d in monthly_data:
+        d['pct'] = round(d['count'] / max_monthly * 100)
+        d['month_label'] = d['month'].strftime('%b %Y') if d['month'] else ''
+
+    all_programs = Program.objects.all().order_by('name')
+    all_program_stats = []
+    for prog in all_programs:
+        base = Application.objects.filter(program=prog)
+        total = base.count()
+        approved = base.filter(status='approved').count()
+        rejected = base.filter(status='rejected').count()
+        pending = base.filter(status__in=['submitted', 'for_review']).count()
+        draft = base.filter(status='draft').count()
+        all_program_stats.append({
+            'program': prog,
+            'total': total,
+            'approved': approved,
+            'rejected': rejected,
+            'pending': pending,
+            'draft': draft,
+            'approval_rate': round(approved / total * 100) if total else 0,
+            'rejection_rate': round(rejected / total * 100) if total else 0,
+            'pending_rate': round(pending / total * 100) if total else 0,
+            'draft_rate': round(draft / total * 100) if total else 0,
+        })
+
+    screening_pass = ScreeningResult.objects.filter(outcome='pass').count()
+    screening_flag = ScreeningResult.objects.filter(outcome='flag').count()
+    screening_total = screening_pass + screening_flag
+
+    total_applications = Application.objects.exclude(status='draft').count()
+    total_approved = Application.objects.filter(status='approved').count()
+    total_rejected = Application.objects.filter(status='rejected').count()
+    total_pending = Application.objects.filter(status__in=['submitted', 'for_review']).count()
+
+    context = {
+        'monthly_data': monthly_data,
+        'max_monthly': max_monthly,
+        'all_program_stats': all_program_stats,
+        'screening_pass': screening_pass,
+        'screening_flag': screening_flag,
+        'screening_total': screening_total,
+        'total_applications': total_applications,
+        'total_approved': total_approved,
+        'total_rejected': total_rejected,
+        'total_pending': total_pending,
+    }
+    return render(request, 'reports.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def admin_dashboard_view(request):
+    total_applicants = User.objects.filter(is_staff=False).count()
+    total_applications = Application.objects.count()
+    program_counts = [
+        {'program': prog, 'count': Application.objects.filter(program=prog).count()}
+        for prog in Program.objects.all().order_by('name')
+    ]
+
+    status_counts = {
+        'submitted': Application.objects.filter(status='submitted').count(),
+        'for_review': Application.objects.filter(status='for_review').count(),
+        'approved': Application.objects.filter(status='approved').count(),
+        'rejected': Application.objects.filter(status='rejected').count(),
+        'draft': Application.objects.filter(status='draft').count(),
+    }
+
+    recent_applications = Application.objects.select_related(
+        'applicant', 'program'
+    ).order_by('-created_at')[:10]
+
+    context = {
+        'total_applicants': total_applicants,
+        'total_applications': total_applications,
+        'program_counts': program_counts,
+        'status_counts': status_counts,
+        'recent_applications': recent_applications,
+    }
+    return render(request, 'admin_dashboard.html', context)
+
+

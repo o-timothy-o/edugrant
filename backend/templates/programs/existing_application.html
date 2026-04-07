@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Existing Application — EduGrant{% endblock %}
+
+{% block content %}
+
+<!-- Existing application modal — shown automatically on page load -->
+<div class="modal fade" id="existingAppModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="existingAppModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content existing-app-modal">
+
+      <div class="existing-app-modal-header">
+        <div class="existing-app-modal-icon">
+          <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6M4 6h16M4 10h4m-4 4h4m-4 4h4"/>
+          </svg>
+        </div>
+        <h5 class="existing-app-modal-title" id="existingAppModalLabel">Existing Application Found</h5>
+        <span class="app-program-pill {% if program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %} existing-app-pill">
+          {{ program.name }}
+        </span>
+      </div>
+
+      <div class="existing-app-modal-body">
+        <p class="existing-app-message">
+          You already have an existing <strong>{{ program.name }}</strong> application on record.
+        </p>
+        <div class="existing-app-meta">
+          <div class="existing-app-meta-row">
+            <span class="existing-app-meta-label">Status</span>
+            <span class="app-status-badge status-{{ application.status }}">{{ application.get_status_display }}</span>
+          </div>
+          <div class="existing-app-meta-row">
+            <span class="existing-app-meta-label">Date Filed</span>
+            <span class="existing-app-meta-value">{{ application.created_at|date:"F d, Y" }}</span>
+          </div>
+        </div>
+        {% if program.name == 'SPARK' %}
+        <p class="existing-app-note">
+          SPARK is a one-time grant. Only one application is allowed per applicant.
+        </p>
+        {% else %}
+        <p class="existing-app-note">
+          You currently have an active SINAG application that is still being processed. You may apply again once it has been resolved.
+        </p>
+        {% endif %}
+      </div>
+
+      <div class="existing-app-modal-footer">
+        <a href="{% url 'home' %}" class="btn btn-outline existing-app-btn-back">← Go Back</a>
+        <a href="{% url 'programs:application_detail' application_id=application.id %}" class="btn btn-primary existing-app-btn-view">
+          View My Application
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var modal = new bootstrap.Modal(document.getElementById('existingAppModal'));
+    modal.show();
+  });
+</script>
+
+{% endblock %}

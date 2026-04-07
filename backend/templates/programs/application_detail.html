@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Application Detail – {{ application.program.name }}{% endblock %}
+
+{% block content %}
+<div class="authenticated-landing">
+
+  <div class="gradient-page-header">
+    <span class="detail-program-pill {% if application.program.name == 'SPARK' %}pill-spark-light{% else %}pill-sinag-light{% endif %}">
+      {{ application.program.name }}
+    </span>
+    <h1>Application Detail</h1>
+    <p>{{ application.program.get_program_type_display }}</p>
+  </div>
+
+  <div class="container">
+
+    <div class="detail-meta-grid">
+      <div class="detail-meta-card">
+        <p class="detail-label">Program</p>
+        <p class="detail-value">{{ application.program.name }} — {{ application.program.get_program_type_display }}</p>
+      </div>
+      <div class="detail-meta-card">
+        <p class="detail-label">Date Submitted</p>
+        <p class="detail-value">{{ application.created_at|date:"F d, Y" }}</p>
+      </div>
+      <div class="detail-meta-card">
+        <p class="detail-label">Status</p>
+        <span class="app-status-badge status-{{ application.status }}">{{ application.get_status_display }}</span>
+      </div>
+    </div>
+
+    {% if profile and profile.full_name %}
+    <div class="detail-card">
+      <div class="detail-section">
+        <h3>Personal Information</h3>
+        <div class="detail-info-grid">
+          <div class="detail-info-field"><span class="detail-info-label">Full Name</span><span class="detail-info-value">{{ profile.full_name|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Contact Number</span><span class="detail-info-value">{{ profile.contact_number|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Address</span><span class="detail-info-value">{{ profile.address|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Barangay</span><span class="detail-info-value">{{ profile.barangay|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Residency</span><span class="detail-info-value">{{ profile.residency_years|default:"—" }} years</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Email</span><span class="detail-info-value">{{ application.applicant.email }}</span></div>
+        </div>
+      </div>
+      {% if educational_data and educational_data.school %}
+      <div class="detail-section">
+        <h3>Educational Background</h3>
+        <div class="detail-info-grid">
+          <div class="detail-info-field"><span class="detail-info-label">Course / Degree</span><span class="detail-info-value">{{ educational_data.course|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">School</span><span class="detail-info-value">{{ educational_data.school|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Graduation Date</span><span class="detail-info-value">{{ educational_data.graduation_date|default:"—" }}</span></div>
+          {% if educational_data.exam_to_take %}<div class="detail-info-field"><span class="detail-info-label">Exam to Take</span><span class="detail-info-value">{{ educational_data.exam_to_take }}</span></div>{% endif %}
+          {% if educational_data.exam_date %}<div class="detail-info-field"><span class="detail-info-label">Exam Date</span><span class="detail-info-value">{{ educational_data.exam_date }}</span></div>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="detail-card {% if application.program.name == 'SPARK' %}spark-detail{% else %}sinag-detail{% endif %}">
+      <div class="detail-section">
+        <h3>Document Checklist</h3>
+        <div class="doc-checklist">
+          <div class="doc-checklist-header">
+            <span>Document</span>
+            <span>Status</span>
+          </div>
+          {% for req, doc in doc_statuses %}
+          <div class="doc-checklist-row">
+            <span class="doc-name">
+              {{ req.name }}
+              {% if req.required %}<span class="doc-required">*</span>{% endif %}
+            </span>
+            <div>
+              <span class="doc-status-badge {% if doc and doc.status == 'submitted' %}doc-submitted{% elif doc and doc.status == 'invalid' %}doc-invalid{% else %}doc-missing{% endif %}">
+                {% if doc %}{{ doc.get_status_display }}{% else %}Missing{% endif %}
+              </span>
+              {% if doc and doc.status == 'invalid' and doc.issue_notes %}
+              <p class="doc-issue-note">⚠ {{ doc.issue_notes }}</p>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <p class="doc-note">* Required document</p>
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <a href="{% url 'programs:my_applications' %}" class="btn btn-outline">Back to My Applications</a>
+      <a href="{% url 'home' %}" class="btn btn-primary">Dashboard</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

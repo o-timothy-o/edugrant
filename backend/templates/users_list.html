@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Applicants{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub"><a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> › Applicants</p>
+      <h1 class="admin-dashboard-title">Applicants</h1>
+    </div>
+    <span class="applicants-total-badge">{{ total }} applicant{{ total|pluralize }}</span>
+  </div>
+
+  <!-- Search -->
+  <form method="get" class="applicants-filters">
+    <div class="applicants-search-wrap">
+      <svg class="applicants-search-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Search by name or email…" class="applicants-search-input" />
+    </div>
+    <button type="submit" class="btn btn-primary applicants-filter-btn">Search</button>
+    {% if search %}
+    <a href="{% url 'users_list' %}" class="btn btn-outline applicants-filter-btn">Clear</a>
+    {% endif %}
+  </form>
+
+  <!-- Table -->
+  <div class="admin-card" style="padding: 0; overflow: hidden;">
+    <table class="admin-table applicants-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Barangay</th>
+          <th>Contact</th>
+          <th>Applications</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>
+            <p class="admin-applicant-name">
+              {% if u.applicant_profile.full_name %}
+                {{ u.applicant_profile.full_name }}
+              {% else %}
+                {{ u.get_full_name|default:u.username }}
+              {% endif %}
+            </p>
+          </td>
+          <td>
+            <p class="admin-applicant-email">{{ u.email }}</p>
+          </td>
+          <td>{{ u.applicant_profile.barangay|default:"—" }}</td>
+          <td>{{ u.applicant_profile.contact_number|default:"—" }}</td>
+          <td>
+            {% if u.application_count > 0 %}
+              <a href="{% url 'applicants_list' %}?q={{ u.email }}" class="admin-action-link">{{ u.application_count }}</a>
+            {% else %}
+              0
+            {% endif %}
+          </td>
+          <td class="admin-date">{{ u.date_joined|date:"M j, Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="admin-empty">No applicants found{% if search %} matching "{{ search }}"{% endif %}.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

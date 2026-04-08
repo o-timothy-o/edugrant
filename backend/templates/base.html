@@ -26,7 +26,8 @@
           {% endif %}
           {% if user.is_authenticated %}
             {% if user.is_staff %}
-              <a href="{% url 'applicants_list' %}" class="navBtn">Applicants</a>
+              <a href="{% url 'users_list' %}" class="navBtn">Applicants</a>
+              <a href="{% url 'applicants_list' %}" class="navBtn">Applications</a>
               <a href="{% url 'reports' %}" class="navBtn">Reports</a>
               <a href="{% url 'program_list' %}" class="navBtn">Programs</a>
               <a href="/admin/" class="navBtn">Settings</a>

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth
 from programs.models import Application, Program, ScreeningResult
 from programs.forms import ProgramForm, DocumentRequirementFormSet
@@ -22,6 +22,27 @@ def home(request):
         context['featured_programs'] = active_programs[:3]
         context['total_programs'] = active_programs.count()
     return render(request, "home.html", context)
+
+
+@staff_member_required(login_url="staff_login")
+def users_list_view(request):
+    search = request.GET.get('q', '').strip()
+    users = User.objects.filter(is_staff=False).select_related('applicant_profile').annotate(
+        application_count=Count('application')
+    ).order_by('-date_joined')
+    if search:
+        users = users.filter(
+            Q(email__icontains=search) |
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search) |
+            Q(applicant_profile__full_name__icontains=search)
+        )
+    context = {
+        'users': users,
+        'total': users.count(),
+        'search': search,
+    }
+    return render(request, 'users_list.html', context)
 
 
 @staff_member_required(login_url="staff_login")

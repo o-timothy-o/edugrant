@@ -17,8 +17,8 @@
           </svg>
         </div>
         <h5 class="existing-app-modal-title" id="existingAppModalLabel">Existing Application Found</h5>
-        <span class="app-program-pill {% if program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %} existing-app-pill">
-          {{ program.name }}
+        <span class="app-program-pill {% if program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %} existing-app-pill">
+          {{ program.short_name|default:program.name }}
         </span>
       </div>
 
@@ -36,13 +36,13 @@
             <span class="existing-app-meta-value">{{ application.created_at|date:"F d, Y" }}</span>
           </div>
         </div>
-        {% if program.name == 'SPARK' %}
+        {% if program.program_type == 'grant' %}
         <p class="existing-app-note">
-          SPARK is a one-time grant. Only one application is allowed per applicant.
+          {{ program.short_name|default:program.name }} is a one-time grant. Only one application is allowed per applicant.
         </p>
         {% else %}
         <p class="existing-app-note">
-          You currently have an active SINAG application that is still being processed. You may apply again once it has been resolved.
+          You currently have an active {{ program.short_name|default:program.name }} application that is still being processed. You may apply again once it has been resolved.
         </p>
         {% endif %}
       </div>

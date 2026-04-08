@@ -7,8 +7,8 @@
 <div class="authenticated-landing">
 
   <div class="gradient-page-header">
-    <span class="detail-program-pill {% if application.program.name == 'SPARK' %}pill-spark-light{% else %}pill-sinag-light{% endif %}">
-      {{ application.program.name }}
+    <span class="detail-program-pill {% if application.program.program_type == 'grant' %}pill-spark-light{% else %}pill-sinag-light{% endif %}">
+      {{ application.program.short_name|default:application.program.name }}
     </span>
     <h1>Application Detail</h1>
     <p>{{ application.program.get_program_type_display }}</p>
@@ -59,7 +59,7 @@
     </div>
     {% endif %}
 
-    <div class="detail-card {% if application.program.name == 'SPARK' %}spark-detail{% else %}sinag-detail{% endif %}">
+    <div class="detail-card {% if application.program.program_type == 'grant' %}spark-detail{% else %}sinag-detail{% endif %}">
       <div class="detail-section">
         <h3>Document Checklist</h3>
         <div class="doc-checklist">

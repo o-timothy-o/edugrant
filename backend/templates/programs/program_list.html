@@ -34,7 +34,7 @@
             {% if program.description %}<p class="admin-date" style="margin:0">{{ program.description|truncatechars:60 }}</p>{% endif %}
           </td>
           <td>
-            <span class="app-program-pill {% if program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
+            <span class="app-program-pill {% if program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %}">
               {{ program.get_program_type_display }}
             </span>
           </td>

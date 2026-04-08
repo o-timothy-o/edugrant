@@ -30,7 +30,7 @@ class FamilyCompositionForm(forms.Form):
 class ProgramForm(forms.ModelForm):
     class Meta:
         model = Program
-        fields = ['name', 'program_type', 'status', 'application_frequency', 'description']
+        fields = ['name', 'short_name', 'program_type', 'status', 'application_frequency', 'description']
 
 DocumentRequirementFormSet = inlineformset_factory(
     Program,

@@ -54,23 +54,46 @@
               </div>
               <div class="form-group">
                 <label for="residency">Years of Residency in Carmona</label>
-                <input type="text" id="residency" name="residency" value="{{ profile.residency_years|default:'' }}">
+                <input type="number" id="residency" name="residency" min="0" max="100" value="{{ profile.residency_years|default:'' }}">
               </div>
               <div class="form-group">
                 <label for="barangay">Barangay</label>
-                <input type="text" id="barangay" name="barangay" value="{{ profile.barangay|default:'' }}">
+                <select id="barangay" name="barangay">
+                  <option value="">— Select Barangay —</option>
+                  {% for b in barangay_choices %}
+                  <option value="{{ b }}" {% if profile.barangay == b %}selected{% endif %}>{{ b }}</option>
+                  {% endfor %}
+                </select>
               </div>
               <div class="form-group">
                 <label for="gender">Gender</label>
-                <input type="text" id="gender" name="gender" value="{{ profile.gender|default:'' }}">
+                <select id="gender" name="gender">
+                  <option value="">— Select —</option>
+                  <option value="Male" {% if profile.gender == "Male" %}selected{% endif %}>Male</option>
+                  <option value="Female" {% if profile.gender == "Female" %}selected{% endif %}>Female</option>
+                  <option value="Non-binary" {% if profile.gender == "Non-binary" %}selected{% endif %}>Non-binary</option>
+                  <option value="Prefer not to say" {% if profile.gender == "Prefer not to say" %}selected{% endif %}>Prefer not to say</option>
+                </select>
               </div>
               <div class="form-group">
                 <label for="civil_status">Civil Status</label>
-                <input type="text" id="civil_status" name="civil_status" value="{{ profile.civil_status|default:'' }}">
+                <select id="civil_status" name="civil_status">
+                  <option value="">— Select —</option>
+                  <option value="Single" {% if profile.civil_status == "Single" %}selected{% endif %}>Single</option>
+                  <option value="Married" {% if profile.civil_status == "Married" %}selected{% endif %}>Married</option>
+                  <option value="Widowed" {% if profile.civil_status == "Widowed" %}selected{% endif %}>Widowed</option>
+                  <option value="Separated" {% if profile.civil_status == "Separated" %}selected{% endif %}>Separated</option>
+                  <option value="Annulled" {% if profile.civil_status == "Annulled" %}selected{% endif %}>Annulled</option>
+                </select>
               </div>
               <div class="form-group">
                 <label for="citizenship">Citizenship</label>
-                <input type="text" id="citizenship" name="citizenship" value="{{ profile.citizenship|default:'' }}">
+                <select id="citizenship" name="citizenship">
+                  <option value="">— Select —</option>
+                  <option value="Filipino" {% if profile.citizenship == "Filipino" %}selected{% endif %}>Filipino</option>
+                  <option value="Dual Citizen" {% if profile.citizenship == "Dual Citizen" %}selected{% endif %}>Dual Citizen</option>
+                  <option value="Foreign National" {% if profile.citizenship == "Foreign National" %}selected{% endif %}>Foreign National</option>
+                </select>
               </div>
               <div class="form-group">
                 <label for="contact_number">Contact Number</label>
@@ -78,7 +101,11 @@
               </div>
               <div class="form-group">
                 <label for="working">Currently Working?</label>
-                <input type="text" id="working" name="working" value="{{ profile.currently_working|default:'' }}">
+                <select id="working" name="working">
+                  <option value="">— Select —</option>
+                  <option value="Yes" {% if profile.currently_working == "Yes" %}selected{% endif %}>Yes</option>
+                  <option value="No" {% if profile.currently_working == "No" %}selected{% endif %}>No</option>
+                </select>
               </div>
               <div class="form-group">
                 <label for="religion">Religion</label>
@@ -86,7 +113,15 @@
               </div>
               <div class="form-group">
                 <label for="monthly_income">Monthly Income</label>
-                <input type="text" id="monthly_income" name="monthly_income" value="{{ profile.monthly_income|default:'' }}">
+                <select id="monthly_income" name="monthly_income">
+                  <option value="">— Select Range —</option>
+                  <option value="Below ₱10,000" {% if profile.monthly_income == "Below ₱10,000" %}selected{% endif %}>Below ₱10,000</option>
+                  <option value="₱10,000 – ₱20,999" {% if profile.monthly_income == "₱10,000 – ₱20,999" %}selected{% endif %}>₱10,000 – ₱20,999</option>
+                  <option value="₱21,000 – ₱43,999" {% if profile.monthly_income == "₱21,000 – ₱43,999" %}selected{% endif %}>₱21,000 – ₱43,999 (Middle Income)</option>
+                  <option value="₱44,000 – ₱76,999" {% if profile.monthly_income == "₱44,000 – ₱76,999" %}selected{% endif %}>₱44,000 – ₱76,999</option>
+                  <option value="₱77,000 – ₱131,999" {% if profile.monthly_income == "₱77,000 – ₱131,999" %}selected{% endif %}>₱77,000 – ₱131,999</option>
+                  <option value="₱132,000 and above" {% if profile.monthly_income == "₱132,000 and above" %}selected{% endif %}>₱132,000 and above</option>
+                </select>
               </div>
             </div>
           </div>

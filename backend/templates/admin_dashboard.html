@@ -78,8 +78,8 @@
               <p class="admin-applicant-email">{{ app.applicant.email }}</p>
             </td>
             <td>
-              <span class="app-program-pill {% if app.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
-                {{ app.program.name }}
+              <span class="app-program-pill {% if app.program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %}">
+                {{ app.program.short_name|default:app.program.name }}
               </span>
             </td>
             <td><span class="app-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span></td>
@@ -132,9 +132,9 @@
         {% if total_applications > 0 %}
         {% for pc in program_counts %}
         <div class="admin-program-bar-row">
-          <span class="admin-program-bar-label">{{ pc.program.name }}</span>
+          <span class="admin-program-bar-label">{{ pc.program.short_name|default:pc.program.name }}</span>
           <div class="admin-program-bar-track">
-            <div class="admin-program-bar-fill {% if pc.program.name == 'SPARK' %}spark-bar{% else %}sinag-bar{% endif %}"
+            <div class="admin-program-bar-fill {% if pc.program.program_type == 'grant' %}spark-bar{% else %}sinag-bar{% endif %}"
               style="width: {% widthratio pc.count total_applications 100 %}%"></div>
           </div>
           <span class="admin-program-bar-count">{{ pc.count }}</span>

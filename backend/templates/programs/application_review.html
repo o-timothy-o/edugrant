@@ -24,8 +24,8 @@
     </div>
     <div class="admin-card review-meta-card">
       <p class="detail-label">Program</p>
-      <span class="app-program-pill {% if application.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
-        {{ application.program.name }}
+      <span class="app-program-pill {% if application.program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %}">
+        {{ application.program.short_name|default:application.program.name }}
       </span>
       <p class="review-meta-sub" style="margin-top: 6px;">{{ application.program.get_program_type_display }}</p>
     </div>

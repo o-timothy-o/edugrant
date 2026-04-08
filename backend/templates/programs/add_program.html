@@ -36,6 +36,12 @@
         </div>
 
         <div class="prog-form-group">
+          <label class="prog-label">Short Name / Alias</label>
+          {{ form.short_name }}
+          <p class="prog-field-hint">Brief label for buttons and pills (e.g. SINAG, SPARK).</p>
+        </div>
+
+        <div class="prog-form-group">
           <label class="prog-label">Program Type *</label>
           {{ form.program_type }}
           {% if form.program_type.errors %}

@@ -141,8 +141,8 @@
     {% for stats in all_program_stats %}
     <div class="admin-card">
       <div class="admin-card-header">
-        <h2>{{ stats.program.name }}
-          <span class="app-program-pill {% if stats.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}" style="font-size:11px;">
+        <h2>{{ stats.program.short_name|default:stats.program.name }}
+          <span class="app-program-pill {% if stats.program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %}" style="font-size:11px;">
             {{ stats.program.get_program_type_display }}
           </span>
         </h2>

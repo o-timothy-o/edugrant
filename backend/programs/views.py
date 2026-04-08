@@ -3,11 +3,28 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from .models import Program, Application, DocumentRequirement, ApplicationDocument
-from .forms import SparkApplicationForm, SinagApplicationForm, ApplicationDocumentForm, FamilyCompositionForm
+from .forms import ApplicationDocumentForm, FamilyCompositionForm
 from .services import run_rule_evaluation
 from django.forms import formset_factory
 from accounts.models import ApplicantProfile
 import json
+
+BARANGAY_CHOICES = [
+    "Barangay 1 (Poblacion) - San Pablo",
+    "Barangay 2 (Poblacion) - San Jose",
+    "Barangay 3 (Poblacion) - San Jose",
+    "Barangay 4 (Poblacion) - J.M. Loyola",
+    "Barangay 5 (Poblacion) - J.M. Loyola",
+    "Barangay 6 (Poblacion) - Magallanes",
+    "Barangay 7 (Poblacion) - Magallanes",
+    "Barangay 8 (Poblacion) - Rosario",
+    "Bancal",
+    "Cabilang Baybay",
+    "Lantic",
+    "Mabuhay",
+    "Maduya",
+    "Milagrosa",
+]
 
 
 def _save_step1_data(request, application):
@@ -55,46 +72,9 @@ def _save_step1_data(request, application):
 def spark_application_view(request):
     try:
         spark_program = Program.objects.get(name="SPARK")
+        return redirect('programs:generic_application_step1', program_id=spark_program.id)
     except Program.DoesNotExist:
         return redirect('home')
-
-    # SPARK is one-time only — show modal if a submitted/approved/rejected app exists
-    existing = Application.objects.filter(
-        applicant=request.user,
-        program=spark_program,
-    ).exclude(status='draft').first()
-    if existing:
-        return render(request, 'programs/existing_application.html', {
-            'application': existing,
-            'program': spark_program,
-        })
-
-    application, created = Application.objects.get_or_create(
-        applicant=request.user,
-        program=spark_program,
-        defaults={'status': 'draft'}
-    )
-
-    if request.method == 'POST':
-        form = SparkApplicationForm(request.POST, instance=application)
-        if form.is_valid():
-            form.save()
-            _save_step1_data(request, application)
-            return redirect('programs:spark_application_step2', application_id=application.id)
-    else:
-        form = SparkApplicationForm(instance=application)
-
-    document_requirements = DocumentRequirement.objects.filter(program=spark_program)
-    profile = getattr(request.user, 'applicant_profile', None)
-
-    context = {
-        'form': form,
-        'program': spark_program,
-        'document_requirements': document_requirements,
-        'application': application,
-        'profile': profile,
-    }
-    return render(request, 'programs/spark_application.html', context)
 
 @login_required
 def spark_application_step2_view(request, application_id):
@@ -354,6 +334,7 @@ def generic_application_step1_view(request, program_id):
         'application': application,
         'profile': profile,
         'document_requirements': document_requirements,
+        'barangay_choices': BARANGAY_CHOICES,
     }
     return render(request, 'programs/generic_application_step1.html', context)
 
@@ -410,44 +391,6 @@ def generic_application_step2_view(request, program_id, application_id):
 def sinag_application_view(request):
     try:
         sinag_program = Program.objects.get(name="SINAG")
+        return redirect('programs:generic_application_step1', program_id=sinag_program.id)
     except Program.DoesNotExist:
         return redirect('home')
-
-    # Block re-application if a submitted/pending SINAG app is already under review
-    pending = Application.objects.filter(
-        applicant=request.user,
-        program=sinag_program,
-        status__in=['submitted', 'for_review'],
-    ).first()
-    if pending:
-        return render(request, 'programs/existing_application.html', {
-            'application': pending,
-            'program': sinag_program,
-        })
-
-    application, created = Application.objects.get_or_create(
-        applicant=request.user,
-        program=sinag_program,
-        defaults={'status': 'draft'}
-    )
-
-    if request.method == 'POST':
-        form = SinagApplicationForm(request.POST, instance=application)
-        if form.is_valid():
-            form.save()
-            _save_step1_data(request, application)
-            return redirect('programs:sinag_application_step2', application_id=application.id)
-    else:
-        form = SinagApplicationForm(instance=application)
-
-    document_requirements = DocumentRequirement.objects.filter(program=sinag_program)
-    profile = getattr(request.user, 'applicant_profile', None)
-
-    context = {
-        'form': form,
-        'program': sinag_program,
-        'document_requirements': document_requirements,
-        'application': application,
-        'profile': profile,
-    }
-    return render(request, 'programs/sinag_application.html', context)

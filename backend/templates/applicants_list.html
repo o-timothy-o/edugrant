@@ -62,8 +62,8 @@
             <p class="admin-applicant-email">{{ app.applicant.email }}</p>
           </td>
           <td>
-            <span class="app-program-pill {% if app.program.name == 'SPARK' %}pill-spark{% else %}pill-sinag{% endif %}">
-              {{ app.program.name }}
+            <span class="app-program-pill {% if app.program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %}">
+              {{ app.program.short_name|default:app.program.name }}
             </span>
           </td>
           <td>

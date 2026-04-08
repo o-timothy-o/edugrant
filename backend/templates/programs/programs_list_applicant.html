@@ -33,10 +33,6 @@
         <div class="all-program-footer">
           {% if program.id in user_app_program_ids %}
             <span class="all-program-pending">Application Pending Review</span>
-          {% elif program.name == 'SPARK' %}
-            <a href="{% url 'programs:spark_application' %}" class="btn btn-secondary">Apply</a>
-          {% elif program.name == 'SINAG' %}
-            <a href="{% url 'programs:sinag_application' %}" class="btn btn-secondary">Apply</a>
           {% else %}
             <a href="{% url 'programs:generic_application_step1' program.id %}" class="btn btn-secondary">Apply</a>
           {% endif %}

@@ -28,7 +28,7 @@ def home(request):
 def users_list_view(request):
     search = request.GET.get('q', '').strip()
     users = User.objects.filter(is_staff=False).select_related('applicant_profile').annotate(
-        application_count=Count('application')
+        application_count=Count('applications')
     ).order_by('-date_joined')
     if search:
         users = users.filter(

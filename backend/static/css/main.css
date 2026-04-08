@@ -3001,3 +3001,132 @@ body {
   color: #ef4444;
   cursor: pointer;
 }
+
+/* Nav dropdown */
+.nav-dropdown {
+  position: relative;
+}
+.nav-dropdown-toggle {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.5);
+  cursor: pointer;
+}
+.nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  min-width: 180px;
+  z-index: 999;
+  overflow: hidden;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+  display: block;
+}
+.nav-dropdown-item {
+  display: block;
+  padding: 10px 16px;
+  color: #374151;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.nav-dropdown-item:hover {
+  background: #f3f4f6;
+  color: #7c3aed;
+}
+
+/* Styled selects in application form */
+.application-form select {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.application-form select:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+}
+.application-form select option[value=""] {
+  color: #9ca3af;
+}
+
+/* Program modals */
+.program-modal { border-radius: 14px; overflow: hidden; }
+.program-modal-header {
+  padding: 20px 24px;
+  border-bottom: none;
+  color: #fff;
+}
+.spark-modal-header { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.sinag-modal-header { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.program-modal-header .program-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+.program-modal-header .modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+.program-modal-body { padding: 24px; }
+.program-modal-tagline {
+  color: #374151;
+  margin-bottom: 20px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.program-modal-section { margin-bottom: 18px; }
+.program-modal-section h6 {
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.program-modal-section ul {
+  padding-left: 18px;
+  margin: 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.program-modal-section p {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+.program-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* 4-column schools attended grid (awards column removed) */
+.schools-attended-grid-4col {
+  grid-template-columns: 2fr 1fr 2fr 1.5fr;
+}

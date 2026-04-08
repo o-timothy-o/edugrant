@@ -148,37 +148,32 @@
         </div>
 
         <div class="form-section">
-          <div class="schools-attended-grid">
+          <div class="schools-attended-grid schools-attended-grid-4col">
             <div class="grid-header">Name of Schools Attended (Elementary to College)</div>
             <div class="grid-header">School Type (Public or Private)</div>
             <div class="grid-header">School Address</div>
             <div class="grid-header">Year Started and Year Graduated</div>
-            <div class="grid-header">Honors / Awards Received (If any)</div>
 
             {% with s=application.educational_data.schools_attended %}
             <div class="grid-cell"><input type="text" name="school_name_1" value="{{ s.0.name|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_type_1" value="{{ s.0.type|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_address_1" value="{{ s.0.address|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_year_1" value="{{ s.0.year|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_honors_1" value="{{ s.0.honors|default:'' }}"></div>
 
             <div class="grid-cell"><input type="text" name="school_name_2" value="{{ s.1.name|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_type_2" value="{{ s.1.type|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_address_2" value="{{ s.1.address|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_year_2" value="{{ s.1.year|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_honors_2" value="{{ s.1.honors|default:'' }}"></div>
 
             <div class="grid-cell"><input type="text" name="school_name_3" value="{{ s.2.name|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_type_3" value="{{ s.2.type|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_address_3" value="{{ s.2.address|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_year_3" value="{{ s.2.year|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_honors_3" value="{{ s.2.honors|default:'' }}"></div>
 
             <div class="grid-cell"><input type="text" name="school_name_4" value="{{ s.3.name|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_type_4" value="{{ s.3.type|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_address_4" value="{{ s.3.address|default:'' }}"></div>
             <div class="grid-cell"><input type="text" name="school_year_4" value="{{ s.3.year|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_honors_4" value="{{ s.3.honors|default:'' }}"></div>
             {% endwith %}
           </div>
         </div>

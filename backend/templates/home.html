@@ -21,7 +21,7 @@
       </p>
       <div class="hero-actions">
         <a href="{% url 'accounts:register' %}" class="btn btn-primary">Get Started</a>
-        <a href="#" class="btn btn-outline">Contact CAYDO</a>
+        <a href="https://www.facebook.com/CAYDOCarmona" target="_blank" rel="noopener" class="btn btn-outline">Contact CAYDO</a>
       </div>
     </div>
   </section>
@@ -41,7 +41,7 @@
           for PRC board/licensure examinations and meet CAYDO requirements.
         </p>
       </div>
-      <a href="#" class="btn btn-secondary">Learn more</a>
+      <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#sparkModal">Learn more</button>
     </div>
 
     <div class="program-card sinag">
@@ -58,7 +58,99 @@
           performance and documentary requirements set by CAYDO.
         </p>
       </div>
-      <a href="#" class="btn btn-secondary">Learn more</a>
+      <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#sinagModal">Learn more</button>
+    </div>
+
+    <!-- SPARK Modal -->
+    <div class="modal fade" id="sparkModal" tabindex="-1" aria-labelledby="sparkModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content program-modal">
+          <div class="modal-header program-modal-header spark-modal-header">
+            <div>
+              <span class="program-label">SPARK</span>
+              <h5 class="modal-title" id="sparkModalLabel">Specialized Program and Review Knowledge</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body program-modal-body">
+            <p class="program-modal-tagline">A one-time grant assistance program administered by CAYDO for Carmona residents preparing for professional licensure, board, or bar examinations.</p>
+            <div class="program-modal-section">
+              <h6>Who can apply?</h6>
+              <ul>
+                <li>Must be a resident of Carmona, Cavite</li>
+                <li>Must have completed a degree program</li>
+                <li>Must be preparing for a PRC board, licensure, or bar examination</li>
+                <li>One-time assistance only — cannot be availed again after approval</li>
+              </ul>
+            </div>
+            <div class="program-modal-section">
+              <h6>Document Requirements</h6>
+              <ul>
+                <li>Filled out application form</li>
+                <li>Copy of Certificate of Graduation</li>
+                <li>Photocopy of Transcript of Records</li>
+                <li>Photocopy of valid government-issued ID (back to back)</li>
+                <li>Original Barangay Clearance</li>
+                <li>Original Barangay Indigency</li>
+              </ul>
+            </div>
+            <div class="program-modal-section">
+              <h6>Important Notes</h6>
+              <p>Applications are reviewed by CAYDO administrators. Submitting an application does not guarantee approval. All physical copies of requirements must be submitted on-site after online filing.</p>
+            </div>
+          </div>
+          <div class="modal-footer program-modal-footer">
+            <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary">Apply Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SINAG Modal -->
+    <div class="modal fade" id="sinagModal" tabindex="-1" aria-labelledby="sinagModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content program-modal">
+          <div class="modal-header program-modal-header sinag-modal-header">
+            <div>
+              <span class="program-label">SINAG</span>
+              <h5 class="modal-title" id="sinagModalLabel">Scholarship, Incentives and Networking in Achieving Graduate Studies</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body program-modal-body">
+            <p class="program-modal-tagline">A scholarship assistance program administered by CAYDO for Carmona residents pursuing Master's, Doctorate, Law, or other advanced degree programs.</p>
+            <div class="program-modal-section">
+              <h6>Who can apply?</h6>
+              <ul>
+                <li>Must be a resident of Carmona, Cavite</li>
+                <li>Must be enrolled in a graduate or advanced degree program (Master's, Doctorate, Law, Medicine, etc.)</li>
+                <li>Must meet academic performance requirements set by CAYDO</li>
+                <li>Applicants are expected to pass their program — assistance is not renewable for repeating students</li>
+              </ul>
+            </div>
+            <div class="program-modal-section">
+              <h6>Document Requirements</h6>
+              <ul>
+                <li>Filled out application form</li>
+                <li>Copy of Certificate of Graduation (undergraduate)</li>
+                <li>Photocopy of Transcript of Records</li>
+                <li>Photocopy of valid government-issued ID (back to back)</li>
+                <li>Original Barangay Clearance</li>
+                <li>Original Barangay Indigency</li>
+              </ul>
+            </div>
+            <div class="program-modal-section">
+              <h6>Important Notes</h6>
+              <p>Applications are reviewed per batch by CAYDO administrators. You may re-apply after a previous application has been resolved. Submitting an application does not guarantee approval.</p>
+            </div>
+          </div>
+          <div class="modal-footer program-modal-footer">
+            <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary">Apply Now</a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -108,7 +200,7 @@
       </p>
       <div class="cta-actions">
         <a href="{% url 'accounts:register' %}" class="btn btn-primary">Get Started</a>
-        <a href="#" class="btn btn-outline-light">Contact CAYDO</a>
+        <a href="https://www.facebook.com/CAYDOCarmona" target="_blank" rel="noopener" class="btn btn-outline-light">Contact CAYDO</a>
       </div>
     </div>
   </section>

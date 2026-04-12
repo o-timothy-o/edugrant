@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
+from django.views import View
 
 from .forms import ApplicantRegistrationForm
 
@@ -30,6 +31,16 @@ class ApplicantLoginView(LoginView):
             form.add_error(None, "This portal is for applicants only.")
             return self.form_invalid(form)
         return super().form_valid(form)
+
+
+class CustomLogoutView(View):
+    """Logs out the user and redirects staff to the staff login page."""
+    def post(self, request):
+        is_staff = request.user.is_staff
+        logout(request)
+        if is_staff:
+            return redirect(reverse('staff_login'))
+        return redirect(reverse('home'))
 
 
 class StaffLoginView(LoginView):

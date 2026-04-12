@@ -217,13 +217,17 @@
         <form method="post">
           {% csrf_token %}
           <div class="review-action-buttons">
+            <button type="submit" name="action" value="awaiting_physical" class="btn review-btn-await">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Awaiting Physical
+            </button>
             <button type="submit" name="action" value="approved" class="btn review-btn-approve">
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-              Approve
+              Fully Approve
             </button>
             <button type="submit" name="action" value="for_review" class="btn review-btn-review">
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              Mark for Review
+              For Review
             </button>
             <button type="submit" name="action" value="rejected" class="btn review-btn-reject">
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -253,8 +257,12 @@
             <span class="review-legend-desc">Under active evaluation</span>
           </div>
           <div class="review-legend-row">
+            <span class="app-status-badge status-awaiting_physical">Awaiting Physical</span>
+            <span class="review-legend-desc">Approved online; applicant must submit physical copies</span>
+          </div>
+          <div class="review-legend-row">
             <span class="app-status-badge status-approved">Approved</span>
-            <span class="review-legend-desc">Application accepted</span>
+            <span class="review-legend-desc">Fully approved; physical copies received</span>
           </div>
           <div class="review-legend-row">
             <span class="app-status-badge status-rejected">Rejected</span>

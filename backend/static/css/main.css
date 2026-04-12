@@ -1556,11 +1556,12 @@ body {
   font-weight: 600;
 }
 
-.status-draft      { background: #e5e7eb; color: #374151; }
-.status-submitted  { background: #dbeafe; color: #1d4ed8; }
-.status-for_review { background: #fef3c7; color: #92400e; }
-.status-approved   { background: #dcfce7; color: #15803d; }
-.status-rejected   { background: #fee2e2; color: #b91c1c; }
+.status-draft              { background: #e5e7eb; color: #374151; }
+.status-submitted          { background: #dbeafe; color: #1d4ed8; }
+.status-for_review         { background: #fef3c7; color: #92400e; }
+.status-approved           { background: #dcfce7; color: #15803d; }
+.status-awaiting_physical  { background: #e0f2fe; color: #0369a1; }
+.status-rejected           { background: #fee2e2; color: #b91c1c; }
 
 /* ── Applicants List page ────────────────────────────────── */
 
@@ -1780,6 +1781,15 @@ body {
   gap: 6px;
 }
 .review-btn-reject:hover { background: #fecaca; text-decoration: none; }
+
+.review-btn-await {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+  justify-content: center;
+  gap: 6px;
+}
+.review-btn-await:hover { background: #bae6fd; text-decoration: none; }
 
 .review-messages {
   margin-top: 14px;
@@ -3130,3 +3140,84 @@ body {
 .schools-attended-grid-4col {
   grid-template-columns: 2fr 1fr 2fr 1.5fr;
 }
+
+/* ── Awaiting Physical Submission notice (application_detail.html) ── */
+.awaiting-physical-notice {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: #e0f2fe;
+  border: 1px solid #7dd3fc;
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin: 0 0 20px 0;
+}
+.awaiting-physical-icon {
+  color: #0369a1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.awaiting-physical-title {
+  font-weight: 700;
+  color: #0369a1;
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+}
+.awaiting-physical-body {
+  color: #0c4a6e;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.awaiting-physical-body a {
+  color: #0369a1;
+  font-weight: 600;
+}
+
+/* ── Registration form styled fields ──────────────────────── */
+.register-field-group {
+  margin-bottom: 1.25rem;
+}
+.register-label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+}
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  color: #1f2937;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.register-form input[type="text"]:focus,
+.register-form input[type="email"]:focus,
+.register-form input[type="password"]:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+.register-help {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+}
+.register-error {
+  font-size: 0.85rem;
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 6px 0 0 0;
+}
+.register-non-field-errors { margin-bottom: 1rem; }

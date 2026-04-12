@@ -229,7 +229,7 @@ def application_review_view(request, application_id):
 
     if request.method == 'POST':
         action = request.POST.get('action')
-        if action in ['approved', 'rejected', 'for_review']:
+        if action in ['approved', 'rejected', 'for_review', 'awaiting_physical']:
             application.status = action
             application.save()
             messages.success(request, f'Application has been marked as {application.get_status_display()}.')

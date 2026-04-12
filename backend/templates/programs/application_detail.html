@@ -31,6 +31,18 @@
       </div>
     </div>
 
+    {% if application.status == 'awaiting_physical' %}
+    <div class="awaiting-physical-notice">
+      <div class="awaiting-physical-icon">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div>
+        <p class="awaiting-physical-title">Your application has been approved online!</p>
+        <p class="awaiting-physical-body">Please visit the CAYDO office at Carmona Municipal Hall to submit your physical copies of the required documents. Bring originals and photocopies. Contact CAYDO at their <a href="https://www.facebook.com/CAYDOCarmona" target="_blank" rel="noopener">Facebook page</a> to coordinate your visit.</p>
+      </div>
+    </div>
+    {% endif %}
+
     {% if profile and profile.full_name %}
     <div class="detail-card">
       <div class="detail-section">

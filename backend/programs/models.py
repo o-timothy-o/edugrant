@@ -57,6 +57,7 @@ class Application(models.Model):
         SUBMITTED = "submitted", "Submitted"
         FOR_REVIEW = "for_review", "For Review"
         APPROVED = "approved", "Approved"
+        AWAITING_PHYSICAL = "awaiting_physical", "Approved – Awaiting Physical Submission"
         REJECTED = "rejected", "Rejected"
 
     applicant = models.ForeignKey(

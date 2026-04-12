@@ -65,6 +65,61 @@
     {% include 'footer.html' %}
     {% endblock %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+    (function () {
+      var MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+
+      function getOrCreateError(input) {
+        var id = 'file-size-err-' + (input.id || input.name);
+        var el = document.getElementById(id);
+        if (!el) {
+          el = document.createElement('p');
+          el.id = id;
+          el.style.cssText = 'color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;padding:6px 10px;margin:6px 0 0 0;font-size:0.85rem;';
+          input.parentNode.insertBefore(el, input.nextSibling);
+        }
+        return el;
+      }
+
+      function checkFile(input) {
+        var errEl = getOrCreateError(input);
+        if (!input.files || input.files.length === 0) {
+          errEl.textContent = '';
+          return true;
+        }
+        var file = input.files[0];
+        if (file.size > MAX_BYTES) {
+          errEl.textContent = '\u26a0 "' + file.name + '" is too large (' + (file.size / 1024 / 1024).toFixed(1) + ' MB). Maximum is 2 MB. Please scan as PDF or compress the image before uploading.';
+          input.value = '';
+          return false;
+        }
+        errEl.textContent = '';
+        return true;
+      }
+
+      function attachListeners() {
+        document.querySelectorAll('input[type="file"]').forEach(function (input) {
+          if (!input.dataset.sizeChecked) {
+            input.dataset.sizeChecked = '1';
+            input.addEventListener('change', function () { checkFile(input); });
+          }
+        });
+      }
+
+      // Block submit if any oversized file slipped through
+      document.addEventListener('submit', function (e) {
+        var inputs = e.target.querySelectorAll('input[type="file"]');
+        var ok = true;
+        inputs.forEach(function (input) { if (!checkFile(input)) ok = false; });
+        if (!ok) e.preventDefault();
+      }, true);
+
+      // Attach on load and after any dynamic content added
+      document.addEventListener('DOMContentLoaded', attachListeners);
+      var observer = new MutationObserver(attachListeners);
+      observer.observe(document.body, { childList: true, subtree: true });
+    })();
+    </script>
   </body>
 </html>
 

@@ -39,11 +39,6 @@
       {% endif %}
       
       <button type="submit" class="btn btn-primary btn-login">Log In</button>
-
-      <div class="note">
-        <p>Note: Credentials provided by CAYDO after approval</p>
-        <p style="margin-top:6px;"><a href="{% url 'accounts:password_reset' %}" style="font-size:13px;">Forgot your password?</a></p>
-      </div>
     </form>
     <div class="signup-link">
       <p>Don't have an account? <a href="{% url 'accounts:register' %}">Sign Up</a></p>

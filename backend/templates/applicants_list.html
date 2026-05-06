@@ -81,10 +81,14 @@
             {% endif %}
           </td>
           <td class="admin-date">{{ app.created_at|date:"M j, Y" }}</td>
-          <td class="app-action">
+          <td class="app-action" style="display:flex;gap:8px;align-items:center;">
             <a href="{% url 'programs:application_review' application_id=app.id %}" class="admin-action-link">
               {% if app.status == 'submitted' or app.status == 'for_review' %}Review{% else %}View{% endif %}
             </a>
+            <form method="post" action="{% url 'archive_application' app.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-archive btn-sm">Archive</button>
+            </form>
           </td>
         </tr>
         {% empty %}

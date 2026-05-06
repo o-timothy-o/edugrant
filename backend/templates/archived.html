@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Archived Items{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub"><a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> › Archived</p>
+      <h1 class="admin-dashboard-title">Archived Items</h1>
+    </div>
+  </div>
+
+  <!-- Archived Programs -->
+  <div class="admin-card" style="margin-bottom:20px;">
+    <div class="admin-card-header">
+      <h2>Programs <span class="applicants-total-badge">{{ archived_programs.count }}</span></h2>
+    </div>
+    <table class="admin-table" style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for program in archived_programs %}
+        <tr>
+          <td>
+            <p class="admin-applicant-name">{{ program.name }}</p>
+            {% if program.description %}<p class="admin-date" style="margin:0">{{ program.description|truncatechars:60 }}</p>{% endif %}
+          </td>
+          <td>
+            <span class="app-program-pill {% if program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %}">
+              {{ program.get_program_type_display }}
+            </span>
+          </td>
+          <td>
+            <span class="prog-status-badge {% if program.status == 'active' %}prog-active{% else %}prog-closed{% endif %}">
+              {{ program.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <form method="post" action="{% url 'restore_program' program.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline btn-sm">Restore</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="admin-empty">No archived programs.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Archived Applications -->
+  <div class="admin-card" style="padding:0;overflow:hidden;">
+    <div class="admin-card-header" style="padding:16px 20px 0;">
+      <h2>Applications <span class="applicants-total-badge">{{ archived_applications.count }}</span></h2>
+    </div>
+    <table class="admin-table applicants-table">
+      <thead>
+        <tr>
+          <th>Applicant</th>
+          <th>Program</th>
+          <th>Status</th>
+          <th>Date Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in archived_applications %}
+        <tr>
+          <td>
+            <p class="admin-applicant-name">{{ app.applicant.get_full_name|default:app.applicant.username }}</p>
+            <p class="admin-applicant-email">{{ app.applicant.email }}</p>
+          </td>
+          <td>
+            <span class="app-program-pill {% if app.program.program_type == 'grant' %}pill-spark{% else %}pill-sinag{% endif %}">
+              {{ app.program.short_name|default:app.program.name }}
+            </span>
+          </td>
+          <td>
+            <span class="app-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
+          </td>
+          <td class="admin-date">{{ app.created_at|date:"M j, Y" }}</td>
+          <td>
+            <form method="post" action="{% url 'restore_application' app.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline btn-sm">Restore</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="admin-empty">No archived applications.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

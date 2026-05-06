@@ -270,11 +270,12 @@ def application_review_view(request, application_id):
 
 @login_required
 def program_list_applicant_view(request):
-    programs = Program.objects.filter(status='active').order_by('name')
+    programs = Program.objects.filter(status='active', is_archived=False).order_by('name')
     user_app_program_ids = set(
         Application.objects.filter(
             applicant=request.user,
             status__in=['submitted', 'for_review'],
+            is_archived=False,
         ).values_list('program_id', flat=True)
     )
     context = {
@@ -287,14 +288,14 @@ def program_list_applicant_view(request):
 @login_required
 def my_applications_view(request):
     applications = Application.objects.filter(
-        applicant=request.user
+        applicant=request.user, is_archived=False
     ).select_related('program')
     return render(request, 'programs/my_applications.html', {'applications': applications})
 
 
 @login_required
 def application_detail_view(request, application_id):
-    application = get_object_or_404(Application, id=application_id, applicant=request.user)
+    application = get_object_or_404(Application, id=application_id, applicant=request.user, is_archived=False)
     requirements = DocumentRequirement.objects.filter(program=application.program)
     doc_map = {doc.requirement_id: doc for doc in application.application_documents.all()}
     doc_statuses = [(req, doc_map.get(req.id)) for req in requirements]
@@ -322,6 +323,7 @@ def generic_application_step1_view(request, program_id):
         applicant=request.user,
         program=program,
         status__in=['submitted', 'for_review'],
+        is_archived=False,
     ).first()
     if existing:
         return render(request, 'programs/existing_application.html', {

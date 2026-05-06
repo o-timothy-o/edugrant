@@ -38,6 +38,7 @@ class Program(models.Model):
         blank=True,
         help_text="Short description shown to applicants on the programs list.",
     )
+    is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -78,6 +79,7 @@ class Application(models.Model):
     submitted_at = models.DateTimeField(null=True, blank=True)
     remarks = models.TextField(blank=True)
     educational_data = models.JSONField(default=dict, blank=True)
+    is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

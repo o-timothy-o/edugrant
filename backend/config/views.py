@@ -16,9 +16,9 @@ def home(request):
     context = {}
     if request.user.is_authenticated:
         context['my_applications'] = Application.objects.filter(
-            applicant=request.user
+            applicant=request.user, is_archived=False
         ).select_related('program')
-        active_programs = Program.objects.filter(status='active').order_by('name')
+        active_programs = Program.objects.filter(status='active', is_archived=False).order_by('name')
         context['featured_programs'] = active_programs[:3]
         context['total_programs'] = active_programs.count()
     return render(request, "home.html", context)
@@ -51,7 +51,7 @@ def applicants_list_view(request):
     status_filter = request.GET.get('status', '')
     search = request.GET.get('q', '').strip()
 
-    applications = Application.objects.select_related('applicant', 'program').order_by('-created_at')
+    applications = Application.objects.filter(is_archived=False).select_related('applicant', 'program').order_by('-created_at')
 
     if program_filter:
         applications = applications.filter(program__name=program_filter)
@@ -65,9 +65,9 @@ def applicants_list_view(request):
         ) | applications.filter(
             applicant__last_name__icontains=search
         )
-        applications = applications.select_related('applicant', 'program').order_by('-created_at')
+        applications = applications.filter(is_archived=False).select_related('applicant', 'program').order_by('-created_at')
 
-    programs = Program.objects.all()
+    programs = Program.objects.filter(is_archived=False)
 
     context = {
         'applications': applications,
@@ -83,7 +83,7 @@ def applicants_list_view(request):
 
 @staff_member_required(login_url="staff_login")
 def program_list_view(request):
-    programs = Program.objects.prefetch_related('document_requirements').order_by('name')
+    programs = Program.objects.filter(is_archived=False).prefetch_related('document_requirements').order_by('name')
     context = {'programs': programs}
     return render(request, 'programs/program_list.html', context)
 
@@ -137,6 +137,57 @@ def edit_program_view(request, program_id):
 
 
 @staff_member_required(login_url="staff_login")
+def archive_application_view(request, application_id):
+    if request.method == 'POST':
+        application = get_object_or_404(Application, id=application_id)
+        application.is_archived = True
+        application.save()
+        messages.success(request, 'Application has been archived.')
+    return redirect('applicants_list')
+
+
+@staff_member_required(login_url="staff_login")
+def restore_application_view(request, application_id):
+    if request.method == 'POST':
+        application = get_object_or_404(Application, id=application_id)
+        application.is_archived = False
+        application.save()
+        messages.success(request, 'Application has been restored.')
+    return redirect('archived_list')
+
+
+@staff_member_required(login_url="staff_login")
+def archive_program_view(request, program_id):
+    if request.method == 'POST':
+        program = get_object_or_404(Program, id=program_id)
+        program.is_archived = True
+        program.save()
+        messages.success(request, f'Program "{program.name}" has been archived.')
+    return redirect('program_list')
+
+
+@staff_member_required(login_url="staff_login")
+def restore_program_view(request, program_id):
+    if request.method == 'POST':
+        program = get_object_or_404(Program, id=program_id)
+        program.is_archived = False
+        program.save()
+        messages.success(request, f'Program "{program.name}" has been restored.')
+    return redirect('archived_list')
+
+
+@staff_member_required(login_url="staff_login")
+def archived_list_view(request):
+    archived_programs = Program.objects.filter(is_archived=True).order_by('name')
+    archived_applications = Application.objects.filter(is_archived=True).select_related('applicant', 'program').order_by('-created_at')
+    context = {
+        'archived_programs': archived_programs,
+        'archived_applications': archived_applications,
+    }
+    return render(request, 'archived.html', context)
+
+
+@staff_member_required(login_url="staff_login")
 def reports_view(request):
     # Monthly submissions (non-draft applications grouped by month)
     monthly_qs = (
@@ -153,7 +204,7 @@ def reports_view(request):
         d['pct'] = round(d['count'] / max_monthly * 100)
         d['month_label'] = d['month'].strftime('%b %Y') if d['month'] else ''
 
-    all_programs = Program.objects.all().order_by('name')
+    all_programs = Program.objects.filter(is_archived=False).order_by('name')
     all_program_stats = []
     for prog in all_programs:
         base = Application.objects.filter(program=prog)
@@ -202,21 +253,21 @@ def reports_view(request):
 @staff_member_required(login_url="staff_login")
 def admin_dashboard_view(request):
     total_applicants = User.objects.filter(is_staff=False).count()
-    total_applications = Application.objects.count()
+    total_applications = Application.objects.filter(is_archived=False).count()
     program_counts = [
-        {'program': prog, 'count': Application.objects.filter(program=prog).count()}
-        for prog in Program.objects.all().order_by('name')
+        {'program': prog, 'count': Application.objects.filter(program=prog, is_archived=False).count()}
+        for prog in Program.objects.filter(is_archived=False).order_by('name')
     ]
 
     status_counts = {
-        'submitted': Application.objects.filter(status='submitted').count(),
-        'for_review': Application.objects.filter(status='for_review').count(),
-        'approved': Application.objects.filter(status='approved').count(),
-        'rejected': Application.objects.filter(status='rejected').count(),
-        'draft': Application.objects.filter(status='draft').count(),
+        'submitted': Application.objects.filter(status='submitted', is_archived=False).count(),
+        'for_review': Application.objects.filter(status='for_review', is_archived=False).count(),
+        'approved': Application.objects.filter(status='approved', is_archived=False).count(),
+        'rejected': Application.objects.filter(status='rejected', is_archived=False).count(),
+        'draft': Application.objects.filter(status='draft', is_archived=False).count(),
     }
 
-    recent_applications = Application.objects.select_related(
+    recent_applications = Application.objects.filter(is_archived=False).select_related(
         'applicant', 'program'
     ).order_by('-created_at')[:10]
 

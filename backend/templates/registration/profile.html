@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="authenticated-landing">
+
+  <div class="gradient-page-header">
+    <h1>My Profile</h1>
+    <p>Manage your account details and password</p>
+  </div>
+
+  <div class="container" style="max-width:640px;">
+
+    <!-- Flash messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="site-message-{{ message.tags }}" style="margin-bottom:16px;">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Account Details -->
+    <div class="detail-card" style="margin-bottom:20px;">
+      <div class="detail-section">
+        <h3>Account Details</h3>
+        <form method="post" class="profile-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_profile">
+
+          <div class="profile-field-group">
+            <label class="profile-label">Username</label>
+            <input type="text" name="username" value="{{ profile_form.username.value }}" class="profile-input" required>
+            {% if profile_form.username.errors %}
+            <p class="profile-error">{{ profile_form.username.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div class="profile-field-group">
+            <label class="profile-label">Email Address</label>
+            <input type="email" name="email" value="{{ profile_form.email.value }}" class="profile-input" required>
+            {% if profile_form.email.errors %}
+            <p class="profile-error">{{ profile_form.email.errors.0 }}</p>
+            {% endif %}
+            <p class="profile-help">Changing your email will take effect immediately.</p>
+          </div>
+
+          {% if profile_form.non_field_errors %}
+          <p class="profile-error">{{ profile_form.non_field_errors.0 }}</p>
+          {% endif %}
+
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="detail-card">
+      <div class="detail-section">
+        <h3>Change Password</h3>
+        <form method="post" class="profile-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="change_password">
+
+          <div class="profile-field-group">
+            <label class="profile-label">Current Password</label>
+            <input type="password" name="old_password" class="profile-input" required>
+            {% if password_form.old_password.errors %}
+            <p class="profile-error">{{ password_form.old_password.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <div class="profile-field-group">
+            <label class="profile-label">New Password</label>
+            <input type="password" name="new_password1" class="profile-input" required>
+            {% if password_form.new_password1.errors %}
+            <p class="profile-error">{{ password_form.new_password1.errors.0 }}</p>
+            {% endif %}
+            <p class="profile-help">At least 8 characters. Cannot be entirely numeric.</p>
+          </div>
+
+          <div class="profile-field-group">
+            <label class="profile-label">Confirm New Password</label>
+            <input type="password" name="new_password2" class="profile-input" required>
+            {% if password_form.new_password2.errors %}
+            <p class="profile-error">{{ password_form.new_password2.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          {% if password_form.non_field_errors %}
+          <p class="profile-error">{{ password_form.non_field_errors.0 }}</p>
+          {% endif %}
+
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <button type="submit" class="btn btn-primary">Update Password</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <a href="{% url 'home' %}" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

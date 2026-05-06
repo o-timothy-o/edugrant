@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from .models import Program, Application, DocumentRequirement, ApplicationDocument
+from .models import Program, Application, DocumentRequirement, ApplicationDocument, ApplicationStatusLog
 from .forms import ApplicationDocumentForm, FamilyCompositionForm
 from .services import run_rule_evaluation
 from django.forms import formset_factory
@@ -111,6 +111,7 @@ def spark_application_step2_view(request, application_id):
 
         application.status = 'submitted'
         application.save()
+        ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
         run_rule_evaluation(application)
 
         # Render the same page with the success flag instead of redirecting
@@ -176,6 +177,7 @@ def sinag_application_step2_view(request, application_id):
 
         application.status = 'submitted'
         application.save()
+        ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
         run_rule_evaluation(application)
 
         # Render the same page with the success flag instead of redirecting
@@ -232,6 +234,7 @@ def application_review_view(request, application_id):
         if action in ['approved', 'rejected', 'for_review', 'awaiting_physical']:
             application.status = action
             application.save()
+            ApplicationStatusLog.objects.create(application=application, status=action, changed_by=request.user)
             messages.success(request, f'Application has been marked as {application.get_status_display()}.')
             return redirect('admin_dashboard')
         elif action == 'update_doc':
@@ -248,6 +251,10 @@ def application_review_view(request, application_id):
             return redirect('programs:application_review', application_id=application.id)
 
     profile = getattr(application.applicant, 'applicant_profile', None)
+    status_log_map = {}
+    for log in application.status_logs.order_by('changed_at'):
+        if log.status not in status_log_map:
+            status_log_map[log.status] = log
 
     context = {
         'application': application,
@@ -256,6 +263,7 @@ def application_review_view(request, application_id):
         'screening': screening,
         'profile': profile,
         'educational_data': application.educational_data,
+        'status_log_map': status_log_map,
     }
     return render(request, 'programs/application_review.html', context)
 
@@ -291,11 +299,16 @@ def application_detail_view(request, application_id):
     doc_map = {doc.requirement_id: doc for doc in application.application_documents.all()}
     doc_statuses = [(req, doc_map.get(req.id)) for req in requirements]
     profile = getattr(request.user, 'applicant_profile', None)
+    status_log_map = {}
+    for log in application.status_logs.order_by('changed_at'):
+        if log.status not in status_log_map:
+            status_log_map[log.status] = log
     context = {
         'application': application,
         'doc_statuses': doc_statuses,
         'profile': profile,
         'educational_data': application.educational_data,
+        'status_log_map': status_log_map,
     }
     return render(request, 'programs/application_detail.html', context)
 
@@ -367,6 +380,7 @@ def generic_application_step2_view(request, program_id, application_id):
 
         application.status = 'submitted'
         application.save()
+        ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
         run_rule_evaluation(application)
 
         context = {

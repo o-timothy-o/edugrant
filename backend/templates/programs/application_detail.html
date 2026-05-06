@@ -31,6 +31,98 @@
       </div>
     </div>
 
+    <!-- Application Timeline -->
+    {% with sl=status_log_map %}
+    <div class="app-timeline">
+      <h3 class="timeline-heading">Application Progress</h3>
+      <div class="timeline-track">
+
+        <!-- Step 1: Submitted -->
+        <div class="timeline-step tl-completed">
+          <div class="timeline-node">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-label">Application Submitted</div>
+            {% if sl.submitted %}
+              <div class="timeline-ts">{{ sl.submitted.changed_at|date:"M j, Y · g:i A" }}</div>
+            {% elif application.submitted_at %}
+              <div class="timeline-ts">{{ application.submitted_at|date:"M j, Y · g:i A" }}</div>
+            {% elif application.created_at %}
+              <div class="timeline-ts">{{ application.created_at|date:"M j, Y · g:i A" }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="timeline-connector {% if sl.for_review or sl.approved or sl.rejected or sl.awaiting_physical %}tl-filled{% endif %}"></div>
+
+        <!-- Step 2: Under Review -->
+        <div class="timeline-step {% if sl.for_review %}tl-completed{% elif application.status == 'for_review' %}tl-active{% else %}tl-pending{% endif %}">
+          <div class="timeline-node">
+            {% if sl.for_review %}
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            {% else %}2{% endif %}
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-label">Under Review</div>
+            {% if sl.for_review %}<div class="timeline-ts">{{ sl.for_review.changed_at|date:"M j, Y · g:i A" }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="timeline-connector {% if sl.approved or sl.rejected %}tl-filled{% endif %}"></div>
+
+        <!-- Step 3: Decision (Approved / Declined) -->
+        {% if sl.approved %}
+        <div class="timeline-step tl-approved">
+          <div class="timeline-node">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-label">Approved</div>
+            <div class="timeline-ts">{{ sl.approved.changed_at|date:"M j, Y · g:i A" }}</div>
+          </div>
+        </div>
+        {% elif sl.rejected %}
+        <div class="timeline-step tl-declined">
+          <div class="timeline-node">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-label">Declined</div>
+            <div class="timeline-ts">{{ sl.rejected.changed_at|date:"M j, Y · g:i A" }}</div>
+          </div>
+        </div>
+        {% elif application.status == 'approved' or application.status == 'rejected' %}
+        <div class="timeline-step tl-active">
+          <div class="timeline-node">3</div>
+          <div class="timeline-content"><div class="timeline-label">Decision</div></div>
+        </div>
+        {% else %}
+        <div class="timeline-step tl-pending">
+          <div class="timeline-node">3</div>
+          <div class="timeline-content"><div class="timeline-label">Approved / Declined</div></div>
+        </div>
+        {% endif %}
+
+        <div class="timeline-connector {% if sl.awaiting_physical %}tl-filled{% endif %}"></div>
+
+        <!-- Step 4: For Onsite Submission -->
+        <div class="timeline-step {% if sl.awaiting_physical %}tl-awaiting{% elif application.status == 'awaiting_physical' %}tl-active{% elif sl.rejected %}tl-skipped{% else %}tl-pending{% endif %}">
+          <div class="timeline-node">
+            {% if sl.awaiting_physical %}
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            {% else %}4{% endif %}
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-label">For Onsite Submission</div>
+            {% if sl.awaiting_physical %}<div class="timeline-ts">{{ sl.awaiting_physical.changed_at|date:"M j, Y · g:i A" }}</div>{% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% endwith %}
+
     {% if application.status == 'awaiting_physical' %}
     <div class="awaiting-physical-notice">
       <div class="awaiting-physical-icon">

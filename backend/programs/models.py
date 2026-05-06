@@ -201,3 +201,29 @@ class ScreeningResult(models.Model):
 
     def __str__(self):
         return f"{self.application}: {self.outcome}"
+
+
+class ApplicationStatusLog(models.Model):
+    """Records every status change on an application with a timestamp and actor."""
+
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name="status_logs",
+    )
+    status = models.CharField(max_length=50)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="status_log_entries",
+    )
+
+    class Meta:
+        db_table = "programs_applicationstatuslog"
+        ordering = ["changed_at"]
+
+    def __str__(self):
+        return f"{self.application} → {self.status}"

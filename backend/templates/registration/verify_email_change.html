@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verify New Email — EduGrant{% endblock %}
+
+{% block content %}
+<div class="register-container">
+  <div class="register-header">
+    <h1 class="title">Verify New Email</h1>
+    <p class="subtitle">Enter the code sent to your new address</p>
+  </div>
+  <div class="register-card">
+    <h2 class="account-creation-title">Email Verification</h2>
+
+    <div class="info-box">
+      <p>A 6-digit verification code was sent to <strong>{{ email }}</strong>. Enter it below to confirm the change. The code expires in 10 minutes.</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <p class="register-help" style="color: #16a34a; font-weight: 600;">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'accounts:verify_email_change' %}" class="register-form">
+      {% csrf_token %}
+      <div class="register-field-group">
+        <label for="otp_code" class="register-label">Verification Code</label>
+        <input
+          type="text"
+          id="otp_code"
+          name="otp_code"
+          maxlength="6"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          placeholder="Enter 6-digit code"
+          autocomplete="one-time-code"
+          required
+        >
+        {% if error %}
+          <p class="register-error">{{ error }}</p>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-create">Confirm Email Change</button>
+    </form>
+
+    <div class="back-link" style="margin-top: 1rem;">
+      <p>Didn't receive a code? <a href="{% url 'accounts:resend_email_change_otp' %}">Resend code</a></p>
+      <a href="{% url 'accounts:change_email' %}">&larr; Use a different email</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

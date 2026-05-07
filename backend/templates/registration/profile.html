@@ -38,11 +38,11 @@
 
           <div class="profile-field-group">
             <label class="profile-label">Email Address</label>
-            <input type="email" name="email" value="{{ profile_form.email.value }}" class="profile-input" required>
-            {% if profile_form.email.errors %}
-            <p class="profile-error">{{ profile_form.email.errors.0 }}</p>
-            {% endif %}
-            <p class="profile-help">Changing your email will take effect immediately.</p>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="text" value="{{ request.user.email }}" class="profile-input" disabled style="flex:1;background:#f3f4f6;color:#6b7280;">
+              <a href="{% url 'accounts:change_email' %}" class="btn btn-outline" style="white-space:nowrap;">Change Email</a>
+            </div>
+            <p class="profile-help">Email changes require verification via a code sent to the new address.</p>
           </div>
 
           {% if profile_form.non_field_errors %}

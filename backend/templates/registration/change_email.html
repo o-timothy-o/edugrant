@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Change Email — EduGrant{% endblock %}
+
+{% block content %}
+<div class="register-container">
+  <div class="register-header">
+    <h1 class="title">Change Email Address</h1>
+    <p class="subtitle">A verification code will be sent to your new email</p>
+  </div>
+  <div class="register-card">
+    <h2 class="account-creation-title">New Email Address</h2>
+
+    <form method="post" action="{% url 'accounts:change_email' %}" class="register-form">
+      {% csrf_token %}
+      <div class="register-field-group">
+        <label for="id_email" class="register-label">New Email Address</label>
+        <input type="email" id="id_email" name="email" value="{{ form.email.value|default:'' }}" required>
+        {% if form.email.errors %}
+          <p class="register-error">{{ form.email.errors.0 }}</p>
+        {% endif %}
+      </div>
+      {% if form.non_field_errors %}
+        <p class="register-error">{{ form.non_field_errors.0 }}</p>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary btn-create">Send Verification Code</button>
+    </form>
+
+    <div class="back-link">
+      <a href="{% url 'accounts:profile' %}">&larr; Back to Profile</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

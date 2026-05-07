@@ -13,7 +13,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views import View
 
-from .forms import ApplicantRegistrationForm, ProfileEditForm
+from .forms import ApplicantRegistrationForm, ProfileEditForm, ChangeEmailForm
 from .models import ApplicantProfile, EmailVerification
 
 
@@ -181,6 +181,87 @@ def profile_view(request):
         "profile_form": profile_form,
         "password_form": password_form,
     })
+
+
+@login_required
+def change_email_view(request):
+    form = ChangeEmailForm(current_user=request.user)
+    if request.method == "POST":
+        form = ChangeEmailForm(request.POST, current_user=request.user)
+        if form.is_valid():
+            new_email = form.cleaned_data["email"]
+            request.session["pending_new_email"] = new_email
+
+            EmailVerification.objects.filter(email=new_email, is_used=False).update(is_used=True)
+            otp_code = _generate_otp()
+            EmailVerification.objects.create(
+                email=new_email,
+                otp_code=otp_code,
+                expires_at=timezone.now() + timedelta(minutes=10),
+            )
+            _send_otp_email(new_email, otp_code)
+            return redirect("accounts:verify_email_change")
+
+    return render(request, "registration/change_email.html", {"form": form})
+
+
+@login_required
+def verify_email_change_view(request):
+    pending_email = request.session.get("pending_new_email")
+    if not pending_email:
+        return redirect("accounts:change_email")
+
+    error = None
+    if request.method == "POST":
+        entered_code = request.POST.get("otp_code", "").strip()
+        verification = (
+            EmailVerification.objects.filter(
+                email=pending_email,
+                otp_code=entered_code,
+                is_used=False,
+            )
+            .order_by("-created_at")
+            .first()
+        )
+
+        if not verification:
+            error = "Invalid code. Please check your email and try again."
+        elif verification.is_expired:
+            error = "This code has expired. Please request a new one below."
+        else:
+            verification.is_used = True
+            verification.save()
+
+            request.user.email = pending_email
+            request.user.save()
+            del request.session["pending_new_email"]
+
+            messages.success(request, "Your email address has been updated.")
+            return redirect("accounts:profile")
+
+    return render(request, "registration/verify_email_change.html", {
+        "email": pending_email,
+        "error": error,
+    })
+
+
+@login_required
+def resend_email_change_otp_view(request):
+    pending_email = request.session.get("pending_new_email")
+    if not pending_email:
+        return redirect("accounts:change_email")
+
+    EmailVerification.objects.filter(email=pending_email, is_used=False).update(is_used=True)
+    otp_code = _generate_otp()
+    EmailVerification.objects.create(
+        email=pending_email,
+        otp_code=otp_code,
+        expires_at=timezone.now() + timedelta(minutes=10),
+    )
+    _send_otp_email(pending_email, otp_code)
+
+    messages.success(request, "A new verification code has been sent to your new email address.")
+    return redirect("accounts:verify_email_change")
 
 
 class StaffLoginView(LoginView):

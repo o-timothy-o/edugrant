@@ -25,11 +25,9 @@ class ApplicantRegistrationForm(UserCreationForm):
 
 
 class ProfileEditForm(forms.ModelForm):
-    email = forms.EmailField(required=True)
-
     class Meta:
         model = User
-        fields = ("username", "email")
+        fields = ("username",)
 
     def clean_username(self):
         username = self.cleaned_data["username"]
@@ -38,9 +36,18 @@ class ProfileEditForm(forms.ModelForm):
             raise forms.ValidationError("That username is already taken.")
         return username
 
+
+class ChangeEmailForm(forms.Form):
+    email = forms.EmailField(label="New Email Address")
+
+    def __init__(self, *args, current_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_user = current_user
+
     def clean_email(self):
         email = self.cleaned_data["email"]
-        qs = User.objects.filter(email=email).exclude(pk=self.instance.pk)
-        if qs.exists():
+        if self.current_user and email == self.current_user.email:
+            raise forms.ValidationError("This is already your current email address.")
+        if User.objects.filter(email=email).exists():
             raise forms.ValidationError("An account with that email already exists.")
         return email

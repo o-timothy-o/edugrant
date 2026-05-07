@@ -56,7 +56,7 @@ class Application(models.Model):
     class ApplicationStatus(models.TextChoices):
         DRAFT = "draft", "Draft"
         SUBMITTED = "submitted", "Submitted"
-        FOR_REVIEW = "for_review", "For Review"
+        FOR_REVIEW = "for_review", "In Review"
         APPROVED = "approved", "Approved"
         AWAITING_PHYSICAL = "awaiting_physical", "Approved – Awaiting Physical Submission"
         REJECTED = "rejected", "Rejected"

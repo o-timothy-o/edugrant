@@ -5,6 +5,7 @@ from django.contrib import messages
 from .models import Program, Application, DocumentRequirement, ApplicationDocument, ApplicationStatusLog
 from .forms import ApplicationDocumentForm, FamilyCompositionForm
 from .services import run_rule_evaluation
+from .utils import send_status_notification, send_document_invalid_notification
 from django.forms import formset_factory
 from accounts.models import ApplicantProfile
 import json
@@ -112,6 +113,7 @@ def spark_application_step2_view(request, application_id):
         application.status = 'submitted'
         application.save()
         ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
+        send_status_notification(application, 'submitted')
         run_rule_evaluation(application)
 
         # Render the same page with the success flag instead of redirecting
@@ -178,6 +180,7 @@ def sinag_application_step2_view(request, application_id):
         application.status = 'submitted'
         application.save()
         ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
+        send_status_notification(application, 'submitted')
         run_rule_evaluation(application)
 
         # Render the same page with the success flag instead of redirecting
@@ -235,6 +238,7 @@ def application_review_view(request, application_id):
             application.status = action
             application.save()
             ApplicationStatusLog.objects.create(application=application, status=action, changed_by=request.user)
+            send_status_notification(application, action)
             messages.success(request, f'Application has been marked as {application.get_status_display()}.')
             return redirect('admin_dashboard')
         elif action == 'update_doc':
@@ -247,6 +251,8 @@ def application_review_view(request, application_id):
                 doc.issue_notes = notes
                 doc.save()
                 run_rule_evaluation(application)
+                if new_status == 'invalid':
+                    send_document_invalid_notification(application, doc.requirement.name, notes)
                 messages.success(request, 'Document status updated.')
             return redirect('programs:application_review', application_id=application.id)
 
@@ -383,6 +389,7 @@ def generic_application_step2_view(request, program_id, application_id):
         application.status = 'submitted'
         application.save()
         ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
+        send_status_notification(application, 'submitted')
         run_rule_evaluation(application)
 
         context = {

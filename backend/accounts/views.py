@@ -15,6 +15,7 @@ from django.views import View
 
 from .forms import ApplicantRegistrationForm, ProfileEditForm, ChangeEmailForm
 from .models import ApplicantProfile, EmailVerification
+from programs.utils import send_welcome_email
 
 
 def _generate_otp():
@@ -101,6 +102,7 @@ def verify_otp_view(request):
                 is_staff=False,
             )
             ApplicantProfile.objects.get_or_create(user=user)
+            send_welcome_email(user)
 
             del request.session["pending_username"]
             del request.session["pending_email"]

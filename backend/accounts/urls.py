@@ -12,6 +12,8 @@ app_name = "accounts"
 
 urlpatterns = [
     path("register/", views.register_view, name="register"),
+    path("verify/", views.verify_otp_view, name="verify_otp"),
+    path("verify/resend/", views.resend_otp_view, name="resend_otp"),
     path("login/", views.ApplicantLoginView.as_view(), name="login"),
     path("logout/", views.CustomLogoutView.as_view(), name="logout"),
     path("profile/", views.profile_view, name="profile"),

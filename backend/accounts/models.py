@@ -1,5 +1,26 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+
+
+class EmailVerification(models.Model):
+    """Stores a one-time OTP sent to an email address during registration."""
+
+    email = models.EmailField()
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "accounts_emailverification"
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"OTP for {self.email} ({'used' if self.is_used else 'active'})"
 
 
 class ApplicantProfile(models.Model):

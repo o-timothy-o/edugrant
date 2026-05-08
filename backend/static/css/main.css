@@ -14,12 +14,17 @@
 
 body {
   margin: 0;
+  overflow-x: hidden;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
   background:
     linear-gradient(to right, rgba(249, 250, 251, 1) 0%, rgba(249, 250, 251, 1) 50%, rgba(249, 250, 251, 0) 100%),
     url('../img/bg_dahlia.png') center / cover fixed;
   color: var(--text);
+}
+
+img, input, select, textarea, button {
+  max-width: 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -1203,6 +1208,60 @@ body {
   color: #4a148c;
 }
 
+/* ── Schools Attended (new row-card structure) ─────────────── */
+
+.schools-container {
+  margin-bottom: 1.5rem;
+}
+
+.schools-header-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1.5fr 36px;
+  gap: 8px;
+  padding: 0 0 6px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 4px;
+}
+
+.schools-header-row span {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.school-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1.5fr 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.school-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.school-field input {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.school-delete-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.school-mobile-label {
+  display: none;
+}
+
+/* ── Legacy grid classes (kept for backward compat) ─────────── */
 .schools-attended-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -2440,13 +2499,58 @@ body {
     grid-template-columns: 1fr !important;
   }
 
-  .schools-attended-grid {
-    grid-template-columns: 1fr !important;
-    font-size: 13px;
+  .application-form .form-group.full-width {
+    grid-column: span 1;
   }
 
-  .schools-attended-grid .grid-header {
+  /* Schools attended: card-per-row layout */
+  .schools-header-row {
     display: none;
+  }
+
+  .school-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .school-field {
+    grid-column: span 1;
+  }
+
+  .school-field-address {
+    grid-column: span 2;
+  }
+
+  .school-delete-cell {
+    grid-column: span 2;
+    justify-content: flex-end;
+  }
+
+  .school-mobile-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 3px;
+  }
+
+  /* Upload grid: single column */
+  .upload-grid-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* Prevent inputs from overflowing containers */
+  .application-form input,
+  .application-form select,
+  .application-form textarea {
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   /* My Applications / Application Detail tables: horizontal scroll */

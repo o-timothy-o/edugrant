@@ -166,38 +166,47 @@
             Use the <strong>+ Add Row</strong> button below to add more entries if needed.
           </p>
           <input type="hidden" name="school_row_max" id="school_row_max" value="4">
-          <div id="schools-grid" class="schools-attended-grid schools-attended-grid-5col">
-            <div class="grid-header">Name of School <span class="required-mark">*</span></div>
-            <div class="grid-header">Type (Public/Private) <span class="required-mark">*</span></div>
-            <div class="grid-header">School Address <span class="required-mark">*</span></div>
-            <div class="grid-header">Year (Started – Graduated) <span class="required-mark">*</span></div>
-            <div class="grid-header"></div>
+          <div id="schools-container" class="schools-container">
+
+            <div class="schools-header-row">
+              <span>Name of School <span class="required-mark">*</span></span>
+              <span>Type (Public/Private) <span class="required-mark">*</span></span>
+              <span>School Address <span class="required-mark">*</span></span>
+              <span>Year (Started – Graduated) <span class="required-mark">*</span></span>
+              <span></span>
+            </div>
 
             {% with s=application.educational_data.schools_attended %}
-            <div class="grid-cell"><input type="text" name="school_name_1" required value="{{ s.0.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_1" required value="{{ s.0.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_1" required value="{{ s.0.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_1" required value="{{ s.0.year|default:'' }}"></div>
-            <div class="grid-cell"></div>
-
-            <div class="grid-cell"><input type="text" name="school_name_2" required value="{{ s.1.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_2" required value="{{ s.1.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_2" required value="{{ s.1.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_2" required value="{{ s.1.year|default:'' }}"></div>
-            <div class="grid-cell"></div>
-
-            <div class="grid-cell"><input type="text" name="school_name_3" required value="{{ s.2.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_3" required value="{{ s.2.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_3" required value="{{ s.2.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_3" required value="{{ s.2.year|default:'' }}"></div>
-            <div class="grid-cell"></div>
-
-            <div class="grid-cell"><input type="text" name="school_name_4" required value="{{ s.3.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_4" required value="{{ s.3.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_4" required value="{{ s.3.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_4" required value="{{ s.3.year|default:'' }}"></div>
-            <div class="grid-cell"></div>
+            <div class="school-row">
+              <div class="school-field"><label class="school-mobile-label">Name of School <span class="required-mark">*</span></label><input type="text" name="school_name_1" required placeholder="e.g. Carmona Elementary School" value="{{ s.0.name|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Type <span class="required-mark">*</span></label><input type="text" name="school_type_1" required placeholder="Public / Private" value="{{ s.0.type|default:'' }}"></div>
+              <div class="school-field school-field-address"><label class="school-mobile-label">School Address <span class="required-mark">*</span></label><input type="text" name="school_address_1" required placeholder="City, Province" value="{{ s.0.address|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Year <span class="required-mark">*</span></label><input type="text" name="school_year_1" required placeholder="e.g. 2010 – 2016" value="{{ s.0.year|default:'' }}"></div>
+              <div class="school-field school-delete-cell"></div>
+            </div>
+            <div class="school-row">
+              <div class="school-field"><label class="school-mobile-label">Name of School <span class="required-mark">*</span></label><input type="text" name="school_name_2" required placeholder="e.g. Carmona National High School" value="{{ s.1.name|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Type <span class="required-mark">*</span></label><input type="text" name="school_type_2" required placeholder="Public / Private" value="{{ s.1.type|default:'' }}"></div>
+              <div class="school-field school-field-address"><label class="school-mobile-label">School Address <span class="required-mark">*</span></label><input type="text" name="school_address_2" required placeholder="City, Province" value="{{ s.1.address|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Year <span class="required-mark">*</span></label><input type="text" name="school_year_2" required placeholder="e.g. 2016 – 2022" value="{{ s.1.year|default:'' }}"></div>
+              <div class="school-field school-delete-cell"></div>
+            </div>
+            <div class="school-row">
+              <div class="school-field"><label class="school-mobile-label">Name of School <span class="required-mark">*</span></label><input type="text" name="school_name_3" required placeholder="e.g. Senior High School" value="{{ s.2.name|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Type <span class="required-mark">*</span></label><input type="text" name="school_type_3" required placeholder="Public / Private" value="{{ s.2.type|default:'' }}"></div>
+              <div class="school-field school-field-address"><label class="school-mobile-label">School Address <span class="required-mark">*</span></label><input type="text" name="school_address_3" required placeholder="City, Province" value="{{ s.2.address|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Year <span class="required-mark">*</span></label><input type="text" name="school_year_3" required placeholder="e.g. 2020 – 2022" value="{{ s.2.year|default:'' }}"></div>
+              <div class="school-field school-delete-cell"></div>
+            </div>
+            <div class="school-row">
+              <div class="school-field"><label class="school-mobile-label">Name of School <span class="required-mark">*</span></label><input type="text" name="school_name_4" required placeholder="e.g. University / College" value="{{ s.3.name|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Type <span class="required-mark">*</span></label><input type="text" name="school_type_4" required placeholder="Public / Private" value="{{ s.3.type|default:'' }}"></div>
+              <div class="school-field school-field-address"><label class="school-mobile-label">School Address <span class="required-mark">*</span></label><input type="text" name="school_address_4" required placeholder="City, Province" value="{{ s.3.address|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Year <span class="required-mark">*</span></label><input type="text" name="school_year_4" required placeholder="e.g. 2022 – Present" value="{{ s.3.year|default:'' }}"></div>
+              <div class="school-field school-delete-cell"></div>
+            </div>
             {% endwith %}
+
           </div>
 
           <button type="button" id="add-school-row" class="btn btn-outline" style="margin-top:0.5rem;">+ Add Row</button>
@@ -214,48 +223,61 @@
 <script>
 (function () {
   var rowMax = 4;
-  var grid = document.getElementById('schools-grid');
+  var container = document.getElementById('schools-container');
   var rowMaxInput = document.getElementById('school_row_max');
+
+  var fieldDefs = [
+    { key: 'name',    label: 'Name of School',           placeholder: 'School Name',        cls: '' },
+    { key: 'type',    label: 'Type',                     placeholder: 'Public / Private',   cls: '' },
+    { key: 'address', label: 'School Address',           placeholder: 'City, Province',     cls: 'school-field-address' },
+    { key: 'year',    label: 'Year',                     placeholder: 'e.g. 2015 – 2019',   cls: '' },
+  ];
 
   document.getElementById('add-school-row').addEventListener('click', function () {
     rowMax++;
     rowMaxInput.value = rowMax;
     var n = rowMax;
 
-    var fields = [
-      { name: 'school_name_' + n, placeholder: 'School Name' },
-      { name: 'school_type_' + n, placeholder: 'Public / Private' },
-      { name: 'school_address_' + n, placeholder: 'School Address' },
-      { name: 'school_year_' + n, placeholder: 'e.g. 2015 – 2019' },
-    ];
+    var row = document.createElement('div');
+    row.className = 'school-row';
+    row.dataset.extraRow = n;
 
-    fields.forEach(function (f) {
-      var cell = document.createElement('div');
-      cell.className = 'grid-cell';
-      cell.dataset.extraRow = n;
+    fieldDefs.forEach(function (f) {
+      var fieldDiv = document.createElement('div');
+      fieldDiv.className = 'school-field' + (f.cls ? ' ' + f.cls : '');
+
+      var lbl = document.createElement('label');
+      lbl.className = 'school-mobile-label';
+      lbl.textContent = f.label + ' ';
+      var star = document.createElement('span');
+      star.className = 'required-mark';
+      star.textContent = '*';
+      lbl.appendChild(star);
+
       var input = document.createElement('input');
       input.type = 'text';
-      input.name = f.name;
+      input.name = 'school_' + f.key + '_' + n;
       input.placeholder = f.placeholder;
-      cell.appendChild(input);
-      grid.appendChild(cell);
+
+      fieldDiv.appendChild(lbl);
+      fieldDiv.appendChild(input);
+      row.appendChild(fieldDiv);
     });
 
-    var deleteCell = document.createElement('div');
-    deleteCell.className = 'grid-cell';
-    deleteCell.dataset.extraRow = n;
+    var deleteField = document.createElement('div');
+    deleteField.className = 'school-field school-delete-cell';
     var deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'btn-remove-row';
     deleteBtn.title = 'Remove row';
     deleteBtn.textContent = '✕';
     deleteBtn.addEventListener('click', function () {
-      grid.querySelectorAll('[data-extra-row="' + n + '"]').forEach(function (el) {
-        el.remove();
-      });
+      row.remove();
     });
-    deleteCell.appendChild(deleteBtn);
-    grid.appendChild(deleteCell);
+    deleteField.appendChild(deleteBtn);
+    row.appendChild(deleteField);
+
+    container.appendChild(row);
   });
 }());
 </script>

@@ -31,7 +31,9 @@ BARANGAY_CHOICES = [
 def _save_step1_data(request, application):
     """Save Step 1 personal and educational data from POST."""
     profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
-    profile.full_name = request.POST.get('full_name', '').strip()
+    profile.first_name = request.POST.get('first_name', '').strip()
+    profile.middle_name = request.POST.get('middle_name', '').strip()
+    profile.last_name = request.POST.get('last_name', '').strip()
     profile.address = request.POST.get('address', '').strip()
     profile.barangay = request.POST.get('barangay', '').strip()
     profile.residency_years = request.POST.get('residency', '').strip()
@@ -44,14 +46,14 @@ def _save_step1_data(request, application):
     profile.monthly_income = request.POST.get('monthly_income', '').strip()
     profile.save()
 
+    max_rows = min(int(request.POST.get('school_row_max', '4')), 50)
     schools_attended = []
-    for i in range(1, 5):
+    for i in range(1, max_rows + 1):
         row = {
-            'name': request.POST.get(f'school_name_{i}', ''),
-            'type': request.POST.get(f'school_type_{i}', ''),
-            'address': request.POST.get(f'school_address_{i}', ''),
-            'year': request.POST.get(f'school_year_{i}', ''),
-            'honors': request.POST.get(f'school_honors_{i}', ''),
+            'name': request.POST.get(f'school_name_{i}', '').strip(),
+            'type': request.POST.get(f'school_type_{i}', '').strip(),
+            'address': request.POST.get(f'school_address_{i}', '').strip(),
+            'year': request.POST.get(f'school_year_{i}', '').strip(),
         }
         if any(row.values()):
             schools_attended.append(row)

@@ -140,7 +140,9 @@
       <div class="detail-section">
         <h3>Personal Information</h3>
         <div class="detail-info-grid">
-          <div class="detail-info-field"><span class="detail-info-label">Full Name</span><span class="detail-info-value">{{ profile.full_name|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">First Name</span><span class="detail-info-value">{{ profile.first_name|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Middle Name</span><span class="detail-info-value">{{ profile.middle_name|default:"—" }}</span></div>
+          <div class="detail-info-field"><span class="detail-info-label">Last Name</span><span class="detail-info-value">{{ profile.last_name|default:"—" }}</span></div>
           <div class="detail-info-field"><span class="detail-info-label">Contact Number</span><span class="detail-info-value">{{ profile.contact_number|default:"—" }}</span></div>
           <div class="detail-info-field"><span class="detail-info-label">Address</span><span class="detail-info-value">{{ profile.address|default:"—" }}</span></div>
           <div class="detail-info-field"><span class="detail-info-label">Barangay</span><span class="detail-info-value">{{ profile.barangay|default:"—" }}</span></div>

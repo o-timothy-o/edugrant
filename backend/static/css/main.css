@@ -3141,6 +3141,15 @@ body {
   grid-template-columns: 2fr 1fr 2fr 1.5fr;
 }
 
+.schools-attended-grid-5col {
+  grid-template-columns: 2fr 1fr 2fr 1.5fr 36px;
+}
+
+.required-mark {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
 /* ── Awaiting Physical Submission notice (application_detail.html) ── */
 .awaiting-physical-notice {
   display: flex;

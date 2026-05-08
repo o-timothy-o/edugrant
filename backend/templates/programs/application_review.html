@@ -107,7 +107,9 @@
       <span class="report-chart-sub">From applicant profile</span>
     </div>
     <div class="review-profile-grid">
-      <div class="review-profile-field"><span class="review-profile-label">Full Name</span><span class="review-profile-value">{{ profile.full_name|default:"—" }}</span></div>
+      <div class="review-profile-field"><span class="review-profile-label">First Name</span><span class="review-profile-value">{{ profile.first_name|default:"—" }}</span></div>
+      <div class="review-profile-field"><span class="review-profile-label">Middle Name</span><span class="review-profile-value">{{ profile.middle_name|default:"—" }}</span></div>
+      <div class="review-profile-field"><span class="review-profile-label">Last Name</span><span class="review-profile-value">{{ profile.last_name|default:"—" }}</span></div>
       <div class="review-profile-field"><span class="review-profile-label">Contact Number</span><span class="review-profile-value">{{ profile.contact_number|default:"—" }}</span></div>
       <div class="review-profile-field"><span class="review-profile-label">Address</span><span class="review-profile-value">{{ profile.address|default:"—" }}</span></div>
       <div class="review-profile-field"><span class="review-profile-label">Barangay</span><span class="review-profile-value">{{ profile.barangay|default:"—" }}</span></div>

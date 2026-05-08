@@ -32,7 +32,9 @@ class ApplicantProfile(models.Model):
         related_name="applicant_profile",
     )
     # Personal information (from Step 1 form)
-    full_name = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(max_length=128, blank=True)
+    middle_name = models.CharField(max_length=128, blank=True)
+    last_name = models.CharField(max_length=128, blank=True)
     address = models.CharField(max_length=255, blank=True)
     barangay = models.CharField(max_length=128, blank=True)
     residency_years = models.CharField(max_length=64, blank=True)
@@ -46,6 +48,10 @@ class ApplicantProfile(models.Model):
 
     class Meta:
         db_table = "accounts_applicantprofile"
+
+    @property
+    def full_name(self):
+        return ' '.join(p for p in [self.first_name, self.middle_name, self.last_name] if p)
 
     def __str__(self):
         return f"Profile: {self.user.username}"

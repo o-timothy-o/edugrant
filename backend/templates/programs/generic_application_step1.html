@@ -33,31 +33,43 @@
       </div>
       {% endif %}
 
+      <p class="form-required-note"><span class="required-mark">*</span> Required fields</p>
+
       <form method="post" class="application-form">
         {% csrf_token %}
 
         <div class="form-section">
           <h3>PERSONAL INFORMATION OF THE APPLICANT</h3>
           <div class="grid-container">
+
             <div class="form-group">
-              <label for="full_name">Full Name *</label>
-              <input type="text" id="full_name" name="full_name" required value="{{ profile.full_name|default:'' }}">
+              <label for="first_name">First Name <span class="required-mark">*</span></label>
+              <input type="text" id="first_name" name="first_name" required value="{{ profile.first_name|default:'' }}">
             </div>
             <div class="form-group">
-              <label for="email">Email Address *</label>
+              <label for="middle_name">Middle Name <em style="font-weight:400;font-size:0.85em;">(optional)</em></label>
+              <input type="text" id="middle_name" name="middle_name" value="{{ profile.middle_name|default:'' }}">
+            </div>
+            <div class="form-group">
+              <label for="last_name">Last Name <span class="required-mark">*</span></label>
+              <input type="text" id="last_name" name="last_name" required value="{{ profile.last_name|default:'' }}">
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email Address <span class="required-mark">*</span></label>
               <input type="email" id="email" name="email" required value="{{ request.user.email|default:'' }}">
             </div>
             <div class="form-group full-width">
-              <label for="address">Complete Carmona Address *</label>
+              <label for="address">Complete Carmona Address <span class="required-mark">*</span></label>
               <input type="text" id="address" name="address" required value="{{ profile.address|default:'' }}">
             </div>
             <div class="form-group">
-              <label for="residency">Years of Residency in Carmona</label>
-              <input type="number" id="residency" name="residency" min="0" max="100" value="{{ profile.residency_years|default:'' }}">
+              <label for="residency">Years of Residency in Carmona <span class="required-mark">*</span></label>
+              <input type="number" id="residency" name="residency" min="0" max="100" required value="{{ profile.residency_years|default:'' }}">
             </div>
             <div class="form-group">
-              <label for="barangay">Barangay</label>
-              <select id="barangay" name="barangay">
+              <label for="barangay">Barangay <span class="required-mark">*</span></label>
+              <select id="barangay" name="barangay" required>
                 <option value="">— Select Barangay —</option>
                 {% for b in barangay_choices %}
                 <option value="{{ b }}" {% if profile.barangay == b %}selected{% endif %}>{{ b }}</option>
@@ -65,8 +77,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="gender">Gender</label>
-              <select id="gender" name="gender">
+              <label for="gender">Gender <span class="required-mark">*</span></label>
+              <select id="gender" name="gender" required>
                 <option value="">— Select —</option>
                 <option value="Male" {% if profile.gender == "Male" %}selected{% endif %}>Male</option>
                 <option value="Female" {% if profile.gender == "Female" %}selected{% endif %}>Female</option>
@@ -75,8 +87,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="civil_status">Civil Status</label>
-              <select id="civil_status" name="civil_status">
+              <label for="civil_status">Civil Status <span class="required-mark">*</span></label>
+              <select id="civil_status" name="civil_status" required>
                 <option value="">— Select —</option>
                 <option value="Single" {% if profile.civil_status == "Single" %}selected{% endif %}>Single</option>
                 <option value="Married" {% if profile.civil_status == "Married" %}selected{% endif %}>Married</option>
@@ -86,8 +98,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="citizenship">Citizenship</label>
-              <select id="citizenship" name="citizenship">
+              <label for="citizenship">Citizenship <span class="required-mark">*</span></label>
+              <select id="citizenship" name="citizenship" required>
                 <option value="">— Select —</option>
                 <option value="Filipino" {% if profile.citizenship == "Filipino" %}selected{% endif %}>Filipino</option>
                 <option value="Dual Citizen" {% if profile.citizenship == "Dual Citizen" %}selected{% endif %}>Dual Citizen</option>
@@ -95,12 +107,12 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="contact_number">Contact Number</label>
-              <input type="text" id="contact_number" name="contact_number" value="{{ profile.contact_number|default:'' }}">
+              <label for="contact_number">Contact Number <span class="required-mark">*</span></label>
+              <input type="text" id="contact_number" name="contact_number" required value="{{ profile.contact_number|default:'' }}">
             </div>
             <div class="form-group">
-              <label for="working">Currently Working?</label>
-              <select id="working" name="working">
+              <label for="working">Currently Working? <span class="required-mark">*</span></label>
+              <select id="working" name="working" required>
                 <option value="">— Select —</option>
                 <option value="Yes" {% if profile.currently_working == "Yes" %}selected{% endif %}>Yes</option>
                 <option value="No" {% if profile.currently_working == "No" %}selected{% endif %}>No</option>
@@ -111,8 +123,8 @@
               <input type="text" id="religion" name="religion" value="{{ profile.religion|default:'' }}">
             </div>
             <div class="form-group">
-              <label for="monthly_income">Monthly Income</label>
-              <select id="monthly_income" name="monthly_income">
+              <label for="monthly_income">Monthly Income <span class="required-mark">*</span></label>
+              <select id="monthly_income" name="monthly_income" required>
                 <option value="">— Select Range —</option>
                 <option value="Below ₱10,000" {% if profile.monthly_income == "Below ₱10,000" %}selected{% endif %}>Below ₱10,000</option>
                 <option value="₱10,000 – ₱20,999" {% if profile.monthly_income == "₱10,000 – ₱20,999" %}selected{% endif %}>₱10,000 – ₱20,999</option>
@@ -148,42 +160,103 @@
         </div>
 
         <div class="form-section">
-          <div class="schools-attended-grid schools-attended-grid-4col">
-            <div class="grid-header">Name of Schools Attended (Elementary to College)</div>
-            <div class="grid-header">School Type (Public or Private)</div>
-            <div class="grid-header">School Address</div>
-            <div class="grid-header">Year Started and Year Graduated</div>
+          <h3>SCHOOLS ATTENDED <span style="font-weight:400;font-size:0.85em;">(Elementary to College)</span></h3>
+          <p style="font-size:0.85em;color:#6b7280;margin-bottom:1rem;">
+            Fill in all four rows. <span class="required-mark">*</span> marks are required per row.
+            Use the <strong>+ Add Row</strong> button below to add more entries if needed.
+          </p>
+          <input type="hidden" name="school_row_max" id="school_row_max" value="4">
+          <div id="schools-grid" class="schools-attended-grid schools-attended-grid-5col">
+            <div class="grid-header">Name of School <span class="required-mark">*</span></div>
+            <div class="grid-header">Type (Public/Private) <span class="required-mark">*</span></div>
+            <div class="grid-header">School Address <span class="required-mark">*</span></div>
+            <div class="grid-header">Year (Started – Graduated) <span class="required-mark">*</span></div>
+            <div class="grid-header"></div>
 
             {% with s=application.educational_data.schools_attended %}
-            <div class="grid-cell"><input type="text" name="school_name_1" value="{{ s.0.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_1" value="{{ s.0.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_1" value="{{ s.0.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_1" value="{{ s.0.year|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_name_1" required value="{{ s.0.name|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_type_1" required value="{{ s.0.type|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_address_1" required value="{{ s.0.address|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_year_1" required value="{{ s.0.year|default:'' }}"></div>
+            <div class="grid-cell"></div>
 
-            <div class="grid-cell"><input type="text" name="school_name_2" value="{{ s.1.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_2" value="{{ s.1.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_2" value="{{ s.1.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_2" value="{{ s.1.year|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_name_2" required value="{{ s.1.name|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_type_2" required value="{{ s.1.type|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_address_2" required value="{{ s.1.address|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_year_2" required value="{{ s.1.year|default:'' }}"></div>
+            <div class="grid-cell"></div>
 
-            <div class="grid-cell"><input type="text" name="school_name_3" value="{{ s.2.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_3" value="{{ s.2.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_3" value="{{ s.2.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_3" value="{{ s.2.year|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_name_3" required value="{{ s.2.name|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_type_3" required value="{{ s.2.type|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_address_3" required value="{{ s.2.address|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_year_3" required value="{{ s.2.year|default:'' }}"></div>
+            <div class="grid-cell"></div>
 
-            <div class="grid-cell"><input type="text" name="school_name_4" value="{{ s.3.name|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_type_4" value="{{ s.3.type|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_address_4" value="{{ s.3.address|default:'' }}"></div>
-            <div class="grid-cell"><input type="text" name="school_year_4" value="{{ s.3.year|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_name_4" required value="{{ s.3.name|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_type_4" required value="{{ s.3.type|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_address_4" required value="{{ s.3.address|default:'' }}"></div>
+            <div class="grid-cell"><input type="text" name="school_year_4" required value="{{ s.3.year|default:'' }}"></div>
+            <div class="grid-cell"></div>
             {% endwith %}
           </div>
+
+          <button type="button" id="add-school-row" class="btn btn-outline" style="margin-top:0.5rem;">+ Add Row</button>
         </div>
 
         <div class="form-actions">
-          <p class="form-required-note">* Required fields</p>
           <button type="submit" class="btn btn-primary">Next →</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  var rowMax = 4;
+  var grid = document.getElementById('schools-grid');
+  var rowMaxInput = document.getElementById('school_row_max');
+
+  document.getElementById('add-school-row').addEventListener('click', function () {
+    rowMax++;
+    rowMaxInput.value = rowMax;
+    var n = rowMax;
+
+    var fields = [
+      { name: 'school_name_' + n, placeholder: 'School Name' },
+      { name: 'school_type_' + n, placeholder: 'Public / Private' },
+      { name: 'school_address_' + n, placeholder: 'School Address' },
+      { name: 'school_year_' + n, placeholder: 'e.g. 2015 – 2019' },
+    ];
+
+    fields.forEach(function (f) {
+      var cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      cell.dataset.extraRow = n;
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.name = f.name;
+      input.placeholder = f.placeholder;
+      cell.appendChild(input);
+      grid.appendChild(cell);
+    });
+
+    var deleteCell = document.createElement('div');
+    deleteCell.className = 'grid-cell';
+    deleteCell.dataset.extraRow = n;
+    var deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'btn-remove-row';
+    deleteBtn.title = 'Remove row';
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', function () {
+      grid.querySelectorAll('[data-extra-row="' + n + '"]').forEach(function (el) {
+        el.remove();
+      });
+    });
+    deleteCell.appendChild(deleteBtn);
+    grid.appendChild(deleteCell);
+  });
+}());
+</script>
 {% endblock %}

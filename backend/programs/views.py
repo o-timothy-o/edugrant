@@ -371,13 +371,22 @@ def generic_application_step2_view(request, program_id, application_id):
         return redirect('programs:application_detail', application_id=application.id)
 
     document_requirements = DocumentRequirement.objects.filter(program=program)
-    document_forms = [ApplicationDocumentForm(prefix=str(req.id)) for req in document_requirements]
+    document_forms = [ApplicationDocumentForm(prefix=str(req.id), file_required=req.required) for req in document_requirements]
 
     if request.method == 'POST':
         document_forms = [
-            ApplicationDocumentForm(request.POST, request.FILES, prefix=str(req.id))
+            ApplicationDocumentForm(request.POST, request.FILES, prefix=str(req.id), file_required=req.required)
             for req in document_requirements
         ]
+        all_docs_valid = all(form.is_valid() for form in document_forms)
+        if not all_docs_valid:
+            context = {
+                'program': program,
+                'application': application,
+                'document_requirements': document_requirements,
+                'doc_forms_and_reqs': zip(document_forms, document_requirements),
+            }
+            return render(request, 'programs/generic_application_step2.html', context)
         for i, form in enumerate(document_forms):
             if form.is_valid() and form.cleaned_data.get('file'):
                 doc, _ = ApplicationDocument.objects.get_or_create(

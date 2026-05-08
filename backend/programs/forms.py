@@ -17,6 +17,10 @@ class ApplicationDocumentForm(forms.ModelForm):
         model = ApplicationDocument
         fields = ['file']
 
+    def __init__(self, *args, file_required=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['file'].required = file_required
+
 class FamilyCompositionForm(forms.Form):
     name = forms.CharField(max_length=100)
     date_of_birth = forms.CharField(max_length=100)

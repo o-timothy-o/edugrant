@@ -21,14 +21,19 @@
 
         <div class="form-section">
           <h3>Upload Required Documents</h3>
+          <p class="required-note"><span class="required-mark">*</span> Fields marked with an asterisk are required.</p>
+          <p class="upload-capabilities-note">Accepted formats: <strong>PDF, JPG, PNG</strong> &mdash; Maximum <strong>2 MB</strong> per file. Scan documents as PDF or compress images before uploading if needed.</p>
           {% if document_requirements %}
           <div class="upload-grid-container">
             {% for form, req in doc_forms_and_reqs %}
             <div class="form-group">
               <label for="{{ form.file.id_for_label }}">
-                {{ req.name }}{% if req.required %} *{% endif %}
+                {{ req.name }}{% if req.required %} <span class="required-mark">*</span>{% endif %}
               </label>
               {{ form.file }}
+              {% if form.file.errors %}
+              <p class="field-error">{{ form.file.errors|join:", " }}</p>
+              {% endif %}
             </div>
             {% endfor %}
           </div>

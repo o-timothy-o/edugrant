@@ -3150,6 +3150,28 @@ body {
   margin-left: 2px;
 }
 
+.required-note {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+
+.upload-capabilities-note {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.field-error {
+  font-size: 0.82rem;
+  color: #dc2626;
+  margin: 4px 0 0;
+}
+
 /* ── Awaiting Physical Submission notice (application_detail.html) ── */
 .awaiting-physical-notice {
   display: flex;

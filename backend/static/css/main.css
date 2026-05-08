@@ -18,7 +18,7 @@ body {
     "Apple Color Emoji", "Segoe UI Emoji";
   background:
     linear-gradient(to right, rgba(249, 250, 251, 1) 0%, rgba(249, 250, 251, 1) 50%, rgba(249, 250, 251, 0) 100%),
-    url('../img/Maam%20Dahlia.png') center / cover fixed;
+    url('../img/bg_dahlia.png') center / cover fixed;
   color: var(--text);
 }
 

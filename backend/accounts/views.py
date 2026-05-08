@@ -13,7 +13,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views import View
 
-from .forms import ApplicantRegistrationForm, ProfileEditForm, ChangeEmailForm
+from .forms import ApplicantRegistrationForm, ChangeEmailForm
 from .models import ApplicantProfile, EmailVerification
 from programs.utils import send_welcome_email
 
@@ -160,27 +160,17 @@ class CustomLogoutView(View):
 
 @login_required
 def profile_view(request):
-    profile_form = ProfileEditForm(instance=request.user)
     password_form = PasswordChangeForm(user=request.user)
 
     if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "update_profile":
-            profile_form = ProfileEditForm(request.POST, instance=request.user)
-            if profile_form.is_valid():
-                profile_form.save()
-                messages.success(request, "Your account details have been updated.")
-                return redirect("accounts:profile")
-        elif action == "change_password":
-            password_form = PasswordChangeForm(user=request.user, data=request.POST)
-            if password_form.is_valid():
-                password_form.save()
-                update_session_auth_hash(request, password_form.user)
-                messages.success(request, "Your password has been changed.")
-                return redirect("accounts:profile")
+        password_form = PasswordChangeForm(user=request.user, data=request.POST)
+        if password_form.is_valid():
+            password_form.save()
+            update_session_auth_hash(request, password_form.user)
+            messages.success(request, "Your password has been changed.")
+            return redirect("accounts:profile")
 
     return render(request, "registration/profile.html", {
-        "profile_form": profile_form,
         "password_form": password_form,
     })
 

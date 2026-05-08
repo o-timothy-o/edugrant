@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth.forms import UserCreationForm
 
 from .models import ApplicantProfile
 
@@ -12,29 +12,23 @@ class ApplicantRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")
+        fields = ("email", "password1", "password2")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].lower()
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("An account with that email already exists.")
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.username = self.cleaned_data["email"]
         user.email = self.cleaned_data["email"]
         user.is_staff = False
         if commit:
             user.save()
             ApplicantProfile.objects.get_or_create(user=user)
         return user
-
-
-class ProfileEditForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ("username",)
-
-    def clean_username(self):
-        username = self.cleaned_data["username"]
-        qs = User.objects.filter(username=username).exclude(pk=self.instance.pk)
-        if qs.exists():
-            raise forms.ValidationError("That username is already taken.")
-        return username
 
 
 class ChangeEmailForm(forms.Form):

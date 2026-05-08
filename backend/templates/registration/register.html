@@ -14,11 +14,8 @@
   </div>
   <div class="register-card">
     <h2 class="account-creation-title">Account Creation</h2>
-    <p class="step-indicator">Step 1 of 2: Create Your Account</p>
+    <p class="step-indicator">Create Your Account</p>
     
-    <div class="info-box">
-      <p>Please upload the required documents to create your account. After verification, you can proceed to submit your application.</p>
-    </div>
 
     <div class="step-circle">1</div>
     <p class="step-label">Account Setup</p>
@@ -26,12 +23,6 @@
     <form method="post" action="{% url 'accounts:register' %}" class="register-form">
       {% csrf_token %}
       
-      <div class="register-field-group">
-        <label for="{{ form.username.id_for_label }}" class="register-label">{{ form.username.label }}</label>
-        {{ form.username }}
-        {% if form.username.help_text %}<p class="register-help">{{ form.username.help_text }}</p>{% endif %}
-        {% for error in form.username.errors %}<p class="register-error">{{ error }}</p>{% endfor %}
-      </div>
       <div class="register-field-group">
         <label for="{{ form.email.id_for_label }}" class="register-label">{{ form.email.label }}</label>
         {{ form.email }}
@@ -54,14 +45,6 @@
         {% for error in form.non_field_errors %}<p class="register-error">{{ error }}</p>{% endfor %}
       </div>
       {% endif %}
-
-      <div class="important-notes">
-        <h3>Important Notes:</h3>
-        <ul>
-          <li>All documents must be clear and readable</li>
-          <li>Account will be verified by CAYDO within 24-48 hours</li>
-        </ul>
-      </div>
 
       <div class="form-group-checkbox">
         <input type="checkbox" id="certify" name="certify" required>

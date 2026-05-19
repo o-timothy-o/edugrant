@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block doc_title %}Report{% endblock %} – EduGrant</title>
+  <title>{% block page_title %}Report{% endblock %} – EduGrant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -274,6 +274,9 @@
         <div class="report-header-module">Official Report</div>
         <div class="report-header-title">{% block doc_title %}Report{% endblock %}</div>
         <div class="report-header-date">As of {{ report_date|date:"F j, Y" }}</div>
+        {% if filter_label and filter_label != 'All Time' %}
+        <div class="report-header-date" style="margin-top:4px; opacity:0.6;">Period: {{ filter_label }}</div>
+        {% endif %}
       </div>
     </div>
 

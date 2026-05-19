@@ -13,11 +13,90 @@
     </div>
     <div class="report-export-group">
       <span class="report-export-label">View Report</span>
-      <a href="{% url 'view_applications_report' %}" class="btn btn-outline btn-sm">Applications</a>
-      <a href="{% url 'view_programs_report' %}" class="btn btn-outline btn-sm">Program Summary</a>
-      <a href="{% url 'view_applicants_report' %}" class="btn btn-outline btn-sm">Applicants</a>
+      <a href="{% url 'view_applications_report' %}?{{ request.GET.urlencode }}" class="btn btn-outline btn-sm">Applications</a>
+      <a href="{% url 'view_programs_report' %}?{{ request.GET.urlencode }}" class="btn btn-outline btn-sm">Program Summary</a>
+      <a href="{% url 'view_applicants_report' %}?{{ request.GET.urlencode }}" class="btn btn-outline btn-sm">Applicants</a>
     </div>
   </div>
+
+  <!-- Date filter bar -->
+  <form method="get" class="report-filter-form" id="reportFilterForm">
+    <div class="report-filter-row">
+
+      <label class="report-filter-label">Filter by:</label>
+
+      <select name="filter_type" id="filterType" class="report-filter-select">
+        <option value="" {% if not filter_type %}selected{% endif %}>All Time</option>
+        <option value="year" {% if filter_type == 'year' %}selected{% endif %}>By Year</option>
+        <option value="month" {% if filter_type == 'month' %}selected{% endif %}>By Month</option>
+        <option value="range" {% if filter_type == 'range' %}selected{% endif %}>Date Range</option>
+      </select>
+
+      <div id="yearInput" class="report-filter-group" {% if filter_type != 'year' and filter_type != 'month' %}style="display:none"{% endif %}>
+        <select name="year" class="report-filter-select">
+          {% for y in available_years %}
+          <option value="{{ y }}" {% if active_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div id="monthInput" class="report-filter-group" {% if filter_type != 'month' %}style="display:none"{% endif %}>
+        <select name="month" class="report-filter-select">
+          <option value="1"  {% if active_month == '1'  %}selected{% endif %}>January</option>
+          <option value="2"  {% if active_month == '2'  %}selected{% endif %}>February</option>
+          <option value="3"  {% if active_month == '3'  %}selected{% endif %}>March</option>
+          <option value="4"  {% if active_month == '4'  %}selected{% endif %}>April</option>
+          <option value="5"  {% if active_month == '5'  %}selected{% endif %}>May</option>
+          <option value="6"  {% if active_month == '6'  %}selected{% endif %}>June</option>
+          <option value="7"  {% if active_month == '7'  %}selected{% endif %}>July</option>
+          <option value="8"  {% if active_month == '8'  %}selected{% endif %}>August</option>
+          <option value="9"  {% if active_month == '9'  %}selected{% endif %}>September</option>
+          <option value="10" {% if active_month == '10' %}selected{% endif %}>October</option>
+          <option value="11" {% if active_month == '11' %}selected{% endif %}>November</option>
+          <option value="12" {% if active_month == '12' %}selected{% endif %}>December</option>
+        </select>
+      </div>
+
+      <div id="rangeInput" class="report-filter-group report-filter-range" {% if filter_type != 'range' %}style="display:none"{% endif %}>
+        <input type="date" name="from_date" value="{{ active_from_date }}" class="report-filter-date" placeholder="From">
+        <span class="report-filter-range-sep">to</span>
+        <input type="date" name="to_date" value="{{ active_to_date }}" class="report-filter-date" placeholder="To">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+      {% if filter_type %}
+      <a href="{% url 'reports' %}" class="btn btn-outline btn-sm">Clear</a>
+      {% endif %}
+
+    </div>
+    {% if filter_type %}
+    <p class="report-filter-active">Showing: <strong>{{ filter_label }}</strong></p>
+    {% endif %}
+  </form>
+
+  <script>
+  (function () {
+    var typeEl = document.getElementById('filterType');
+    var yearEl = document.getElementById('yearInput');
+    var monthEl = document.getElementById('monthInput');
+    var rangeEl = document.getElementById('rangeInput');
+
+    function setGroup(el, visible) {
+      el.style.display = visible ? '' : 'none';
+      el.querySelectorAll('input, select').forEach(function (i) { i.disabled = !visible; });
+    }
+
+    function update() {
+      var t = typeEl.value;
+      setGroup(yearEl,  t === 'year' || t === 'month');
+      setGroup(monthEl, t === 'month');
+      setGroup(rangeEl, t === 'range');
+    }
+
+    typeEl.addEventListener('change', update);
+    update();
+  })();
+  </script>
 
   <!-- Summary stat cards -->
   <div class="admin-stats-row">

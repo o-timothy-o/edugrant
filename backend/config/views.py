@@ -12,6 +12,60 @@ from programs.forms import ProgramForm, DocumentRequirementFormSet
 
 User = get_user_model()
 
+_MONTHS = [
+    '', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+
+def _get_filter_params(request):
+    return (
+        request.GET.get('filter_type', ''),
+        request.GET.get('year', ''),
+        request.GET.get('month', ''),
+        request.GET.get('from_date', ''),
+        request.GET.get('to_date', ''),
+    )
+
+
+def _date_filter(filter_type, year, month, from_date, to_date, field='created_at'):
+    f = Q()
+    if filter_type == 'year' and year:
+        try:
+            f = Q(**{f'{field}__year': int(year)})
+        except ValueError:
+            pass
+    elif filter_type == 'month' and year and month:
+        try:
+            f = Q(**{f'{field}__year': int(year), f'{field}__month': int(month)})
+        except ValueError:
+            pass
+    elif filter_type == 'range':
+        if from_date:
+            f &= Q(**{f'{field}__date__gte': from_date})
+        if to_date:
+            f &= Q(**{f'{field}__date__lte': to_date})
+    return f
+
+
+def _filter_label(filter_type, year, month, from_date, to_date):
+    if filter_type == 'year' and year:
+        return f'Year {year}'
+    if filter_type == 'month' and year and month:
+        try:
+            return f'{_MONTHS[int(month)]} {year}'
+        except (ValueError, IndexError):
+            pass
+    if filter_type == 'range':
+        parts = []
+        if from_date:
+            parts.append(f'From {from_date}')
+        if to_date:
+            parts.append(f'To {to_date}')
+        if parts:
+            return ' — '.join(parts)
+    return 'All Time'
+
 
 def about_view(request):
     return render(request, 'about.html')
@@ -196,9 +250,16 @@ def archived_list_view(request):
 
 @staff_member_required(login_url="staff_login")
 def reports_view(request):
-    # Monthly submissions (non-draft applications grouped by month)
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date)
+    label = _filter_label(filter_type, year, month, from_date, to_date)
+
+    year_vals = Application.objects.values_list('created_at__year', flat=True).distinct().order_by('-created_at__year')
+    available_years = list(year_vals) or [timezone.now().year]
+
     monthly_qs = (
         Application.objects
+        .filter(df)
         .exclude(status='draft')
         .annotate(month=TruncMonth('created_at'))
         .values('month')
@@ -214,7 +275,7 @@ def reports_view(request):
     all_programs = Program.objects.filter(is_archived=False).order_by('name')
     all_program_stats = []
     for prog in all_programs:
-        base = Application.objects.filter(program=prog)
+        base = Application.objects.filter(df, program=prog)
         total = base.count()
         approved = base.filter(status='approved').count()
         rejected = base.filter(status='rejected').count()
@@ -237,10 +298,10 @@ def reports_view(request):
     screening_flag = ScreeningResult.objects.filter(outcome='flag').count()
     screening_total = screening_pass + screening_flag
 
-    total_applications = Application.objects.exclude(status='draft').count()
-    total_approved = Application.objects.filter(status='approved').count()
-    total_rejected = Application.objects.filter(status='rejected').count()
-    total_pending = Application.objects.filter(status__in=['submitted', 'for_review']).count()
+    total_applications = Application.objects.filter(df).exclude(status='draft').count()
+    total_approved = Application.objects.filter(df, status='approved').count()
+    total_rejected = Application.objects.filter(df, status='rejected').count()
+    total_pending = Application.objects.filter(df, status__in=['submitted', 'for_review']).count()
 
     context = {
         'monthly_data': monthly_data,
@@ -253,6 +314,13 @@ def reports_view(request):
         'total_approved': total_approved,
         'total_rejected': total_rejected,
         'total_pending': total_pending,
+        'filter_type': filter_type,
+        'active_year': year,
+        'active_month': month,
+        'active_from_date': from_date,
+        'active_to_date': to_date,
+        'filter_label': label,
+        'available_years': available_years,
     }
     return render(request, 'reports.html', context)
 
@@ -377,9 +445,13 @@ def export_applicants_csv(request):
 
 @staff_member_required(login_url="staff_login")
 def view_applications_report(request):
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date)
+    label = _filter_label(filter_type, year, month, from_date, to_date)
+
     applications = (
         Application.objects
-        .filter(is_archived=False)
+        .filter(df, is_archived=False)
         .exclude(status='draft')
         .select_related('applicant', 'program', 'applicant__applicant_profile')
         .order_by('-created_at')
@@ -388,6 +460,7 @@ def view_applications_report(request):
     context = {
         'applications': applications,
         'report_date': timezone.now(),
+        'filter_label': label,
         'total': total,
         'total_approved': applications.filter(status='approved').count(),
         'total_rejected': applications.filter(status='rejected').count(),
@@ -398,9 +471,13 @@ def view_applications_report(request):
 
 @staff_member_required(login_url="staff_login")
 def view_programs_report(request):
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date)
+    label = _filter_label(filter_type, year, month, from_date, to_date)
+
     programs_data = []
     for prog in Program.objects.filter(is_archived=False).order_by('name'):
-        base = Application.objects.filter(program=prog)
+        base = Application.objects.filter(df, program=prog)
         total = base.count()
         approved = base.filter(status='approved').count()
         rejected = base.filter(status='rejected').count()
@@ -418,14 +495,19 @@ def view_programs_report(request):
     context = {
         'programs_data': programs_data,
         'report_date': timezone.now(),
+        'filter_label': label,
     }
     return render(request, 'reports/programs_report.html', context)
 
 
 @staff_member_required(login_url="staff_login")
 def view_applicants_report(request):
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date, field='date_joined')
+    label = _filter_label(filter_type, year, month, from_date, to_date)
+
     users = (
-        User.objects.filter(is_staff=False)
+        User.objects.filter(df, is_staff=False)
         .select_related('applicant_profile')
         .annotate(application_count=Count('applications'))
         .order_by('-date_joined')
@@ -433,6 +515,7 @@ def view_applicants_report(request):
     context = {
         'users': users,
         'report_date': timezone.now(),
+        'filter_label': label,
         'total': users.count(),
     }
     return render(request, 'reports/applicants_report.html', context)

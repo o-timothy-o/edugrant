@@ -191,6 +191,16 @@ def change_email_view(request):
         form = ChangeEmailForm(request.POST, current_user=request.user)
         if form.is_valid():
             new_email = form.cleaned_data["email"]
+
+            recent = EmailVerification.objects.filter(
+                email=new_email,
+                is_used=False,
+                created_at__gte=timezone.now() - timedelta(seconds=60),
+            ).exists()
+            if recent:
+                request.session["pending_new_email"] = new_email
+                return redirect("accounts:verify_email_change")
+
             request.session["pending_new_email"] = new_email
 
             EmailVerification.objects.filter(email=new_email, is_used=False).update(is_used=True)
@@ -234,6 +244,7 @@ def verify_email_change_view(request):
             verification.save()
 
             request.user.email = pending_email
+            request.user.username = pending_email
             request.user.save()
             del request.session["pending_new_email"]
 

@@ -28,7 +28,7 @@
       <button type="submit" class="btn btn-primary btn-create" id="submitBtn">Send Verification Code</button>
     </form>
     <script>
-    document.querySelector('form').addEventListener('submit', function () {
+    document.querySelector('.register-form').addEventListener('submit', function () {
       var btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.textContent = 'Sending…';

@@ -1283,7 +1283,7 @@ body {
   justify-content: center;
 }
 
-.school-mobile-label {
+.application-form .school-mobile-label {
   display: none;
 }
 
@@ -2645,7 +2645,7 @@ body {
     justify-content: flex-end;
   }
 
-  .school-mobile-label {
+  .application-form .school-mobile-label {
     display: block;
     font-size: 0.72rem;
     font-weight: 600;

@@ -234,9 +234,34 @@
         max-width: 100%;
       }
 
+      /* Let the table expand to full page width instead of scrolling */
+      .report-table-wrap {
+        overflow: visible !important;
+      }
+
+      .report-table {
+        width: 100%;
+        font-size: 9.5px;
+        table-layout: auto;
+      }
+
+      .report-table th {
+        font-size: 8.5px;
+        padding: 6px 7px;
+        white-space: normal;
+      }
+
+      .report-table td {
+        padding: 5px 7px;
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      /* Don't split a row across two pages */
+      .report-table tr { page-break-inside: avoid; }
+
       .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .status-badge  { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
       .report-table tbody tr:hover td { background: #fff; }
 
       @page { margin: 1.2cm 1.5cm; size: A4 landscape; }

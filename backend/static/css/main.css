@@ -49,6 +49,7 @@ a:hover {
 .siteHeader {
   background: linear-gradient(to right, #fbbf24, #8b5cf6);
   border-bottom: none;
+  position: relative;
 }
 
 .siteHeader .container {
@@ -147,6 +148,31 @@ a:hover {
   text-decoration: underline;
   color: #ffffff;
 }
+
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 8px;
+  padding: 9px 10px;
+  cursor: pointer;
+}
+
+.nav-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .siteMain {
   padding: 28px 0;
@@ -2471,16 +2497,82 @@ body {
     width: calc(100% - 24px);
   }
 
-  /* Navbar: stack brand + nav vertically */
+  /* Navbar: hamburger replaces inline nav */
   .siteHeader .container {
-    flex-wrap: wrap;
-    gap: 10px;
+    flex-wrap: nowrap;
     padding: 10px 0;
   }
 
+  .nav-hamburger {
+    display: flex;
+  }
+
   .nav {
-    flex-wrap: wrap;
-    gap: 8px;
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to right, #fbbf24, #8b5cf6);
+    flex-direction: column;
+    padding: 12px 16px 16px;
+    z-index: 200;
+    gap: 4px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  }
+
+  .nav.nav-open {
+    display: flex;
+  }
+
+  .nav .navBtn {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 8px;
+    text-align: left;
+  }
+
+  .nav .navLogoutForm {
+    display: block;
+    width: 100%;
+  }
+
+  .nav .navLogoutForm button {
+    width: 100%;
+    text-align: left;
+    justify-content: flex-start;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  /* Manage sub-dropdown: expand inline on mobile */
+  .nav .nav-dropdown {
+    width: 100%;
+  }
+
+  .nav .nav-dropdown-menu {
+    position: static;
+    background: rgba(0,0,0,0.18);
+    box-shadow: none;
+    border-radius: 8px;
+    min-width: unset;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .nav .nav-dropdown-item {
+    color: #fff;
+    border-radius: 6px;
+  }
+
+  .nav .nav-dropdown-item:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
   }
 
   /* Admin stat cards: 2 columns */
@@ -2587,6 +2679,17 @@ body {
   .applicants-search-wrap {
     width: 100%;
   }
+
+  /* Wide grids: allow horizontal scroll on mobile */
+  .family-composition-grid {
+    overflow-x: auto;
+    grid-template-columns: repeat(8, minmax(80px, 1fr));
+  }
+
+  .schools-attended-grid {
+    overflow-x: auto;
+    grid-template-columns: repeat(5, minmax(110px, 1fr));
+  }
 }
 
 @media (max-width: 480px) {
@@ -2605,11 +2708,6 @@ body {
 
   h1 {
     font-size: 22px;
-  }
-
-  .navBtn {
-    font-size: 12px;
-    padding: 5px 10px;
   }
 
   /* Monthly chart bars: shrink label */

@@ -122,6 +122,15 @@ def resend_otp_view(request):
     if not pending_email:
         return redirect("accounts:register")
 
+    recent = EmailVerification.objects.filter(
+        email=pending_email,
+        is_used=False,
+        created_at__gte=timezone.now() - timedelta(seconds=60),
+    ).exists()
+    if recent:
+        messages.warning(request, "Please wait a moment before requesting a new code.")
+        return redirect("accounts:verify_otp")
+
     EmailVerification.objects.filter(email=pending_email, is_used=False).update(is_used=True)
 
     otp_code = _generate_otp()
@@ -242,6 +251,15 @@ def resend_email_change_otp_view(request):
     pending_email = request.session.get("pending_new_email")
     if not pending_email:
         return redirect("accounts:change_email")
+
+    recent = EmailVerification.objects.filter(
+        email=pending_email,
+        is_used=False,
+        created_at__gte=timezone.now() - timedelta(seconds=60),
+    ).exists()
+    if recent:
+        messages.warning(request, "Please wait a moment before requesting a new code.")
+        return redirect("accounts:verify_email_change")
 
     EmailVerification.objects.filter(email=pending_email, is_used=False).update(is_used=True)
     otp_code = _generate_otp()

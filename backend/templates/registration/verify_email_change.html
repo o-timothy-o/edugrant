@@ -46,9 +46,33 @@
     </form>
 
     <div class="back-link" style="margin-top: 1rem;">
-      <p>Didn't receive a code? <a href="{% url 'accounts:resend_email_change_otp' %}">Resend code</a></p>
+      <p>Didn't receive a code? <a href="{% url 'accounts:resend_email_change_otp' %}" id="resendLink">Resend code</a></p>
       <a href="{% url 'accounts:change_email' %}">&larr; Use a different email</a>
     </div>
   </div>
 </div>
+<script>
+(function () {
+  var COOLDOWN = 60;
+  var KEY = 'email_otp_sent_at';
+  var link = document.getElementById('resendLink');
+  if (!link) return;
+  if (!sessionStorage.getItem(KEY)) sessionStorage.setItem(KEY, Date.now());
+  function tick() {
+    var remaining = Math.ceil(COOLDOWN - (Date.now() - parseInt(sessionStorage.getItem(KEY))) / 1000);
+    if (remaining > 0) {
+      link.style.pointerEvents = 'none';
+      link.style.opacity = '0.45';
+      link.textContent = 'Resend code (' + remaining + 's)';
+      setTimeout(tick, 1000);
+    } else {
+      link.style.pointerEvents = '';
+      link.style.opacity = '';
+      link.textContent = 'Resend code';
+    }
+  }
+  tick();
+  link.addEventListener('click', function () { sessionStorage.setItem(KEY, Date.now()); });
+})();
+</script>
 {% endblock %}

@@ -2252,6 +2252,25 @@ body {
 
 /* ── Reports Page ───────────────────────────────────────── */
 
+.report-export-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.report-export-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
 .report-chart-sub {
   font-size: 12px;
   color: var(--muted);

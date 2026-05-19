@@ -9,6 +9,7 @@ from .views import (
     reports_view, program_list_view, add_program_view, edit_program_view,
     delete_program_view, archive_application_view, restore_application_view,
     archive_program_view, restore_program_view, archived_list_view,
+    export_applications_csv, export_programs_csv, export_applicants_csv,
 )
 
 urlpatterns = [
@@ -19,6 +20,9 @@ urlpatterns = [
     path("applications/<int:application_id>/archive/", archive_application_view, name="archive_application"),
     path("applications/<int:application_id>/restore/", restore_application_view, name="restore_application"),
     path("reports/", reports_view, name="reports"),
+    path("reports/export/applications/", export_applications_csv, name="export_applications_csv"),
+    path("reports/export/programs/", export_programs_csv, name="export_programs_csv"),
+    path("reports/export/applicants/", export_applicants_csv, name="export_applicants_csv"),
     path("manage/programs/", program_list_view, name="program_list"),
     path("manage/programs/add/", add_program_view, name="add_program"),
     path("manage/programs/<int:program_id>/edit/", edit_program_view, name="edit_program"),

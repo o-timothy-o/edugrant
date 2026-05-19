@@ -1,9 +1,11 @@
+import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth
+from django.http import HttpResponse
 from programs.models import Application, Program, ScreeningResult
 from programs.forms import ProgramForm, DocumentRequirementFormSet
 
@@ -281,3 +283,88 @@ def admin_dashboard_view(request):
     return render(request, 'admin_dashboard.html', context)
 
 
+@staff_member_required(login_url="staff_login")
+def export_applications_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="applications.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        'Full Name', 'Email', 'Contact Number', 'Barangay', 'Address',
+        'Program', 'Program Type', 'Status', 'Date Submitted',
+    ])
+    applications = (
+        Application.objects
+        .filter(is_archived=False)
+        .exclude(status='draft')
+        .select_related('applicant', 'program', 'applicant__applicant_profile')
+        .order_by('-created_at')
+    )
+    for app in applications:
+        profile = getattr(app.applicant, 'applicant_profile', None)
+        writer.writerow([
+            profile.full_name if profile else '',
+            app.applicant.email,
+            profile.contact_number if profile else '',
+            profile.barangay if profile else '',
+            profile.address if profile else '',
+            app.program.name,
+            app.program.get_program_type_display(),
+            app.get_status_display(),
+            app.created_at.strftime('%Y-%m-%d'),
+        ])
+    return response
+
+
+@staff_member_required(login_url="staff_login")
+def export_programs_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="program_summary.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Program', 'Type', 'Total', 'Approved', 'Rejected', 'Pending', 'Draft', 'Approval Rate (%)'])
+    for prog in Program.objects.filter(is_archived=False).order_by('name'):
+        base = Application.objects.filter(program=prog)
+        total = base.count()
+        approved = base.filter(status='approved').count()
+        rejected = base.filter(status='rejected').count()
+        pending = base.filter(status__in=['submitted', 'for_review']).count()
+        draft = base.filter(status='draft').count()
+        approval_rate = round(approved / total * 100, 1) if total else 0
+        writer.writerow([
+            prog.name,
+            prog.get_program_type_display(),
+            total, approved, rejected, pending, draft,
+            f'{approval_rate}%',
+        ])
+    return response
+
+
+@staff_member_required(login_url="staff_login")
+def export_applicants_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="applicants.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        'Full Name', 'Email', 'Barangay', 'Address', 'Contact Number',
+        'Gender', 'Civil Status', 'Monthly Income', 'Date Joined', 'Total Applications',
+    ])
+    users = (
+        User.objects.filter(is_staff=False)
+        .select_related('applicant_profile')
+        .annotate(application_count=Count('applications'))
+        .order_by('-date_joined')
+    )
+    for user in users:
+        profile = getattr(user, 'applicant_profile', None)
+        writer.writerow([
+            profile.full_name if profile else '',
+            user.email,
+            profile.barangay if profile else '',
+            profile.address if profile else '',
+            profile.contact_number if profile else '',
+            profile.gender if profile else '',
+            profile.civil_status if profile else '',
+            profile.monthly_income if profile else '',
+            user.date_joined.strftime('%Y-%m-%d'),
+            user.application_count,
+        ])
+    return response

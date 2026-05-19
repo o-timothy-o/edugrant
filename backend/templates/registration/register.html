@@ -51,8 +51,15 @@
         <label for="certify">I certify that all documents provided are authentic and belong to me. I understand that providing false information may result in disqualification. *</label>
       </div>
       
-      <button type="submit" class="btn btn-primary btn-create">Create account</button>
+      <button type="submit" class="btn btn-primary btn-create" id="submitBtn">Create account</button>
     </form>
+    <script>
+    document.querySelector('form').addEventListener('submit', function () {
+      var btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending code…';
+    });
+    </script>
     
     <div class="back-link">
       <a href="{% url 'home' %}">&larr; Back Home</a>

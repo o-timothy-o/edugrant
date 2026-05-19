@@ -25,8 +25,15 @@
         <p class="register-error">{{ form.non_field_errors.0 }}</p>
       {% endif %}
 
-      <button type="submit" class="btn btn-primary btn-create">Send Verification Code</button>
+      <button type="submit" class="btn btn-primary btn-create" id="submitBtn">Send Verification Code</button>
     </form>
+    <script>
+    document.querySelector('form').addEventListener('submit', function () {
+      var btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+    });
+    </script>
 
     <div class="back-link">
       <a href="{% url 'accounts:profile' %}">&larr; Back to Profile</a>

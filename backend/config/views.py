@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth
 from django.http import HttpResponse
+from django.utils import timezone
 from programs.models import Application, Program, ScreeningResult
 from programs.forms import ProgramForm, DocumentRequirementFormSet
 
@@ -372,3 +373,66 @@ def export_applicants_csv(request):
             user.application_count,
         ])
     return response
+
+
+@staff_member_required(login_url="staff_login")
+def view_applications_report(request):
+    applications = (
+        Application.objects
+        .filter(is_archived=False)
+        .exclude(status='draft')
+        .select_related('applicant', 'program', 'applicant__applicant_profile')
+        .order_by('-created_at')
+    )
+    total = applications.count()
+    context = {
+        'applications': applications,
+        'report_date': timezone.now(),
+        'total': total,
+        'total_approved': applications.filter(status='approved').count(),
+        'total_rejected': applications.filter(status='rejected').count(),
+        'total_pending': applications.filter(status__in=['submitted', 'for_review']).count(),
+    }
+    return render(request, 'reports/applications_report.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def view_programs_report(request):
+    programs_data = []
+    for prog in Program.objects.filter(is_archived=False).order_by('name'):
+        base = Application.objects.filter(program=prog)
+        total = base.count()
+        approved = base.filter(status='approved').count()
+        rejected = base.filter(status='rejected').count()
+        pending = base.filter(status__in=['submitted', 'for_review']).count()
+        draft = base.filter(status='draft').count()
+        programs_data.append({
+            'program': prog,
+            'total': total,
+            'approved': approved,
+            'rejected': rejected,
+            'pending': pending,
+            'draft': draft,
+            'approval_rate': round(approved / total * 100, 1) if total else 0,
+        })
+    context = {
+        'programs_data': programs_data,
+        'report_date': timezone.now(),
+    }
+    return render(request, 'reports/programs_report.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def view_applicants_report(request):
+    users = (
+        User.objects.filter(is_staff=False)
+        .select_related('applicant_profile')
+        .annotate(application_count=Count('applications'))
+        .order_by('-date_joined')
+    )
+    context = {
+        'users': users,
+        'report_date': timezone.now(),
+        'total': users.count(),
+    }
+    return render(request, 'reports/applicants_report.html', context)

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EduGrant – Sample Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      padding: 32px 24px 64px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 32px;
+    }
+    .note {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      color: #92400e;
+      margin-bottom: 28px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      padding: 20px 24px 24px;
+    }
+    .card.full { grid-column: 1 / -1; }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #111827;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 18px;
+    }
+    canvas { width: 100% !important; }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto 24px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .stat-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #111827; }
+    .stat-caption { font-size: 12px; color: #9ca3af; margin-top: 3px; }
+
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 1fr; }
+      .card.full { grid-column: 1; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div style="max-width:1100px;margin:0 auto 24px;">
+    <h1>EduGrant – Sample Analytics Dashboard</h1>
+    <p class="subtitle">CAYDO Carmona, Cavite — Scholarship Management System &nbsp;·&nbsp; Sample data for thesis visualization</p>
+    <div class="note">
+      These charts use <strong>simulated data</strong> to represent what EduGrant's analytics would look like after deployment.
+      Replace with real figures from CAYDO for your final thesis.
+    </div>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Applicants</div>
+      <div class="stat-value">214</div>
+      <div class="stat-caption">Registered accounts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Applications</div>
+      <div class="stat-value">187</div>
+      <div class="stat-caption">Across all programs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Approval Rate</div>
+      <div class="stat-value">61%</div>
+      <div class="stat-caption">Of submitted applications</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Programs</div>
+      <div class="stat-value">2</div>
+      <div class="stat-caption">SPARK &amp; SINAG</div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1. Monthly Submissions -->
+    <div class="card full">
+      <div class="card-title">Monthly Application Submissions</div>
+      <div class="card-sub">Total applications submitted per month (excluding drafts)</div>
+      <canvas id="monthlyChart" height="90"></canvas>
+    </div>
+
+    <!-- 2. Status Breakdown by Program -->
+    <div class="card">
+      <div class="card-title">Application Status by Program</div>
+      <div class="card-sub">Breakdown of statuses across SPARK and SINAG</div>
+      <canvas id="statusChart" height="200"></canvas>
+    </div>
+
+    <!-- 3. Applicants by Barangay -->
+    <div class="card">
+      <div class="card-title">Applicants by Barangay</div>
+      <div class="card-sub">Top 8 barangays by number of registered applicants</div>
+      <canvas id="barangayChart" height="200"></canvas>
+    </div>
+
+    <!-- 4. Approval Rate Comparison -->
+    <div class="card">
+      <div class="card-title">Approval Rate by Program</div>
+      <div class="card-sub">Percentage of submitted applications approved per program</div>
+      <canvas id="approvalChart" height="200"></canvas>
+    </div>
+
+    <!-- 5. Application Funnel -->
+    <div class="card">
+      <div class="card-title">Application Status Distribution</div>
+      <div class="card-sub">Overall breakdown of all application statuses</div>
+      <canvas id="funnelChart" height="200"></canvas>
+    </div>
+
+    <!-- 6. Program Type split -->
+    <div class="card full">
+      <div class="card-title">Cumulative Applications Over Time</div>
+      <div class="card-sub">Running total of submitted applications (SPARK vs SINAG)</div>
+      <canvas id="cumulativeChart" height="90"></canvas>
+    </div>
+
+  </div>
+
+  <script>
+    const PURPLE = '#7c3aed';
+    const YELLOW = '#f59e0b';
+    const LIGHT_PURPLE = 'rgba(124,58,237,0.15)';
+    const LIGHT_YELLOW = 'rgba(245,158,11,0.15)';
+    const GREEN = '#16a34a';
+    const RED = '#dc2626';
+    const BLUE = '#2563eb';
+    const GRAY = '#9ca3af';
+
+    const months = ['Aug 2025','Sep 2025','Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026','Mar 2026','Apr 2026','May 2026'];
+
+    // 1. Monthly submissions
+    new Chart(document.getElementById('monthlyChart'), {
+      type: 'bar',
+      data: {
+        labels: months,
+        datasets: [{
+          label: 'Applications Submitted',
+          data: [4, 9, 18, 24, 11, 21, 28, 34, 26, 12],
+          backgroundColor: 'rgba(124,58,237,0.75)',
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280' } },
+          x: { grid: { display: false }, ticks: { color: '#6b7280' } }
+        }
+      }
+    });
+
+    // 2. Status by program (grouped bar)
+    new Chart(document.getElementById('statusChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Submitted', 'For Review', 'Approved', 'Rejected', 'Draft'],
+        datasets: [
+          {
+            label: 'SPARK',
+            data: [14, 8, 55, 18, 7],
+            backgroundColor: 'rgba(245,158,11,0.8)',
+            borderRadius: 4,
+          },
+          {
+            label: 'SINAG',
+            data: [10, 5, 39, 14, 17],
+            backgroundColor: 'rgba(124,58,237,0.8)',
+            borderRadius: 4,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280' } },
+          x: { grid: { display: false }, ticks: { color: '#6b7280' } }
+        }
+      }
+    });
+
+    // 3. Barangay horizontal bar
+    new Chart(document.getElementById('barangayChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Brgy. Maduya','Brgy. Lantic','Brgy. Mabuhay','Brgy. Bancal','Brgy. Poblacion I','Brgy. Cabilang Baybay','Brgy. Halang','Brgy. Loma De Gato'],
+        datasets: [{
+          label: 'Applicants',
+          data: [38, 31, 27, 24, 21, 18, 16, 14],
+          backgroundColor: 'rgba(37,99,235,0.75)',
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280' } },
+          y: { grid: { display: false }, ticks: { color: '#374151', font: { size: 11 } } }
+        }
+      }
+    });
+
+    // 4. Approval rate comparison (horizontal bar)
+    new Chart(document.getElementById('approvalChart'), {
+      type: 'bar',
+      data: {
+        labels: ['SPARK', 'SINAG', 'Overall'],
+        datasets: [{
+          label: 'Approval Rate (%)',
+          data: [64, 57, 61],
+          backgroundColor: ['rgba(245,158,11,0.8)', 'rgba(124,58,237,0.8)', 'rgba(22,163,74,0.8)'],
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: { label: ctx => ctx.parsed.y + '%' }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true, max: 100,
+            grid: { color: '#f3f4f6' },
+            ticks: { color: '#6b7280', callback: v => v + '%' }
+          },
+          x: { grid: { display: false }, ticks: { color: '#374151' } }
+        }
+      }
+    });
+
+    // 5. Doughnut — status distribution
+    new Chart(document.getElementById('funnelChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Approved', 'Rejected', 'For Review', 'Submitted', 'Draft'],
+        datasets: [{
+          data: [94, 32, 13, 24, 24],
+          backgroundColor: [
+            'rgba(22,163,74,0.85)',
+            'rgba(220,38,38,0.8)',
+            'rgba(245,158,11,0.8)',
+            'rgba(37,99,235,0.75)',
+            'rgba(156,163,175,0.7)'
+          ],
+          borderWidth: 2,
+          borderColor: '#fff',
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 12 }, color: '#374151', padding: 14 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                const pct = Math.round(ctx.parsed / total * 100);
+                return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // 6. Cumulative line chart
+    const sparkCumulative = [2, 7, 18, 33, 39, 52, 65, 83, 95, 102];
+    const sinagCumulative = [2, 4, 13, 24, 27, 35, 45, 57, 67, 72];
+    new Chart(document.getElementById('cumulativeChart'), {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: 'SPARK',
+            data: sparkCumulative,
+            borderColor: YELLOW,
+            backgroundColor: LIGHT_YELLOW,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: YELLOW,
+          },
+          {
+            label: 'SINAG',
+            data: sinagCumulative,
+            borderColor: PURPLE,
+            backgroundColor: LIGHT_PURPLE,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: PURPLE,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280' } },
+          x: { grid: { display: false }, ticks: { color: '#6b7280' } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

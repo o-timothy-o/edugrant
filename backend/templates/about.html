@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Us – EduGrant{% endblock %}
+
+{% block content %}
+<div class="about-page">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <h1 class="admin-dashboard-title">About EduGrant</h1>
+      <p class="admin-dashboard-sub">Community Affairs and Youth Development Office – Carmona, Cavite</p>
+    </div>
+  </div>
+
+  <!-- About CAYDO -->
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h2>Who We Are</h2>
+    </div>
+    <div class="about-section-body">
+      <p>
+        The <strong>Community Affairs and Youth Development Office (CAYDO)</strong> is a local government office under the Municipality of Carmona, Cavite. CAYDO is responsible for administering youth development programs, community welfare initiatives, and scholarship grants for qualified Carmona residents.
+      </p>
+      <p>
+        EduGrant is CAYDO's online scholarship management system, designed to streamline the application process for the SPARK and SINAG programs. It allows residents to submit and track their applications entirely online, while enabling CAYDO staff to manage, review, and process submissions efficiently.
+      </p>
+      <div class="about-contact-strip">
+        <div class="about-contact-item">
+          <span class="about-contact-label">Office</span>
+          <span>Carmona Municipal Hall, Carmona, Cavite</span>
+        </div>
+        <div class="about-contact-item">
+          <span class="about-contact-label">Facebook</span>
+          <a href="https://www.facebook.com/CAYDOCarmona" target="_blank" rel="noopener">facebook.com/CAYDOCarmona</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Program Cards -->
+  <div class="about-programs-grid">
+
+    <!-- SPARK -->
+    <div class="admin-card about-program-card">
+      <div class="about-program-header spark-header">
+        <span class="program-label">SPARK</span>
+        <h2>Specialized Program &amp; Advancing Review Knowledge</h2>
+      </div>
+      <div class="about-section-body">
+        <p class="about-program-tagline">
+          A one-time financial assistance grant for Carmona residents preparing for professional licensure, board, or bar examinations.
+        </p>
+
+        <h4>Who Can Apply?</h4>
+        <ul>
+          <li>Must be a resident of Carmona, Cavite</li>
+          <li>Must have completed a degree program</li>
+          <li>Must be preparing for a PRC board, licensure, or bar examination</li>
+          <li>One-time assistance only — cannot be availed again after approval</li>
+        </ul>
+
+        <h4>Document Requirements</h4>
+        <ul>
+          <li>Filled-out application form</li>
+          <li>Copy of Certificate of Graduation</li>
+          <li>Photocopy of Transcript of Records</li>
+          <li>Photocopy of valid government-issued ID (front and back)</li>
+          <li>Original Barangay Clearance</li>
+          <li>Original Barangay Indigency</li>
+        </ul>
+
+        <p class="about-note">
+          All physical copies of requirements must be submitted on-site at the CAYDO office after online filing. Submitting an application does not guarantee approval.
+        </p>
+      </div>
+    </div>
+
+    <!-- SINAG -->
+    <div class="admin-card about-program-card">
+      <div class="about-program-header sinag-header">
+        <span class="program-label">SINAG</span>
+        <h2>Scholarship, Incentives &amp; Networking in Advancing Graduate Studies</h2>
+      </div>
+      <div class="about-section-body">
+        <p class="about-program-tagline">
+          An ongoing scholarship program for Carmona residents pursuing Master's, Doctorate, Law, Medicine, or other advanced degree programs.
+        </p>
+
+        <h4>Who Can Apply?</h4>
+        <ul>
+          <li>Must be a resident of Carmona, Cavite</li>
+          <li>Must be enrolled in a graduate or advanced degree program</li>
+          <li>Must meet academic performance requirements set by CAYDO</li>
+          <li>Assistance is not renewable for students repeating a program year</li>
+        </ul>
+
+        <h4>Document Requirements</h4>
+        <ul>
+          <li>Filled-out application form</li>
+          <li>Copy of Certificate of Graduation (undergraduate)</li>
+          <li>Photocopy of Transcript of Records</li>
+          <li>Photocopy of valid government-issued ID (front and back)</li>
+          <li>Original Barangay Clearance</li>
+          <li>Original Barangay Indigency</li>
+        </ul>
+
+        <p class="about-note">
+          Applications are reviewed per batch. You may re-apply after a previous application has been resolved. Submitting an application does not guarantee approval.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-band" style="border-radius: 12px; margin-top: 8px;">
+    <div class="cta-content">
+      <h2>Ready to Apply?</h2>
+      <p>Create an account to start your SPARK or SINAG application online.</p>
+      <div class="cta-actions">
+        {% if user.is_authenticated %}
+          <a href="{% url 'programs:program_list_applicant' %}" class="btn btn-primary">View Programs</a>
+        {% else %}
+          <a href="{% url 'accounts:register' %}" class="btn btn-primary">Get Started</a>
+        {% endif %}
+        <a href="https://www.facebook.com/CAYDOCarmona" target="_blank" rel="noopener" class="btn btn-outline-light">Contact CAYDO</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

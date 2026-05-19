@@ -5,7 +5,7 @@ from django.urls import path, include
 
 from accounts.views import StaffLoginView
 from .views import (
-    home, admin_dashboard_view, users_list_view, applicants_list_view,
+    about_view, home, admin_dashboard_view, users_list_view, applicants_list_view,
     reports_view, program_list_view, add_program_view, edit_program_view,
     delete_program_view, archive_application_view, restore_application_view,
     archive_program_view, restore_program_view, archived_list_view,
@@ -14,6 +14,7 @@ from .views import (
 
 urlpatterns = [
     path("", home, name="home"),
+    path("about/", about_view, name="about"),
     path("dashboard/", admin_dashboard_view, name="admin_dashboard"),
     path("applicants/", users_list_view, name="users_list"),
     path("applications/", applicants_list_view, name="applicants_list"),

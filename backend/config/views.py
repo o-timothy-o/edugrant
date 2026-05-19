@@ -12,6 +12,10 @@ from programs.forms import ProgramForm, DocumentRequirementFormSet
 User = get_user_model()
 
 
+def about_view(request):
+    return render(request, 'about.html')
+
+
 def home(request):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_dashboard')

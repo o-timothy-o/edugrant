@@ -74,32 +74,53 @@
     <script>
     (function () {
       var MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+      var ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+      var ALLOWED_EXTS  = ['.pdf', '.jpg', '.jpeg', '.png'];
+      var ERR_STYLE = 'color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;padding:6px 10px;margin:6px 0 0 0;font-size:0.85rem;display:block;';
 
       function getOrCreateError(input) {
-        var id = 'file-size-err-' + (input.id || input.name);
+        var id = 'file-err-' + (input.id || input.name);
         var el = document.getElementById(id);
         if (!el) {
           el = document.createElement('p');
           el.id = id;
-          el.style.cssText = 'color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:6px;padding:6px 10px;margin:6px 0 0 0;font-size:0.85rem;';
           input.parentNode.insertBefore(el, input.nextSibling);
         }
         return el;
       }
 
+      function showError(errEl, msg) {
+        errEl.style.cssText = ERR_STYLE;
+        errEl.textContent = msg;
+      }
+
+      function clearError(errEl) {
+        errEl.style.cssText = 'display:none;';
+        errEl.textContent = '';
+      }
+
       function checkFile(input) {
         var errEl = getOrCreateError(input);
         if (!input.files || input.files.length === 0) {
-          errEl.textContent = '';
+          clearError(errEl);
           return true;
         }
         var file = input.files[0];
-        if (file.size > MAX_BYTES) {
-          errEl.textContent = '\u26a0 "' + file.name + '" is too large (' + (file.size / 1024 / 1024).toFixed(1) + ' MB). Maximum is 2 MB. Please scan as PDF or compress the image before uploading.';
+        var ext = file.name.lastIndexOf('.') !== -1
+          ? file.name.slice(file.name.lastIndexOf('.')).toLowerCase()
+          : '';
+        var typeOk = ALLOWED_TYPES.indexOf(file.type) !== -1 || ALLOWED_EXTS.indexOf(ext) !== -1;
+        if (!typeOk) {
+          showError(errEl, '\u26a0 "' + file.name + '" is not allowed. Only PDF, JPG, and PNG files are accepted.');
           input.value = '';
           return false;
         }
-        errEl.textContent = '';
+        if (file.size > MAX_BYTES) {
+          showError(errEl, '\u26a0 "' + file.name + '" is too large (' + (file.size / 1024 / 1024).toFixed(1) + ' MB). Maximum is 2 MB. Please scan as PDF or compress the image before uploading.');
+          input.value = '';
+          return false;
+        }
+        clearError(errEl);
         return true;
       }
 

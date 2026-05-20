@@ -1,6 +1,10 @@
+import os
 from django import forms
 from django.forms import inlineformset_factory
 from .models import Application, ApplicationDocument, DocumentRequirement, Program
+
+ALLOWED_EXTENSIONS = {'.pdf', '.jpg', '.jpeg', '.png'}
+ALLOWED_CONTENT_TYPES = {'application/pdf', 'image/jpeg', 'image/png'}
 
 class SparkApplicationForm(forms.ModelForm):
     class Meta:
@@ -16,10 +20,22 @@ class ApplicationDocumentForm(forms.ModelForm):
     class Meta:
         model = ApplicationDocument
         fields = ['file']
+        widgets = {
+            'file': forms.FileInput(attrs={'accept': 'application/pdf,image/jpeg,image/png'}),
+        }
 
     def __init__(self, *args, file_required=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['file'].required = file_required
+
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if file and hasattr(file, 'name'):
+            ext = os.path.splitext(file.name)[1].lower()
+            content_type = getattr(file, 'content_type', '')
+            if ext not in ALLOWED_EXTENSIONS and content_type not in ALLOWED_CONTENT_TYPES:
+                raise forms.ValidationError('Only PDF, JPG, and PNG files are allowed.')
+        return file
 
 class FamilyCompositionForm(forms.Form):
     name = forms.CharField(max_length=100)

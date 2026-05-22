@@ -39,7 +39,6 @@ def _save_step1_data(request, application):
     profile.residency_years = request.POST.get('residency', '').strip()
     profile.gender = request.POST.get('gender', '').strip()
     profile.civil_status = request.POST.get('civil_status', '').strip()
-    profile.citizenship = request.POST.get('citizenship', '').strip()
     profile.contact_number = request.POST.get('contact_number', '').strip()
     profile.currently_working = request.POST.get('working', '').strip()
     profile.religion = request.POST.get('religion', '').strip()

@@ -11,6 +11,7 @@ from .views import (
     archive_program_view, restore_program_view, archived_list_view,
     export_applications_csv, export_programs_csv, export_applicants_csv,
     view_applications_report, view_programs_report, view_applicants_report,
+    program_rules_view, edit_rule_view, delete_rule_view,
 )
 
 urlpatterns = [
@@ -32,6 +33,9 @@ urlpatterns = [
     path("manage/programs/add/", add_program_view, name="add_program"),
     path("manage/programs/<int:program_id>/edit/", edit_program_view, name="edit_program"),
     path("manage/programs/<int:program_id>/delete/", delete_program_view, name="delete_program"),
+    path("manage/programs/<int:program_id>/rules/", program_rules_view, name="program_rules"),
+    path("manage/programs/<int:program_id>/rules/<int:rule_id>/edit/", edit_rule_view, name="edit_rule"),
+    path("manage/programs/<int:program_id>/rules/<int:rule_id>/delete/", delete_rule_view, name="delete_rule"),
     path("manage/programs/<int:program_id>/archive/", archive_program_view, name="archive_program"),
     path("manage/programs/<int:program_id>/restore/", restore_program_view, name="restore_program"),
     path("manage/archived/", archived_list_view, name="archived_list"),

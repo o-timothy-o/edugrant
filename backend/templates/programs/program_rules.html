@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Rules — {{ program.name }}{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub">
+        <a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> ›
+        <a href="{% url 'program_list' %}" class="review-breadcrumb">Programs</a> ›
+        {{ program.name }} › Rules
+      </p>
+      <h1 class="admin-dashboard-title">Screening Rules — {{ program.name }}</h1>
+    </div>
+    <a href="{% url 'program_list' %}" class="btn btn-outline">← Back to Programs</a>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Left: existing rules -->
+    <div class="col-lg-7">
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <div style="padding:20px 24px 12px;border-bottom:1px solid #f3f4f6;">
+          <h2 style="font-size:16px;font-weight:600;margin:0;">Current Rules</h2>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Field</th>
+              <th>Condition</th>
+              <th>Value</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rule in rules %}
+            <tr {% if editing_rule and editing_rule.id == rule.id %}style="background:#faf5ff;"{% endif %}>
+              <td>
+                <p class="admin-applicant-name" style="margin:0;">{{ rule.name }}</p>
+                <p class="admin-date" style="margin:0;">{{ rule.get_rule_type_display }}</p>
+              </td>
+              <td class="admin-date">{{ rule.get_rule_field_display|default:"—" }}</td>
+              <td class="admin-date">{{ rule.get_condition_display|default:"—" }}</td>
+              <td class="admin-date">{{ rule.value|default:"—" }}</td>
+              <td class="prog-actions-cell">
+                <a href="{% url 'edit_rule' program.id rule.id %}" class="btn btn-outline btn-sm">Edit</a>
+                <form method="post" action="{% url 'delete_rule' program.id rule.id %}" style="display:inline;"
+                  onsubmit="return confirm('Delete rule \'{{ rule.name }}\'?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="admin-empty">No rules yet. Add one using the form.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: add / edit form -->
+    <div class="col-lg-5">
+      <div class="admin-card">
+        <h2 style="font-size:16px;font-weight:600;margin:0 0 20px;">
+          {% if editing_rule %}Edit Rule{% else %}Add New Rule{% endif %}
+        </h2>
+
+        <form method="post"
+          action="{% if editing_rule %}{% url 'edit_rule' program.id editing_rule.id %}{% else %}{% url 'program_rules' program.id %}{% endif %}">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Rule Name</label>
+            <input type="text" name="name" class="form-control"
+              placeholder="e.g. Monthly Income Must Not Exceed ₱15,000"
+              value="{{ editing_rule.name|default:'' }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Rule Type</label>
+            <select name="rule_type" class="form-select">
+              {% for value, label in rule_type_choices %}
+              <option value="{{ value }}"
+                {% if editing_rule and editing_rule.rule_type == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Field to Check</label>
+            <select name="rule_field" id="rule_field" class="form-select" onchange="updateHint()">
+              <option value="">— Select a field —</option>
+              {% for value, label in rule_field_choices %}
+              <option value="{{ value }}"
+                {% if editing_rule and editing_rule.rule_field == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Condition</label>
+            <select name="condition" id="condition" class="form-select" onchange="updateHint()">
+              <option value="">— Select a condition —</option>
+              {% for value, label in condition_choices %}
+              <option value="{{ value }}"
+                {% if editing_rule and editing_rule.condition == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Value</label>
+            <input type="text" name="value" id="rule_value" class="form-control"
+              placeholder="Enter the comparison value"
+              value="{{ editing_rule.value|default:'' }}">
+            <div id="value-hint" style="font-size:12px;color:#6b7280;margin-top:4px;"></div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Display Order</label>
+            <input type="number" name="display_order" class="form-control" min="0"
+              value="{{ editing_rule.display_order|default:'0' }}" style="width:100px;">
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <button type="submit" class="btn btn-primary">
+              {% if editing_rule %}Save Changes{% else %}Add Rule{% endif %}
+            </button>
+            {% if editing_rule %}
+            <a href="{% url 'program_rules' program.id %}" class="btn btn-outline">Cancel</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var HINTS = {
+    monthly_income:   { lte: '₱ amount (e.g. 15000)', gte: '₱ amount (e.g. 5000)' },
+    residency_years:  { gte: 'Number of years (e.g. 1)', lte: 'Number of years (e.g. 5)' },
+    graduation_date:  { date_after: 'YYYY-MM-DD (e.g. 2020-01-01)', date_before: 'YYYY-MM-DD (e.g. 2026-12-31)' },
+  };
+  var DEFAULT_HINTS = {
+    lte:         'Maximum number (e.g. 15000)',
+    gte:         'Minimum number (e.g. 1)',
+    equals:      'Exact value (e.g. Filipino)',
+    not_equals:  'Value to exclude (e.g. Yes)',
+    in_list:     'Comma-separated values (e.g. Single, Widow)',
+    date_after:  'YYYY-MM-DD (e.g. 2020-01-01)',
+    date_before: 'YYYY-MM-DD (e.g. 2026-12-31)',
+  };
+  function updateHint() {
+    var field = document.getElementById('rule_field').value;
+    var cond  = document.getElementById('condition').value;
+    var hint  = '';
+    if (field && cond) {
+      hint = (HINTS[field] && HINTS[field][cond]) || DEFAULT_HINTS[cond] || '';
+    }
+    document.getElementById('value-hint').textContent = hint;
+  }
+  updateHint();
+</script>
+{% endblock %}

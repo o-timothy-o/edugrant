@@ -46,6 +46,7 @@
           <td class="admin-date">{{ program.application_frequency|default:"—" }}</td>
           <td class="admin-date">{{ program.document_requirements.count }} document{{ program.document_requirements.count|pluralize }}</td>
           <td class="prog-actions-cell">
+            <a href="{% url 'program_rules' program.id %}" class="btn btn-outline btn-sm">Rules</a>
             <a href="{% url 'edit_program' program.id %}" class="btn btn-outline btn-sm">Edit</a>
             <form method="post" action="{% url 'archive_program' program.id %}" style="display:inline;">
               {% csrf_token %}

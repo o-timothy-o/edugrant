@@ -7,7 +7,7 @@ from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth
 from django.http import HttpResponse
 from django.utils import timezone
-from programs.models import Application, Program, ScreeningResult
+from programs.models import Application, Program, ProgramRule, ScreeningResult
 from programs.forms import ProgramForm, DocumentRequirementFormSet
 
 User = get_user_model()
@@ -195,6 +195,73 @@ def edit_program_view(request, program_id):
         formset = DocumentRequirementFormSet(instance=program)
     context = {'form': form, 'formset': formset, 'program': program}
     return render(request, 'programs/edit_program.html', context)
+
+
+def _rule_choices():
+    return {
+        'rule_type_choices': ProgramRule.RuleType.choices,
+        'rule_field_choices': ProgramRule.RuleField.choices,
+        'condition_choices': ProgramRule.Condition.choices,
+    }
+
+
+@staff_member_required(login_url="staff_login")
+def program_rules_view(request, program_id):
+    program = get_object_or_404(Program, id=program_id)
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        rule_type = request.POST.get('rule_type', '')
+        rule_field = request.POST.get('rule_field', '')
+        condition = request.POST.get('condition', '')
+        value = request.POST.get('value', '').strip()
+        display_order = request.POST.get('display_order', 0) or 0
+        if name and rule_type:
+            ProgramRule.objects.create(
+                program=program, name=name, rule_type=rule_type,
+                rule_field=rule_field, condition=condition,
+                value=value, display_order=display_order,
+            )
+            messages.success(request, f'Rule "{name}" added.')
+        return redirect('program_rules', program_id=program_id)
+    context = {
+        'program': program,
+        'rules': program.rules.all(),
+        **_rule_choices(),
+    }
+    return render(request, 'programs/program_rules.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def edit_rule_view(request, program_id, rule_id):
+    program = get_object_or_404(Program, id=program_id)
+    rule = get_object_or_404(ProgramRule, id=rule_id, program=program)
+    if request.method == 'POST':
+        rule.name = request.POST.get('name', '').strip()
+        rule.rule_type = request.POST.get('rule_type', '')
+        rule.rule_field = request.POST.get('rule_field', '')
+        rule.condition = request.POST.get('condition', '')
+        rule.value = request.POST.get('value', '').strip()
+        rule.display_order = request.POST.get('display_order', 0) or 0
+        rule.save()
+        messages.success(request, f'Rule "{rule.name}" updated.')
+        return redirect('program_rules', program_id=program_id)
+    context = {
+        'program': program,
+        'rules': program.rules.all(),
+        'editing_rule': rule,
+        **_rule_choices(),
+    }
+    return render(request, 'programs/program_rules.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def delete_rule_view(request, program_id, rule_id):
+    rule = get_object_or_404(ProgramRule, id=rule_id, program__id=program_id)
+    if request.method == 'POST':
+        name = rule.name
+        rule.delete()
+        messages.success(request, f'Rule "{name}" deleted.')
+    return redirect('program_rules', program_id=program_id)
 
 
 @staff_member_required(login_url="staff_login")

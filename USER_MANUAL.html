@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduGrant User Manual</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13pt;
+      line-height: 1.7;
+      color: #1e1e2e;
+      background: #f8f8fc;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 20px;
+      background: #fff;
+      padding: 20mm 22mm 18mm;
+      box-shadow: 0 2px 16px rgba(0,0,0,.10);
+    }
+
+    /* ── Cover page ── */
+    .cover {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 257mm;
+      text-align: center;
+      background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 60%, #7c3aed 100%);
+      color: #fff;
+      border-radius: 4px;
+      padding: 30mm 20mm;
+    }
+    .cover-logo {
+      width: 90px;
+      height: 90px;
+      background: rgba(255,255,255,.18);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      color: #fff;
+    }
+    .cover h1 { font-size: 2.6rem; font-weight: 900; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .cover .subtitle { font-size: 1.05rem; opacity: .85; margin-bottom: 32px; }
+    .cover-divider { width: 60px; height: 3px; background: rgba(255,255,255,.5); margin: 0 auto 28px; border-radius: 2px; }
+    .cover-meta { font-size: .9rem; opacity: .75; line-height: 2; }
+    .cover-meta strong { opacity: 1; }
+
+    /* ── TOC ── */
+    .toc-title { font-size: 1.5rem; font-weight: 800; color: #4c1d95; margin-bottom: 18px; padding-bottom: 8px; border-bottom: 3px solid #ede9fe; }
+    .toc-list { list-style: none; }
+    .toc-list li { margin: 6px 0; }
+    .toc-list a { color: #4c1d95; text-decoration: none; font-size: .97rem; display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; border-bottom: 1px dotted #ddd8f5; }
+    .toc-list a:hover { color: #6d28d9; }
+    .toc-list .toc-sub { padding-left: 20px; }
+    .toc-list .toc-sub a { color: #5b21b6; font-size: .9rem; }
+    .toc-page { font-size: .85rem; color: #888; }
+
+    /* ── Chapter headings ── */
+    .chapter-number { font-size: .8rem; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+    h2.chapter-title {
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: #3b0764;
+      margin-bottom: 6px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #ede9fe;
+    }
+    .chapter-intro { color: #555; margin-bottom: 22px; font-size: .98rem; }
+
+    h3 { font-size: 1.1rem; font-weight: 700; color: #4c1d95; margin: 22px 0 8px; }
+    h4 { font-size: .98rem; font-weight: 700; color: #5b21b6; margin: 16px 0 6px; }
+
+    /* ── Body content ── */
+    p { margin-bottom: 10px; }
+    ul, ol { margin: 8px 0 14px 22px; }
+    li { margin-bottom: 5px; }
+
+    /* ── Steps ── */
+    .steps { counter-reset: step; list-style: none; margin: 10px 0 18px; padding: 0; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .steps li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: #6d28d9;
+      color: #fff;
+      border-radius: 50%;
+      font-size: .8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    /* ── Note / tip / warning boxes ── */
+    .note, .tip, .warning {
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+    .note   { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e3a5f; }
+    .tip    { background: #f0fdf4; border-left: 4px solid #22c55e; color: #14532d; }
+    .warning{ background: #fff7ed; border-left: 4px solid #f97316; color: #7c2d12; }
+    .note strong, .tip strong, .warning strong { display: block; margin-bottom: 4px; }
+
+    /* ── Screenshots ── */
+    .screenshot-wrap {
+      margin: 16px 0 20px;
+      border: 1px solid #e2d9f3;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(76,29,149,.08);
+    }
+    .screenshot-wrap img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .screenshot-caption {
+      background: #f5f3ff;
+      border-top: 1px solid #e2d9f3;
+      padding: 7px 14px;
+      font-size: .82rem;
+      color: #5b21b6;
+      font-style: italic;
+    }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: .9rem; }
+    th { background: #4c1d95; color: #fff; padding: 9px 12px; text-align: left; font-size: .85rem; }
+    td { padding: 8px 12px; border-bottom: 1px solid #ede9fe; vertical-align: top; }
+    tr:nth-child(even) td { background: #faf9ff; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+    .badge-draft    { background:#f1f5f9; color:#475569; }
+    .badge-submitted{ background:#dbeafe; color:#1e40af; }
+    .badge-review   { background:#fef9c3; color:#713f12; }
+    .badge-approved { background:#dcfce7; color:#14532d; }
+    .badge-rejected { background:#fee2e2; color:#991b1b; }
+    .badge-awaiting { background:#e0e7ff; color:#3730a3; }
+
+    /* ── Dividers ── */
+    hr { border: none; border-top: 2px solid #ede9fe; margin: 28px 0; }
+
+    /* ── FAQ ── */
+    .faq-item { margin-bottom: 20px; }
+    .faq-q { font-weight: 700; color: #3b0764; margin-bottom: 6px; }
+    .faq-a { color: #444; }
+
+    /* ── Glossary ── */
+    .glossary-term { font-weight: 700; color: #4c1d95; }
+
+    /* ── Footer ── */
+    .footer { text-align: center; font-size: .78rem; color: #aaa; padding-top: 14px; border-top: 1px solid #eee; margin-top: 30px; }
+
+    /* ── Print ── */
+    @page {
+      size: A4 portrait;
+      margin: 14mm 16mm;
+    }
+    @media print {
+      body { background: #fff; font-size: 11pt; margin: 0; padding: 0; }
+      .page {
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+        width: 100% !important;
+        min-height: 0 !important;
+        page-break-after: always;
+        break-after: page;
+      }
+      .page:last-child { page-break-after: avoid; break-after: avoid; }
+      .cover { min-height: 0; padding: 30mm 15mm; }
+      h2.chapter-title { page-break-before: auto; break-before: auto; }
+      .screenshot-wrap { page-break-inside: avoid; break-inside: avoid; }
+      .steps li { page-break-inside: avoid; break-inside: avoid; }
+      .note, .tip, .warning { page-break-inside: avoid; break-inside: avoid; }
+      table { page-break-inside: avoid; break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="page">
+  <div class="cover">
+    <div class="cover-logo">E</div>
+    <h1>EduGrant</h1>
+    <p class="subtitle">Scholarship Management System &mdash; User Manual</p>
+    <div class="cover-divider"></div>
+    <p class="cover-meta">
+      <strong>Community Affairs and Youth Development Office</strong><br>
+      Municipal Government of Carmona, Cavite<br><br>
+      System URL: <strong>https://edugrant-self.vercel.app/</strong><br>
+      Document Version: 2.0<br>
+      Date: May 2026
+    </p>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="page">
+  <div class="toc-title">Table of Contents</div>
+  <ul class="toc-list">
+    <li><a href="#ch1">Chapter 1 &nbsp;&middot;&nbsp; Introduction <span class="toc-page">3</span></a></li>
+    <li class="toc-sub"><a href="#ch1-overview">1.1 System Overview <span class="toc-page">3</span></a></li>
+    <li class="toc-sub"><a href="#ch1-programs">1.2 Scholarship Programs <span class="toc-page">3</span></a></li>
+    <li class="toc-sub"><a href="#ch1-access">1.3 Accessing the System <span class="toc-page">3</span></a></li>
+
+    <li><a href="#ch2">Chapter 2 &nbsp;&middot;&nbsp; Account Setup <span class="toc-page">4</span></a></li>
+    <li class="toc-sub"><a href="#ch2-register">2.1 Creating an Account <span class="toc-page">4</span></a></li>
+    <li class="toc-sub"><a href="#ch2-otp">2.2 Email Verification (OTP) <span class="toc-page">4</span></a></li>
+    <li class="toc-sub"><a href="#ch2-login">2.3 Logging In <span class="toc-page">5</span></a></li>
+
+    <li><a href="#ch3">Chapter 3 &nbsp;&middot;&nbsp; Applicant Guide <span class="toc-page">5</span></a></li>
+    <li class="toc-sub"><a href="#ch3-home">3.1 Applicant Home Page <span class="toc-page">5</span></a></li>
+    <li class="toc-sub"><a href="#ch3-programs">3.2 Viewing Available Programs <span class="toc-page">6</span></a></li>
+    <li class="toc-sub"><a href="#ch3-apply-s1">3.3 Submitting an Application &mdash; Step 1 <span class="toc-page">6</span></a></li>
+    <li class="toc-sub"><a href="#ch3-apply-s2">3.4 Submitting an Application &mdash; Step 2 <span class="toc-page">7</span></a></li>
+    <li class="toc-sub"><a href="#ch3-myapps">3.5 My Applications <span class="toc-page">8</span></a></li>
+    <li class="toc-sub"><a href="#ch3-detail">3.6 Application Detail &amp; Status Tracking <span class="toc-page">8</span></a></li>
+
+    <li><a href="#ch4">Chapter 4 &nbsp;&middot;&nbsp; Profile Management <span class="toc-page">9</span></a></li>
+    <li class="toc-sub"><a href="#ch4-profile">4.1 Viewing Your Profile <span class="toc-page">9</span></a></li>
+    <li class="toc-sub"><a href="#ch4-email">4.2 Changing Your Email Address <span class="toc-page">9</span></a></li>
+    <li class="toc-sub"><a href="#ch4-password">4.3 Changing Your Password <span class="toc-page">10</span></a></li>
+
+    <li><a href="#ch5">Chapter 5 &nbsp;&middot;&nbsp; Staff Guide &mdash; Applications &amp; Applicants <span class="toc-page">10</span></a></li>
+    <li class="toc-sub"><a href="#ch5-login">5.1 Staff Login <span class="toc-page">10</span></a></li>
+    <li class="toc-sub"><a href="#ch5-dashboard">5.2 Admin Dashboard <span class="toc-page">11</span></a></li>
+    <li class="toc-sub"><a href="#ch5-applicants">5.3 Applicants List <span class="toc-page">11</span></a></li>
+    <li class="toc-sub"><a href="#ch5-applist">5.4 Applications List <span class="toc-page">12</span></a></li>
+    <li class="toc-sub"><a href="#ch5-review">5.5 Reviewing an Application <span class="toc-page">12</span></a></li>
+
+    <li><a href="#ch6">Chapter 6 &nbsp;&middot;&nbsp; Staff Guide &mdash; Programs &amp; System <span class="toc-page">14</span></a></li>
+    <li class="toc-sub"><a href="#ch6-programs">6.1 Managing Programs <span class="toc-page">14</span></a></li>
+    <li class="toc-sub"><a href="#ch6-addprog">6.2 Adding a New Program <span class="toc-page">14</span></a></li>
+    <li class="toc-sub"><a href="#ch6-reports">6.3 Reports &amp; Analytics <span class="toc-page">15</span></a></li>
+    <li class="toc-sub"><a href="#ch6-report-view">6.4 Viewing and Printing Reports <span class="toc-page">16</span></a></li>
+    <li class="toc-sub"><a href="#ch6-archive">6.5 Archived Items <span class="toc-page">16</span></a></li>
+
+    <li><a href="#faq">Frequently Asked Questions <span class="toc-page">17</span></a></li>
+    <li><a href="#glossary">Glossary <span class="toc-page">18</span></a></li>
+  </ul>
+</div>
+
+<!-- CHAPTER 1 — INTRODUCTION -->
+<div class="page" id="ch1">
+  <div class="chapter-number">Chapter 1</div>
+  <h2 class="chapter-title">Introduction</h2>
+  <p class="chapter-intro">This chapter explains what EduGrant is, the programs it manages, and how to open the system in a web browser.</p>
+
+  <h3 id="ch1-overview">1.1 System Overview</h3>
+  <p>EduGrant is the online scholarship management platform of the <strong>Community Affairs and Youth Development Office (CAYDO)</strong> of Carmona, Cavite. It allows residents to apply for scholarship or financial-assistance grants from any device with an internet connection and lets CAYDO staff review and process those applications without paper forms.</p>
+  <p>Key capabilities include:</p>
+  <ul>
+    <li>Online application submission with document uploads</li>
+    <li>Automated eligibility screening</li>
+    <li>Real-time application status tracking with email notifications</li>
+    <li>Staff tools for reviewing documents and updating application status</li>
+    <li>Program management and analytics/reporting</li>
+  </ul>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/1.png" alt="EduGrant public homepage">
+    <div class="screenshot-caption">Figure 1 &middot; The EduGrant public homepage at https://edugrant-self.vercel.app/ &mdash; visitors can learn about available programs and begin the registration process.</div>
+  </div>
+
+  <h3 id="ch1-programs">1.2 Scholarship Programs</h3>
+  <table>
+    <thead>
+      <tr><th>Program</th><th>Full Name</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>SPARK</strong></td>
+        <td>Support for Professionals and Aspiring Residents with Knowledge</td>
+        <td>One-time financial assistance for Carmona residents preparing for a licensure, bar, or board examination.</td>
+      </tr>
+      <tr>
+        <td><strong>SINAG</strong></td>
+        <td>Scholarship Incentive for Nationals Achieving Greatness</td>
+        <td>Academic scholarship for Carmona residents currently enrolled in college or a technical-vocational program.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 id="ch1-access">1.3 Accessing the System</h3>
+  <p>Open any modern web browser (Google Chrome, Microsoft Edge, Mozilla Firefox, or Safari) and navigate to:</p>
+  <div class="note">
+    <strong>System URL</strong>
+    <a href="https://edugrant-self.vercel.app/" style="color:#1e40af;">https://edugrant-self.vercel.app/</a>
+  </div>
+  <p>No software installation is required. An internet connection and a valid email address are the only prerequisites for applicants.</p>
+</div>
+
+<!-- CHAPTER 2 — ACCOUNT SETUP -->
+<div class="page" id="ch2">
+  <div class="chapter-number">Chapter 2</div>
+  <h2 class="chapter-title">Account Setup</h2>
+  <p class="chapter-intro">Before submitting an application, every resident must create a personal account and verify their email address. This chapter walks through registration, OTP verification, and login.</p>
+
+  <h3 id="ch2-register">2.1 Creating an Account</h3>
+  <p>From the homepage, click the <strong>Register</strong> or <strong>Get Started</strong> button to open the account-creation form.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/2.png" alt="Registration form">
+    <div class="screenshot-caption">Figure 2 &middot; The registration form. Fill in your full name, a valid email address, and a password.</div>
+  </div>
+
+  <ol class="steps">
+    <li>Enter your <strong>First Name</strong> and <strong>Last Name</strong>.</li>
+    <li>Enter a valid <strong>Email Address</strong> &mdash; this will be used for login and notifications. Make sure you have access to this inbox.</li>
+    <li>Create a <strong>Password</strong> (minimum 8 characters) and re-enter it in the confirmation field.</li>
+    <li>Click <strong>Register</strong>. The system will send a one-time password (OTP) to your email.</li>
+  </ol>
+
+  <div class="tip">
+    <strong>Tip</strong>
+    Use an email address you check regularly. All status update notifications from CAYDO will be sent there.
+  </div>
+
+  <h3 id="ch2-otp">2.2 Email Verification (OTP)</h3>
+  <p>After registration, you are redirected to the OTP verification page. Check your email inbox for a message from EduGrant containing a 6-digit code.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/3.png" alt="OTP verification page">
+    <div class="screenshot-caption">Figure 3 &middot; The OTP verification page. Enter the 6-digit code sent to your registered email address.</div>
+  </div>
+
+  <ol class="steps">
+    <li>Open your email and locate the message with the subject <em>"EduGrant &mdash; Verify Your Account"</em>.</li>
+    <li>Copy the 6-digit OTP from the email.</li>
+    <li>Paste or type the code into the verification field on the screen.</li>
+    <li>Click <strong>Verify</strong>. Once confirmed, your account is activated.</li>
+  </ol>
+
+  <div class="warning">
+    <strong>Note</strong>
+    The OTP expires after a limited time. If it expires before you enter it, use the <strong>Resend Code</strong> link on the verification page to request a new one.
+  </div>
+
+  <h3 id="ch2-login">2.3 Logging In</h3>
+  <p>Once your account is verified, you can log in at any time.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/4.png" alt="Login page">
+    <div class="screenshot-caption">Figure 4 &middot; The login page. Enter your registered email address and password.</div>
+  </div>
+
+  <ol class="steps">
+    <li>Navigate to <a href="https://edugrant-self.vercel.app/" style="color:#4c1d95;">https://edugrant-self.vercel.app/</a> and click <strong>Login</strong>.</li>
+    <li>Enter your <strong>Email Address</strong> and <strong>Password</strong>.</li>
+    <li>Click <strong>Login</strong>. You will be taken to the applicant home page.</li>
+  </ol>
+</div>
+
+<!-- CHAPTER 3 — APPLICANT GUIDE -->
+<div class="page" id="ch3">
+  <div class="chapter-number">Chapter 3</div>
+  <h2 class="chapter-title">Applicant Guide</h2>
+  <p class="chapter-intro">This chapter covers everything an applicant needs to know &mdash; browsing programs, filling out the application form, uploading documents, and tracking the status of a submission.</p>
+
+  <h3 id="ch3-home">3.1 Applicant Home Page</h3>
+  <p>After logging in, you land on the applicant home page. Here you can see the available CAYDO scholarship programs and quickly navigate to apply or view your current applications.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/5.png" alt="Applicant home page">
+    <div class="screenshot-caption">Figure 5 &middot; The logged-in applicant home page, showing SPARK and SINAG program cards and navigation links in the header.</div>
+  </div>
+
+  <p>The top navigation bar includes links to:</p>
+  <ul>
+    <li><strong>Home</strong> &mdash; return to this page</li>
+    <li><strong>Programs</strong> &mdash; view all active scholarship programs</li>
+    <li><strong>My Applications</strong> &mdash; see the status of your submissions</li>
+    <li><strong>My Profile</strong> &mdash; manage your account information</li>
+  </ul>
+
+  <h3 id="ch3-programs">3.2 Viewing Available Programs</h3>
+  <p>Click <strong>Programs</strong> in the navigation bar to see all currently active programs offered by CAYDO.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/6.png" alt="Programs list (applicant view)">
+    <div class="screenshot-caption">Figure 6 &middot; The Programs list page shows all active scholarship programs. Each card includes a brief description and an Apply button.</div>
+  </div>
+
+  <p>Each program card shows:</p>
+  <ul>
+    <li>Program name and description</li>
+    <li>Current status (e.g., Active)</li>
+    <li>An <strong>Apply Now</strong> button (disabled if you already have a pending application for that program)</li>
+  </ul>
+
+  <h3 id="ch3-apply-s1">3.3 Submitting an Application &mdash; Step 1: Personal &amp; Educational Information</h3>
+  <p>Clicking <strong>Apply Now</strong> on any program opens the two-step application form. Step 1 collects your personal and educational information.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/7.1.png" alt="Application Step 1 — personal information (top)">
+    <div class="screenshot-caption">Figure 7a &middot; Application Step 1 &mdash; Personal Information section. Fill in your name, address, barangay, and contact details.</div>
+  </div>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/7.2.png" alt="Application Step 1 — educational information (bottom)">
+    <div class="screenshot-caption">Figure 7b &middot; Application Step 1 &mdash; Educational Information and Schools Attended sections.</div>
+  </div>
+
+  <h4>Personal Information Fields</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Description</th><th>Required</th></tr></thead>
+    <tbody>
+      <tr><td>First / Middle / Last Name</td><td>Your full legal name</td><td>Yes</td></tr>
+      <tr><td>Complete Carmona Address</td><td>Your street address within Carmona</td><td>Yes</td></tr>
+      <tr><td>Barangay</td><td>Select your barangay from the dropdown</td><td>Yes</td></tr>
+      <tr><td>Years of Residency</td><td>How long you have lived in Carmona</td><td>No</td></tr>
+      <tr><td>Gender</td><td>Select from the dropdown</td><td>No</td></tr>
+      <tr><td>Civil Status</td><td>Single, Married, Widowed, Separated, or Annulled</td><td>No</td></tr>
+      <tr><td>Contact Number</td><td>Your active mobile number</td><td>No</td></tr>
+      <tr><td>Currently Working?</td><td>Yes or No</td><td>No</td></tr>
+      <tr><td>Religion</td><td>Free-text field</td><td>No</td></tr>
+      <tr><td>Monthly Income</td><td>Select an income bracket</td><td>No</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Educational Information Fields</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Course</td><td>Degree or program you completed or are enrolled in</td></tr>
+      <tr><td>School</td><td>Name of your college or university</td></tr>
+      <tr><td>School Address</td><td>Campus address</td></tr>
+      <tr><td>Date of Graduation</td><td>Actual or expected graduation date</td></tr>
+      <tr><td>Exam to Take</td><td>Name of the licensure / board / bar exam (SPARK only)</td></tr>
+      <tr><td>Review Center Enrolled</td><td>1st take or Retake (SPARK only)</td></tr>
+      <tr><td>Review Center</td><td>Name of review center if applicable (SPARK only)</td></tr>
+      <tr><td>Examination Date</td><td>Scheduled exam date (SPARK only)</td></tr>
+      <tr><td>Schools Attended</td><td>Grid listing schools from elementary through college</td></tr>
+    </tbody>
+  </table>
+
+  <ol class="steps">
+    <li>Complete all required fields (marked with *) in the Personal Information section.</li>
+    <li>Fill in the Educational Information fields relevant to your program.</li>
+    <li>In the Schools Attended grid, list your schools from elementary to college, one per row.</li>
+    <li>Click <strong>Next</strong> to proceed to Step 2. Your data is automatically saved.</li>
+  </ol>
+
+  <div class="tip">
+    <strong>Tip</strong>
+    If you have previously submitted an application, your personal information may already be pre-filled. Review and update any outdated fields before clicking Next.
+  </div>
+
+  <h3 id="ch3-apply-s2">3.4 Submitting an Application &mdash; Step 2: Document Upload</h3>
+  <p>Step 2 requires you to upload supporting documents. The required documents depend on the program you selected. Common requirements include:</p>
+  <ul>
+    <li>Filled-out Application Form</li>
+    <li>Certificate of Graduation</li>
+    <li>Transcript of Records</li>
+    <li>Valid Government-Issued ID (front and back)</li>
+    <li>Original Barangay Clearance</li>
+    <li>Original Barangay Indigency</li>
+  </ul>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/8.png" alt="Application Step 2 — document upload">
+    <div class="screenshot-caption">Figure 8 &middot; Application Step 2 &mdash; Document Upload. Click "Choose File" next to each requirement and select the appropriate file from your device.</div>
+  </div>
+
+  <ol class="steps">
+    <li>For each document requirement listed, click <strong>Choose File</strong> and select the corresponding file from your device.</li>
+    <li>Accepted file types are <strong>PDF, JPG, and PNG</strong> only. Files larger than the allowed size limit will be rejected.</li>
+    <li>After uploading all required documents, click <strong>Submit Application</strong>.</li>
+    <li>A confirmation message appears on-screen once your application has been successfully submitted. You will also receive an email notification.</li>
+  </ol>
+
+  <div class="warning">
+    <strong>Important</strong>
+    Only PDF, JPG, and PNG files are accepted. Attempting to upload other file types (e.g., Word documents, ZIP files) will show an error. Scan or photograph your physical documents and save them in one of the accepted formats before uploading.
+  </div>
+
+  <h3 id="ch3-myapps">3.5 My Applications</h3>
+  <p>Click <strong>My Applications</strong> in the navigation bar to see all applications you have submitted or have in progress.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/9.png" alt="My Applications page">
+    <div class="screenshot-caption">Figure 9 &middot; The My Applications page lists all of your applications with their current status and a link to view each one in detail.</div>
+  </div>
+
+  <p>Each row in the table shows:</p>
+  <ul>
+    <li>Program name</li>
+    <li>Date the application was created</li>
+    <li>Current status (see status definitions in Section 3.6)</li>
+    <li>A <strong>View Details</strong> link to open the full application record</li>
+  </ul>
+
+  <h3 id="ch3-detail">3.6 Application Detail &amp; Status Tracking</h3>
+  <p>Clicking <strong>View Details</strong> on any application opens the Application Detail page, which shows a complete summary of your submission and a visual status timeline.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/10.1.png" alt="Application Detail — top half">
+    <div class="screenshot-caption">Figure 10a &middot; Application Detail page &mdash; top section with the status timeline and personal/educational information submitted.</div>
+  </div>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/10.2.png" alt="Application Detail — document checklist">
+    <div class="screenshot-caption">Figure 10b &middot; Application Detail page &mdash; document checklist showing the status of each uploaded file.</div>
+  </div>
+
+  <p>The <strong>Status Timeline</strong> at the top shows all stages your application has passed through. The document checklist shows each requirement and whether the uploaded file has been marked as <em>Submitted</em>, <em>Invalid</em>, or <em>Missing</em> by staff.</p>
+
+  <table>
+    <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-draft">Draft</span></td><td>Application has been started but not yet submitted.</td></tr>
+      <tr><td><span class="badge badge-submitted">Submitted</span></td><td>Application has been submitted and is waiting for staff review.</td></tr>
+      <tr><td><span class="badge badge-review">In Review</span></td><td>Staff is actively reviewing your documents and information.</td></tr>
+      <tr><td><span class="badge badge-awaiting">Awaiting Physical</span></td><td>Staff requires you to submit original physical documents at the CAYDO office.</td></tr>
+      <tr><td><span class="badge badge-approved">Approved</span></td><td>Your application has been approved.</td></tr>
+      <tr><td><span class="badge badge-rejected">Rejected</span></td><td>Your application was not approved. See staff notes for details.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>Email Notifications</strong>
+    You will receive an email whenever your application status changes. Keep an eye on your inbox, including the Spam or Junk folder.
+  </div>
+</div>
+
+<!-- CHAPTER 4 — PROFILE MANAGEMENT -->
+<div class="page" id="ch4">
+  <div class="chapter-number">Chapter 4</div>
+  <h2 class="chapter-title">Profile Management</h2>
+  <p class="chapter-intro">Applicants can update their email address and change their password from the My Profile page.</p>
+
+  <h3 id="ch4-profile">4.1 Viewing Your Profile</h3>
+  <p>Click <strong>My Profile</strong> in the top navigation bar to open your account settings page.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/11.png" alt="My Profile page">
+    <div class="screenshot-caption">Figure 11 &middot; The My Profile page. Your registered email address is displayed, with options to change your email or password.</div>
+  </div>
+
+  <p>The Profile page shows:</p>
+  <ul>
+    <li>Your current registered email address</li>
+    <li>A <strong>Change Email</strong> button</li>
+    <li>A <strong>Change Password</strong> button</li>
+  </ul>
+
+  <h3 id="ch4-email">4.2 Changing Your Email Address</h3>
+  <p>To change the email address linked to your account, click <strong>Change Email</strong> on your Profile page.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/12.png" alt="Change email address page">
+    <div class="screenshot-caption">Figure 12 &middot; The Change Email page. Enter your new email address and confirm it. A verification OTP will be sent to the new address.</div>
+  </div>
+
+  <ol class="steps">
+    <li>Click <strong>Change Email</strong> on the My Profile page.</li>
+    <li>Enter your new email address in the <strong>New Email</strong> field.</li>
+    <li>Re-enter the address in the <strong>Confirm New Email</strong> field.</li>
+    <li>Click <strong>Update Email</strong>. An OTP will be sent to the new address.</li>
+    <li>Enter the OTP on the verification page to confirm the change.</li>
+  </ol>
+
+  <div class="warning">
+    <strong>Important</strong>
+    After changing your email address, future login attempts and notifications will use the new address. Make sure the new email is active and accessible before confirming the change.
+  </div>
+
+  <h3 id="ch4-password">4.3 Changing Your Password</h3>
+  <ol class="steps">
+    <li>On the My Profile page, click <strong>Change Password</strong>.</li>
+    <li>Enter your <strong>Current Password</strong> to confirm your identity.</li>
+    <li>Enter a <strong>New Password</strong> (at least 8 characters) and re-enter it in the confirmation field.</li>
+    <li>Click <strong>Update Password</strong>. Your new password takes effect immediately.</li>
+  </ol>
+</div>
+
+<!-- CHAPTER 5 — STAFF GUIDE: APPLICATIONS & APPLICANTS -->
+<div class="page" id="ch5">
+  <div class="chapter-number">Chapter 5</div>
+  <h2 class="chapter-title">Staff Guide &mdash; Applications &amp; Applicants</h2>
+  <p class="chapter-intro">This chapter is for CAYDO staff members who review, approve, or reject scholarship applications. Staff accounts have elevated access to all applicant data and administrative tools.</p>
+
+  <h3 id="ch5-login">5.1 Staff Login</h3>
+  <p>The staff portal uses a separate login page to keep administrative access distinct from the applicant portal.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/13.png" alt="Staff portal login page">
+    <div class="screenshot-caption">Figure 13 &middot; The staff login page. Enter your assigned staff username and password to access the administrative portal.</div>
+  </div>
+
+  <ol class="steps">
+    <li>Open your browser and go to <a href="https://edugrant-self.vercel.app/staff/login" style="color:#4c1d95;">https://edugrant-self.vercel.app/staff/login</a>.</li>
+    <li>Enter your <strong>Username</strong> and <strong>Password</strong> as provided by your system administrator.</li>
+    <li>Click <strong>Login</strong>. You will be redirected to the Admin Dashboard.</li>
+  </ol>
+
+  <div class="note">
+    <strong>Note</strong>
+    Staff accounts are created by the system administrator. If you do not have login credentials, contact your office IT officer.
+  </div>
+
+  <h3 id="ch5-dashboard">5.2 Admin Dashboard</h3>
+  <p>The Admin Dashboard is the central hub for monitoring scholarship activity at a glance.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/14.png" alt="Admin Dashboard">
+    <div class="screenshot-caption">Figure 14 &middot; The Admin Dashboard. Summary stat cards appear at the top, followed by a table of recent applications and a sidebar with status and program breakdowns.</div>
+  </div>
+
+  <p>The dashboard shows:</p>
+  <ul>
+    <li><strong>Summary Cards</strong> &mdash; Total Applicants, Total Applications, Pending Applications, Approved Applications</li>
+    <li><strong>Recent Applications</strong> &mdash; latest submissions with applicant name, program, date, and status</li>
+    <li><strong>Status Breakdown</strong> &mdash; count of applications per status (sidebar)</li>
+    <li><strong>Program Breakdown</strong> &mdash; count of applications per program (sidebar)</li>
+  </ul>
+
+  <h3 id="ch5-applicants">5.3 Applicants List</h3>
+  <p>The Applicants page shows every registered applicant in the system along with their profile information.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/15.png" alt="Applicants list">
+    <div class="screenshot-caption">Figure 15 &middot; The Applicants list. Use the search bar at the top to filter by name or email.</div>
+  </div>
+
+  <p>The table columns include: Full Name, Email, Barangay, Date Registered, and Number of Applications. The search bar allows real-time filtering by name or email address.</p>
+
+  <h3 id="ch5-applist">5.4 Applications List</h3>
+  <p>The Applications page is the primary queue for tracking and managing all application submissions across all programs.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/16.png" alt="Applications list with status badges">
+    <div class="screenshot-caption">Figure 16 &middot; The Applications list. Filter by program and status, then click "Review" on any application to open the full review page.</div>
+  </div>
+
+  <p>Available filters at the top of the page:</p>
+  <ul>
+    <li><strong>Program</strong> &mdash; filter by SPARK, SINAG, or all programs</li>
+    <li><strong>Status</strong> &mdash; filter by Draft, Submitted, In Review, Awaiting Physical, Approved, or Rejected</li>
+  </ul>
+  <p>The <strong>Screening</strong> column shows whether the automated eligibility check passed or failed based on the rules configured for that program.</p>
+
+  <h3 id="ch5-review">5.5 Reviewing an Application</h3>
+  <p>Click <strong>Review</strong> on any application in the Applications list to open the full Application Review page. This is where staff verify documents, update document statuses, and make a final decision on the application.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/17.1.png" alt="Application Review — applicant info and document checklist (top)">
+    <div class="screenshot-caption">Figure 17a &middot; Application Review &mdash; top section showing the applicant's personal and educational information, status timeline, and document checklist.</div>
+  </div>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/17.2.png" alt="Application Review — document status controls and admin actions (bottom)">
+    <div class="screenshot-caption">Figure 17b &middot; Application Review &mdash; bottom section with document status dropdowns, View File links, the Admin Actions panel, and the Status Guide.</div>
+  </div>
+
+  <h4>Reviewing Documents</h4>
+  <p>Each document requirement has:</p>
+  <ul>
+    <li>A <strong>View File</strong> link to open the uploaded document in a new tab</li>
+    <li>A status dropdown to mark the document as <em>Submitted</em>, <em>Invalid</em>, or <em>Missing</em></li>
+    <li>An <strong>Issue Notes</strong> field to leave a comment (included in the notification email if marked Invalid)</li>
+  </ul>
+
+  <ol class="steps">
+    <li>Click <strong>View File</strong> next to a document to open and inspect it.</li>
+    <li>If the document is acceptable, leave the status as <strong>Submitted</strong>.</li>
+    <li>If the document is unreadable, incorrect, or expired, set the status to <strong>Invalid</strong> and enter an explanation in the Issue Notes field.</li>
+    <li>Click <strong>Update</strong> to save the document status. The applicant will receive an email if a document is marked Invalid.</li>
+  </ol>
+
+  <h4>Admin Actions</h4>
+  <p>The <strong>Admin Actions</strong> panel on the right side of the page contains buttons to update the overall application status:</p>
+  <table>
+    <thead><tr><th>Action Button</th><th>Sets Status To</th><th>When to Use</th></tr></thead>
+    <tbody>
+      <tr><td>Awaiting Physical</td><td>Awaiting Physical</td><td>Online documents are acceptable; applicant must now bring physical originals to the CAYDO office.</td></tr>
+      <tr><td>Fully Approve</td><td>Approved</td><td>All requirements met; application is granted.</td></tr>
+      <tr><td>In Review</td><td>In Review</td><td>Mark the application as actively being reviewed while staff conduct further checks.</td></tr>
+      <tr><td>Reject</td><td>Rejected</td><td>Application does not meet requirements or documents are unsatisfactory.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warning">
+    <strong>Important</strong>
+    Status changes trigger an automatic email notification to the applicant. Double-check your decision before clicking any action button, as status updates are logged and cannot be undone through the web interface.
+  </div>
+
+  <h4>Automated Eligibility Screening</h4>
+  <p>Immediately after an application is submitted (and again whenever a document status changes), the system's rule engine evaluates the application against the eligibility criteria defined for the program. The result is shown in the <strong>Screening Result</strong> section of the review page, indicating which rules passed and which failed.</p>
+</div>
+
+<!-- CHAPTER 6 — STAFF GUIDE: PROGRAMS & SYSTEM -->
+<div class="page" id="ch6">
+  <div class="chapter-number">Chapter 6</div>
+  <h2 class="chapter-title">Staff Guide &mdash; Programs &amp; System Tools</h2>
+  <p class="chapter-intro">This chapter covers program management, adding new programs and document requirements, generating reports, and managing archived records.</p>
+
+  <h3 id="ch6-programs">6.1 Managing Programs</h3>
+  <p>Click <strong>Programs</strong> in the staff navigation bar to view all programs currently in the system.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/18.png" alt="Programs list — admin view">
+    <div class="screenshot-caption">Figure 18 &middot; The admin Programs list. Each program shows its status (Active/Archived) and action buttons for Edit, Archive, and Delete.</div>
+  </div>
+
+  <p>Each program card shows:</p>
+  <ul>
+    <li>Program name and description</li>
+    <li>Current status (Active or Archived)</li>
+    <li><strong>Edit</strong> &mdash; modify program details and document requirements</li>
+    <li><strong>Archive</strong> &mdash; hide the program from applicants without deleting it</li>
+    <li><strong>Delete</strong> &mdash; permanently remove the program (use with caution)</li>
+  </ul>
+
+  <div class="warning">
+    <strong>Caution</strong>
+    Archiving a program prevents new applications from being submitted but preserves all existing application data. Deleting a program is irreversible and removes all associated data.
+  </div>
+
+  <h3 id="ch6-addprog">6.2 Adding a New Program</h3>
+  <p>Click <strong>Add New Program</strong> at the top of the Programs page to create a new scholarship or grant program.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/19.png" alt="Add New Program form">
+    <div class="screenshot-caption">Figure 19 &middot; The Add New Program form. Fill in the program details at the top, then add document requirements in the formset below.</div>
+  </div>
+
+  <h4>Program Details</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Program Name</td><td>Short name (e.g., SPARK, SINAG)</td></tr>
+      <tr><td>Description</td><td>Brief program overview shown to applicants</td></tr>
+      <tr><td>Status</td><td>Active (visible to applicants) or Inactive (hidden)</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Document Requirements</h4>
+  <p>The form includes a dynamic list of document requirement rows. For each required document:</p>
+  <ol class="steps">
+    <li>Enter the <strong>Document Name</strong> (e.g., "Certificate of Graduation").</li>
+    <li>Enter a brief <strong>Description</strong> to guide applicants.</li>
+    <li>Check <strong>Required</strong> if the document is mandatory for submission.</li>
+    <li>Click <strong>Add Requirement</strong> to add more rows as needed.</li>
+  </ol>
+  <p>Click <strong>Save Program</strong> to create the program. It will immediately appear on the applicant Programs page if set to Active.</p>
+
+  <h3 id="ch6-reports">6.3 Reports &amp; Analytics</h3>
+  <p>Click <strong>Reports</strong> in the navigation bar to open the Reports &amp; Analytics page.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/20.png" alt="Reports and Analytics page">
+    <div class="screenshot-caption">Figure 20 &middot; The Reports &amp; Analytics page with summary stat cards, a filter bar, an Applications Over Time bar chart, and per-program breakdowns.</div>
+  </div>
+
+  <h4>Summary Statistics</h4>
+  <p>The four stat cards at the top show counts for: Total Applications, Approved Applications, Pending Applications, and Registered Applicants.</p>
+
+  <h4>Date Filtering</h4>
+  <p>Use the filter bar below the stat cards to narrow report data to a specific time period:</p>
+  <table>
+    <thead><tr><th>Filter Type</th><th>Fields Required</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>All Time</td><td>None (default)</td><td>Show all records ever</td></tr>
+      <tr><td>By Year</td><td>Year</td><td>All applications submitted in 2026</td></tr>
+      <tr><td>By Month</td><td>Year + Month</td><td>Applications submitted in May 2026</td></tr>
+      <tr><td>Date Range</td><td>From Date + To Date</td><td>May 1, 2026 &ndash; May 22, 2026</td></tr>
+    </tbody>
+  </table>
+  <ol class="steps">
+    <li>Select a <strong>Filter Type</strong> from the dropdown.</li>
+    <li>Fill in the additional fields that appear (year, month, or date range).</li>
+    <li>Click <strong>Apply</strong>. The stat cards and charts update to reflect the chosen period.</li>
+    <li>To reset, click the <strong>Clear</strong> link that appears next to the Apply button.</li>
+  </ol>
+
+  <h4>Charts</h4>
+  <p>The <strong>Applications Over Time</strong> bar chart visualizes monthly application volume. Below it, individual program cards show approval rates, total applications, and status breakdowns for each program.</p>
+
+  <h4>Viewing Detailed Reports</h4>
+  <p>Three report types are available via the View Report buttons:</p>
+  <ul>
+    <li><strong>Applications Report</strong> &mdash; full table of all applications with applicant details and status</li>
+    <li><strong>Programs Report</strong> &mdash; per-program statistics (Total, Approved, Rejected, Pending, Approval Rate)</li>
+    <li><strong>Applicants Report</strong> &mdash; list of all registered applicants with profile and application count</li>
+  </ul>
+  <p>The active date filter is automatically carried through to each report view.</p>
+
+  <h3 id="ch6-report-view">6.4 Viewing and Printing Reports</h3>
+  <p>Each report opens on a dedicated, print-optimized page with a purple header and a formatted data table.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/21.png" alt="Applications Report view">
+    <div class="screenshot-caption">Figure 21 &middot; The Applications Report view. The purple header shows the report title and "As of [date]". Use the toolbar buttons to print or download the report.</div>
+  </div>
+
+  <p>The report toolbar (visible on-screen but hidden when printing) provides:</p>
+  <ul>
+    <li><strong>Back</strong> &mdash; return to the Reports &amp; Analytics page (the active filter is preserved)</li>
+    <li><strong>Download CSV</strong> &mdash; download the report data as a spreadsheet file</li>
+    <li><strong>Print / Save as PDF</strong> &mdash; opens the browser's print dialog; select <em>Save as PDF</em> to save a digital copy</li>
+  </ul>
+
+  <div class="tip">
+    <strong>Printing Tip</strong>
+    In the print dialog, set the paper size to <strong>A4 Landscape</strong> and margins to <strong>Default</strong> or <strong>Minimum</strong> for the best results. The report is pre-formatted to fit A4 landscape at full width.
+  </div>
+
+  <h3 id="ch6-archive">6.5 Archived Items</h3>
+  <p>The Archived Items page stores programs and applications that have been removed from active circulation but are retained for record-keeping.</p>
+
+  <div class="screenshot-wrap">
+    <img src="ui screenshots/22.png" alt="Archived Items page">
+    <div class="screenshot-caption">Figure 22 &middot; The Archived Items page. Archived Programs appear in the top section and Archived Applications in the bottom section. Both sections display "No archived items" when nothing has been archived yet.</div>
+  </div>
+
+  <p>Items in the archive can be:</p>
+  <ul>
+    <li><strong>Restored</strong> &mdash; returned to active status</li>
+    <li><strong>Permanently Deleted</strong> &mdash; removed entirely from the database</li>
+  </ul>
+</div>
+
+<!-- FAQ -->
+<div class="page" id="faq">
+  <div class="chapter-number">Appendix A</div>
+  <h2 class="chapter-title">Frequently Asked Questions</h2>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: I did not receive the OTP email. What should I do?</p>
+    <p class="faq-a">First, check your <strong>Spam</strong> or <strong>Junk</strong> folder. If it is not there, click the <strong>Resend Code</strong> link on the verification page. Make sure the email address you registered with is correct and active. If the problem persists, contact the CAYDO office.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: Can I edit my application after submitting it?</p>
+    <p class="faq-a">No. Once an application is submitted, its status changes from <em>Draft</em> and can no longer be edited through the portal. If you need to make changes, contact the CAYDO office. Staff can request you to resubmit documents if any are marked Invalid.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: I uploaded a document but it shows as "Missing." Why?</p>
+    <p class="faq-a">This can happen if the file upload did not complete successfully. Check the Application Detail page for any notes from staff. If the document shows as Invalid, a corrected version may be requested through the CAYDO office.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: Can I apply to both SPARK and SINAG at the same time?</p>
+    <p class="faq-a">Yes, applications for different programs are handled separately. You may submit one application per program at a time. Make sure you meet the eligibility criteria for both programs before applying.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: My file upload shows an error saying the file type is not allowed.</p>
+    <p class="faq-a">The system only accepts <strong>PDF, JPG, and PNG</strong> files. Convert your document to one of these formats using a scanner app, a phone camera (save as JPG or PNG), or an online file converter, then try uploading again.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: How long does it take for my application to be reviewed?</p>
+    <p class="faq-a">Processing times depend on CAYDO office capacity and the volume of applications received. You will receive an email notification whenever your application status changes. You can also check the My Applications page at any time for an update.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: I forgot my password. How do I reset it?</p>
+    <p class="faq-a">On the login page, click <strong>Forgot Password</strong>. Enter your registered email address and follow the instructions in the reset email to set a new password.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: (Staff) How do I create a new staff account?</p>
+    <p class="faq-a">Staff accounts are managed through the Django admin panel. Only superusers (system administrators) can create or modify staff accounts. Contact the system administrator assigned to EduGrant for assistance.</p>
+  </div>
+
+  <div class="faq-item">
+    <p class="faq-q">Q: (Staff) The CSV download shows garbled characters. How do I fix this?</p>
+    <p class="faq-a">Open Microsoft Excel, go to <strong>Data &rarr; From Text/CSV</strong>, select the downloaded file, and set the encoding to <strong>UTF-8</strong>. This is a common issue with CSV files containing Filipino currency characters and is not a system error.</p>
+  </div>
+</div>
+
+<!-- GLOSSARY -->
+<div class="page" id="glossary">
+  <div class="chapter-number">Appendix B</div>
+  <h2 class="chapter-title">Glossary</h2>
+
+  <table>
+    <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="glossary-term">Application</td>
+        <td>A formal submission by a resident requesting a scholarship or financial assistance grant from CAYDO.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Applicant</td>
+        <td>A registered user of EduGrant who has submitted or is in the process of submitting a scholarship application.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">CAYDO</td>
+        <td>Community Affairs and Youth Development Office &mdash; the municipal government office that administers EduGrant.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Document Requirement</td>
+        <td>A specific document that must be uploaded as part of a scholarship application (e.g., Certificate of Graduation).</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Draft</td>
+        <td>An application that has been started but not yet submitted. Draft applications are visible only to the applicant.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">EduGrant</td>
+        <td>The online scholarship management system operated by CAYDO, accessible at https://edugrant-self.vercel.app/.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">OTP (One-Time Password)</td>
+        <td>A time-limited six-digit code sent to a user's email address to verify their identity during registration or email change.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Program</td>
+        <td>A scholarship or financial-assistance program managed within EduGrant (currently SPARK and SINAG).</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Rule Evaluation / Screening</td>
+        <td>An automated check performed by the system after an application is submitted. It evaluates the applicant's information against eligibility rules and flags potential issues for staff review.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">SINAG</td>
+        <td>Scholarship Incentive for Nationals Achieving Greatness &mdash; a CAYDO academic scholarship for enrolled college or technical-vocational students.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">SPARK</td>
+        <td>Support for Professionals and Aspiring Residents with Knowledge &mdash; a CAYDO one-time financial assistance program for residents preparing for a licensure, board, or bar examination.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Staff</td>
+        <td>CAYDO employees with elevated system access who review and process scholarship applications.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Status Log</td>
+        <td>An immutable record of every status change an application has undergone, including the date, new status, and the staff member who made the change.</td>
+      </tr>
+      <tr>
+        <td class="glossary-term">Status Timeline</td>
+        <td>A visual representation of an application's status history shown on the Application Detail and Application Review pages.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <div class="footer">
+    EduGrant User Manual v2.0 &nbsp;&middot;&nbsp; Community Affairs and Youth Development Office, Carmona, Cavite &nbsp;&middot;&nbsp; May 2026<br>
+    For technical support, contact the EduGrant system administrator.
+  </div>
+</div>
+
+</body>
+</html>

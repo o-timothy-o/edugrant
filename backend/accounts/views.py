@@ -149,6 +149,13 @@ class ApplicantLoginView(LoginView):
     """Login for applicants only. Staff are blocked with an error message."""
     template_name = "registration/login.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.is_staff:
+                return redirect(reverse_lazy("admin_dashboard"))
+            return redirect(reverse_lazy("home"))
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         user = form.get_user()
         if user.is_staff:
@@ -288,6 +295,13 @@ def resend_email_change_otp_view(request):
 class StaffLoginView(LoginView):
     """Login for staff only. Non-staff are blocked with a generic error."""
     template_name = "registration/staff_login.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.is_staff:
+                return redirect(reverse_lazy("admin_dashboard"))
+            return redirect(reverse_lazy("home"))
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy("admin_dashboard")

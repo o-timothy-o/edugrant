@@ -23,37 +23,45 @@
           <span></span><span></span><span></span>
         </button>
         <nav class="nav" id="mainNav">
-          {% if user.is_authenticated and user.is_staff %}
-            {% if request.path != '/dashboard/' %}<a href="/" class="navBtn">Home</a>{% endif %}
-          {% else %}
-            {% if request.path != '/' %}<a href="/" class="navBtn">Home</a>{% endif %}
-          {% endif %}
-          {% if user.is_authenticated %}
-            {% if user.is_staff %}
-              <div class="nav-dropdown">
-                <button class="navBtn nav-dropdown-toggle">Manage ▾</button>
-                <div class="nav-dropdown-menu">
-                  <a href="{% url 'users_list' %}" class="nav-dropdown-item">Applicants</a>
-                  <a href="{% url 'applicants_list' %}" class="nav-dropdown-item">Applications</a>
-                  <a href="{% url 'reports' %}" class="nav-dropdown-item">Reports</a>
-                  <a href="{% url 'program_list' %}" class="nav-dropdown-item">Programs</a>
-                  <a href="{% url 'archived_list' %}" class="nav-dropdown-item">Archived</a>
-                  <a href="/admin/" class="nav-dropdown-item">Settings</a>
-                </div>
-              </div>
+          {% with url_name=request.resolver_match.url_name %}
+          {% if url_name != 'staff_login' %}
+            {% if user.is_authenticated and user.is_staff %}
+              {% if request.path != '/dashboard/' %}<a href="/" class="navBtn">Home</a>{% endif %}
             {% else %}
-                <a href="{% url 'programs:program_list_applicant' %}" class="navBtn">Programs</a>
-              <a href="{% url 'programs:my_applications' %}" class="navBtn">My Applications</a>
-              <a href="{% url 'accounts:profile' %}" class="navBtn">My Profile</a>
+              {% if request.path != '/' %}<a href="/" class="navBtn">Home</a>{% endif %}
             {% endif %}
-            <form method="post" action="{% url 'accounts:logout' %}" class="navLogoutForm">
-              {% csrf_token %}
-              <button type="submit" class="navBtn">Log out</button>
-            </form>
-          {% else %}
-            <a href="{% url 'accounts:login' %}" class="navBtn">Log in</a>
-            <a href="{% url 'accounts:register' %}" class="navBtn navBtn-primary">Register</a>
+            {% if user.is_authenticated %}
+              {% if user.is_staff %}
+                <div class="nav-dropdown">
+                  <button class="navBtn nav-dropdown-toggle">Manage ▾</button>
+                  <div class="nav-dropdown-menu">
+                    <a href="{% url 'users_list' %}" class="nav-dropdown-item">Applicants</a>
+                    <a href="{% url 'applicants_list' %}" class="nav-dropdown-item">Applications</a>
+                    <a href="{% url 'reports' %}" class="nav-dropdown-item">Reports</a>
+                    <a href="{% url 'program_list' %}" class="nav-dropdown-item">Programs</a>
+                    <a href="{% url 'archived_list' %}" class="nav-dropdown-item">Archived</a>
+                    <a href="/admin/" class="nav-dropdown-item">Settings</a>
+                  </div>
+                </div>
+              {% else %}
+                <a href="{% url 'programs:program_list_applicant' %}" class="navBtn">Programs</a>
+                <a href="{% url 'programs:my_applications' %}" class="navBtn">My Applications</a>
+                <a href="{% url 'accounts:profile' %}" class="navBtn">My Profile</a>
+              {% endif %}
+              <form method="post" action="{% url 'accounts:logout' %}" class="navLogoutForm">
+                {% csrf_token %}
+                <button type="submit" class="navBtn">Log out</button>
+              </form>
+            {% else %}
+              {% if url_name != 'login' %}
+                <a href="{% url 'accounts:login' %}" class="navBtn">Log in</a>
+              {% endif %}
+              {% if url_name != 'register' %}
+                <a href="{% url 'accounts:register' %}" class="navBtn navBtn-primary">Register</a>
+              {% endif %}
+            {% endif %}
           {% endif %}
+          {% endwith %}
         </nav>
       </div>
     </header>

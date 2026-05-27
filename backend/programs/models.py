@@ -147,12 +147,33 @@ class ApplicationDocument(models.Model):
 
 
 class ProgramRule(models.Model):
-    """Predefined rule for screening applications (eligibility, conflict, completeness)."""
+    """Predefined rule for screening applications."""
 
     class RuleType(models.TextChoices):
         ELIGIBILITY = "eligibility", "Eligibility"
         CONFLICT = "conflict", "Conflict"
         COMPLETENESS = "completeness", "Completeness"
+
+    class RuleField(models.TextChoices):
+        MONTHLY_INCOME   = "monthly_income",   "Monthly Income"
+        RESIDENCY_YEARS  = "residency_years",  "Years of Residency"
+        BARANGAY         = "barangay",         "Barangay"
+        CITIZENSHIP      = "citizenship",      "Citizenship"
+        CIVIL_STATUS     = "civil_status",     "Civil Status"
+        CURRENTLY_WORKING = "currently_working", "Employment Status"
+        GENDER           = "gender",           "Gender"
+        COURSE           = "course",           "Course / Degree"
+        SCHOOL           = "school",           "School"
+        GRADUATION_DATE  = "graduation_date",  "Graduation Date"
+
+    class Condition(models.TextChoices):
+        LTE          = "lte",          "Must not exceed"
+        GTE          = "gte",          "Must be at least"
+        EQUALS       = "equals",       "Must be equal to"
+        NOT_EQUALS   = "not_equals",   "Must not be"
+        IN_LIST      = "in_list",      "Must be one of (comma-separated)"
+        DATE_AFTER   = "date_after",   "Must be on or after (YYYY-MM-DD)"
+        DATE_BEFORE  = "date_before",  "Must be on or before (YYYY-MM-DD)"
 
     program = models.ForeignKey(
         Program,
@@ -160,14 +181,13 @@ class ProgramRule(models.Model):
         related_name="rules",
     )
     name = models.CharField(max_length=128)
-    rule_type = models.CharField(
-        max_length=32,
-        choices=RuleType.choices,
-    )
-    definition = models.JSONField(
-        default=dict,
+    rule_type = models.CharField(max_length=32, choices=RuleType.choices)
+    rule_field = models.CharField(max_length=64, choices=RuleField.choices, blank=True)
+    condition = models.CharField(max_length=32, choices=Condition.choices, blank=True)
+    value = models.CharField(
+        max_length=255,
         blank=True,
-        help_text="Rule parameters, e.g. {\"check_prior_assistance\": true}",
+        help_text='The value to compare against. For "Must be one of", separate values with commas. For dates, use YYYY-MM-DD format.',
     )
     display_order = models.PositiveIntegerField(default=0)
 

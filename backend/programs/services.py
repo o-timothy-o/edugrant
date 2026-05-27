@@ -1,5 +1,6 @@
 """Services for programs app: completeness, screening, etc."""
 
+import re
 from datetime import datetime
 
 from programs.models import (
@@ -40,29 +41,85 @@ def get_application_completeness(application):
     }
 
 
-def _parse_number(value):
-    """Parse a string number, stripping currency symbols and commas. Returns float or None."""
-    try:
-        return float(str(value).replace(",", "").replace("₱", "").replace("PHP", "").strip())
-    except (ValueError, TypeError):
-        return None
+def _extract_number(text):
+    """Extract the first number from a string, stripping currency symbols and commas."""
+    cleaned = re.sub(r"[₱,\sPHP]", "", str(text))
+    match = re.search(r"[\d.]+", cleaned)
+    return float(match.group()) if match else None
 
 
-def _parse_date(value):
-    """Parse a date string in common formats. Returns date or None."""
+def _parse_date(text):
     for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y"):
         try:
-            return datetime.strptime(str(value).strip(), fmt).date()
+            return datetime.strptime(str(text).strip(), fmt).date()
         except ValueError:
             continue
     return None
 
 
-def _normalize_list(value):
-    """Ensure value is a list of lowercase strings for comparison."""
-    if isinstance(value, str):
-        value = [value]
-    return [str(v).strip().lower() for v in value]
+def _get_actual_value(rule_field, profile, edu):
+    """Return the applicant's actual value for a given rule field."""
+    profile_fields = {
+        "monthly_income", "residency_years", "barangay",
+        "citizenship", "civil_status", "currently_working", "gender",
+    }
+    if rule_field in profile_fields:
+        return getattr(profile, rule_field, "").strip() if profile else None
+    if rule_field in ("course", "school", "graduation_date"):
+        return edu.get(rule_field, "").strip()
+    return None
+
+
+def _evaluate_condition(rule, actual):
+    """
+    Evaluate one rule against the actual value.
+    Returns (flagged: bool, reason: str).
+    """
+    field = rule.rule_field
+    condition = rule.condition
+    rule_value = rule.value.strip()
+    numeric_fields = {"monthly_income", "residency_years"}
+    date_fields = {"graduation_date"}
+
+    if not actual:
+        return False, ""
+
+    if field in numeric_fields:
+        actual_num = _extract_number(actual)
+        try:
+            rule_num = float(rule_value.replace(",", "").replace("₱", "").strip())
+        except ValueError:
+            return False, ""
+        if actual_num is None:
+            return False, ""
+        if condition == ProgramRule.Condition.LTE and actual_num > rule_num:
+            return True, f"₱{actual_num:,.2f} exceeds the maximum of ₱{rule_num:,.2f}"
+        if condition == ProgramRule.Condition.GTE and actual_num < rule_num:
+            return True, f"{actual_num:.0f} is below the minimum of {rule_num:.0f}"
+
+    elif field in date_fields:
+        actual_date = _parse_date(actual)
+        rule_date = _parse_date(rule_value)
+        if actual_date and rule_date:
+            if condition == ProgramRule.Condition.DATE_AFTER and actual_date < rule_date:
+                return True, f"Graduation date {actual} is before the required date {rule_value}"
+            if condition == ProgramRule.Condition.DATE_BEFORE and actual_date > rule_date:
+                return True, f"Graduation date {actual} is after {rule_value}"
+
+    else:
+        actual_lower = actual.lower()
+        if condition == ProgramRule.Condition.EQUALS:
+            if actual_lower != rule_value.lower():
+                return True, f"'{actual}' does not match the required value '{rule_value}'"
+        elif condition == ProgramRule.Condition.NOT_EQUALS:
+            if actual_lower == rule_value.lower():
+                return True, f"'{actual}' is not allowed"
+        elif condition == ProgramRule.Condition.IN_LIST:
+            allowed = [v.strip().lower() for v in rule_value.split(",")]
+            if actual_lower not in allowed:
+                return True, f"'{actual}' is not in the list of allowed values"
+
+    return False, ""
 
 
 def run_rule_evaluation(application):
@@ -80,113 +137,13 @@ def run_rule_evaluation(application):
 
     # 1. Eligibility rules
     for rule in application.program.rules.filter(rule_type=ProgramRule.RuleType.ELIGIBILITY):
-        defn = rule.definition
-
-        # Profile existence
-        if defn.get("check_profile"):
-            if not profile:
-                reasons.append(f"{rule.name}: Applicant profile is missing")
-                outcome = ScreeningResult.Outcome.FLAG
-
-        if profile:
-            # Maximum monthly income
-            if "max_income" in defn:
-                income = _parse_number(profile.monthly_income)
-                max_val = _parse_number(defn["max_income"])
-                if income is not None and max_val is not None and income > max_val:
-                    reasons.append(
-                        f"{rule.name}: Monthly income ₱{income:,.2f} exceeds maximum of ₱{max_val:,.2f}"
-                    )
-                    outcome = ScreeningResult.Outcome.FLAG
-
-            # Minimum residency years
-            if "min_residency_years" in defn:
-                years = _parse_number(profile.residency_years)
-                min_val = _parse_number(defn["min_residency_years"])
-                if years is not None and min_val is not None and years < min_val:
-                    reasons.append(
-                        f"{rule.name}: Residency of {years:.0f} year(s) is below the minimum of {min_val:.0f} year(s)"
-                    )
-                    outcome = ScreeningResult.Outcome.FLAG
-
-            # Required barangay (string or list)
-            if "required_barangay" in defn:
-                allowed = _normalize_list(defn["required_barangay"])
-                if profile.barangay.strip().lower() not in allowed:
-                    reasons.append(
-                        f"{rule.name}: Barangay '{profile.barangay}' is not in the list of eligible barangays"
-                    )
-                    outcome = ScreeningResult.Outcome.FLAG
-
-            # Required citizenship
-            if "required_citizenship" in defn:
-                required = str(defn["required_citizenship"]).strip().lower()
-                if profile.citizenship.strip().lower() != required:
-                    reasons.append(
-                        f"{rule.name}: Citizenship '{profile.citizenship}' does not meet the requirement"
-                    )
-                    outcome = ScreeningResult.Outcome.FLAG
-
-            # Required civil status (string or list)
-            if "required_civil_status" in defn:
-                allowed = _normalize_list(defn["required_civil_status"])
-                if profile.civil_status.strip().lower() not in allowed:
-                    reasons.append(
-                        f"{rule.name}: Civil status '{profile.civil_status}' does not meet the requirement"
-                    )
-                    outcome = ScreeningResult.Outcome.FLAG
-
-            # Employment — must not be currently working
-            if defn.get("must_not_be_working"):
-                if profile.currently_working.strip().lower() in ("yes", "true", "1"):
-                    reasons.append(f"{rule.name}: Applicant must not be currently employed")
-                    outcome = ScreeningResult.Outcome.FLAG
-
-            # Required gender (string or list)
-            if "required_gender" in defn:
-                allowed = _normalize_list(defn["required_gender"])
-                if profile.gender.strip().lower() not in allowed:
-                    reasons.append(
-                        f"{rule.name}: Gender '{profile.gender}' does not meet the requirement"
-                    )
-                    outcome = ScreeningResult.Outcome.FLAG
-
-        # Educational data checks
-        if "required_course" in defn:
-            allowed = _normalize_list(defn["required_course"])
-            course = edu.get("course", "").strip().lower()
-            if not course or course not in allowed:
-                reasons.append(
-                    f"{rule.name}: Course '{edu.get('course', '')}' is not an eligible course"
-                )
-                outcome = ScreeningResult.Outcome.FLAG
-
-        if "required_school" in defn:
-            allowed = _normalize_list(defn["required_school"])
-            school = edu.get("school", "").strip().lower()
-            if not school or school not in allowed:
-                reasons.append(
-                    f"{rule.name}: School '{edu.get('school', '')}' is not an eligible school"
-                )
-                outcome = ScreeningResult.Outcome.FLAG
-
-        if "graduation_date_after" in defn or "graduation_date_before" in defn:
-            grad_date = _parse_date(edu.get("graduation_date", ""))
-            if grad_date:
-                if "graduation_date_after" in defn:
-                    after = _parse_date(defn["graduation_date_after"])
-                    if after and grad_date < after:
-                        reasons.append(
-                            f"{rule.name}: Graduation date is before the required date {defn['graduation_date_after']}"
-                        )
-                        outcome = ScreeningResult.Outcome.FLAG
-                if "graduation_date_before" in defn:
-                    before = _parse_date(defn["graduation_date_before"])
-                    if before and grad_date > before:
-                        reasons.append(
-                            f"{rule.name}: Graduation date is after the required date {defn['graduation_date_before']}"
-                        )
-                        outcome = ScreeningResult.Outcome.FLAG
+        if not rule.rule_field or not rule.condition:
+            continue
+        actual = _get_actual_value(rule.rule_field, profile, edu)
+        flagged, reason = _evaluate_condition(rule, actual)
+        if flagged:
+            reasons.append(f"{rule.name}: {reason}")
+            outcome = ScreeningResult.Outcome.FLAG
 
     # 2. Conflict: applicant must not have prior approved assistance
     prior_approved = Application.objects.filter(

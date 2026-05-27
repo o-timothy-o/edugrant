@@ -18,6 +18,7 @@ class DocumentRequirementInline(admin.TabularInline):
 class ProgramRuleInline(admin.TabularInline):
     model = ProgramRule
     extra = 0
+    fields = ("name", "rule_type", "rule_field", "condition", "value", "display_order")
 
 
 @admin.register(Program)
@@ -65,8 +66,20 @@ class DocumentRequirementAdmin(admin.ModelAdmin):
 
 @admin.register(ProgramRule)
 class ProgramRuleAdmin(admin.ModelAdmin):
-    list_display = ("name", "program", "rule_type", "display_order")
-    list_filter = ("program", "rule_type")
+    list_display = ("name", "program", "rule_type", "rule_field", "condition", "value", "display_order")
+    list_filter = ("program", "rule_type", "rule_field")
+    fieldsets = (
+        (None, {
+            "fields": ("program", "name", "rule_type", "display_order"),
+        }),
+        ("Rule Definition", {
+            "fields": ("rule_field", "condition", "value"),
+            "description": (
+                "Set the Field, Condition, and Value for this rule. "
+                "Leave blank for Conflict and Completeness rule types (those run automatically)."
+            ),
+        }),
+    )
 
 
 @admin.register(ScreeningResult)

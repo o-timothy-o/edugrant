@@ -48,11 +48,13 @@
               <td class="admin-date">{{ rule.value|default:"—" }}</td>
               <td class="prog-actions-cell">
                 <a href="{% url 'edit_rule' program.id rule.id %}" class="btn btn-outline btn-sm">Edit</a>
-                <form method="post" action="{% url 'delete_rule' program.id rule.id %}" style="display:inline;"
-                  onsubmit="return confirm('Delete rule \'{{ rule.name }}\'?');">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
+                <button type="button" class="btn btn-danger btn-sm"
+                  data-bs-toggle="modal" data-bs-target="#deleteRuleModal"
+                  data-rule-id="{{ rule.id }}"
+                  data-rule-name="{{ rule.name }}"
+                  data-delete-url="{% url 'delete_rule' program.id rule.id %}">
+                  Delete
+                </button>
               </td>
             </tr>
             {% empty %}
@@ -150,7 +152,36 @@
   </div>
 </div>
 
+<!-- Delete Rule Modal -->
+<div class="modal fade" id="deleteRuleModal" tabindex="-1" aria-labelledby="deleteRuleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(to right,#ef4444,#b91c1c);color:#fff;border-radius:12px 12px 0 0;">
+        <h5 class="modal-title" id="deleteRuleModalLabel">Delete Rule</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="padding:24px;">
+        <p>Are you sure you want to delete the rule <strong id="deleteRuleName"></strong>?</p>
+        <p style="color:#6b7280;font-size:14px;">This rule will be permanently removed and will no longer apply to new screenings.</p>
+      </div>
+      <div class="modal-footer" style="padding:16px 24px;">
+        <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+        <form id="deleteRuleForm" method="post" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  document.getElementById('deleteRuleModal').addEventListener('show.bs.modal', function(event) {
+    var btn = event.relatedTarget;
+    document.getElementById('deleteRuleName').textContent = btn.getAttribute('data-rule-name');
+    document.getElementById('deleteRuleForm').action = btn.getAttribute('data-delete-url');
+  });
+
   var HINTS = {
     monthly_income:   { lte: '₱ amount (e.g. 15000)', gte: '₱ amount (e.g. 5000)' },
     residency_years:  { gte: 'Number of years (e.g. 1)', lte: 'Number of years (e.g. 5)' },

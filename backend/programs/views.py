@@ -111,10 +111,10 @@ def spark_application_step2_view(request, application_id):
                 doc.status = 'submitted'
                 doc.save()
 
-        application.status = 'submitted'
+        application.status = 'for_review'
         application.save()
-        ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
-        send_status_notification(application, 'submitted')
+        ApplicationStatusLog.objects.create(application=application, status='for_review', changed_by=request.user)
+        send_status_notification(application, 'for_review')
         run_rule_evaluation(application)
 
         # Render the same page with the success flag instead of redirecting
@@ -178,10 +178,10 @@ def sinag_application_step2_view(request, application_id):
                 doc.status = 'submitted'
                 doc.save()
 
-        application.status = 'submitted'
+        application.status = 'for_review'
         application.save()
-        ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
-        send_status_notification(application, 'submitted')
+        ApplicationStatusLog.objects.create(application=application, status='for_review', changed_by=request.user)
+        send_status_notification(application, 'for_review')
         run_rule_evaluation(application)
 
         # Render the same page with the success flag instead of redirecting
@@ -240,6 +240,8 @@ def application_review_view(request, application_id):
             application.save()
             ApplicationStatusLog.objects.create(application=application, status=action, changed_by=request.user)
             send_status_notification(application, action)
+            if action == 'for_review':
+                run_rule_evaluation(application)
             messages.success(request, f'Application has been marked as {application.get_status_display()}.')
             return redirect('admin_dashboard')
         elif action == 'update_doc':
@@ -281,7 +283,7 @@ def program_list_applicant_view(request):
     user_app_program_ids = set(
         Application.objects.filter(
             applicant=request.user,
-            status__in=['submitted', 'for_review'],
+            status__in=['for_review', 'submitted'],
             is_archived=False,
         ).values_list('program_id', flat=True)
     )
@@ -396,10 +398,10 @@ def generic_application_step2_view(request, program_id, application_id):
                 doc.status = 'submitted'
                 doc.save()
 
-        application.status = 'submitted'
+        application.status = 'for_review'
         application.save()
-        ApplicationStatusLog.objects.create(application=application, status='submitted', changed_by=request.user)
-        send_status_notification(application, 'submitted')
+        ApplicationStatusLog.objects.create(application=application, status='for_review', changed_by=request.user)
+        send_status_notification(application, 'for_review')
         run_rule_evaluation(application)
 
         context = {

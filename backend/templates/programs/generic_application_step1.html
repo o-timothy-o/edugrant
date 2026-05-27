@@ -129,6 +129,47 @@
         </div>
 
         <div class="form-section">
+          <h3>FAMILY COMPOSITION</h3>
+          <p style="font-size:0.85em;color:#6b7280;margin-bottom:1rem;">
+            List all members of your household. At least one entry is required.
+            Use the <strong>+ Add Row</strong> button to add more members.
+          </p>
+          <input type="hidden" name="family_row_max" id="family_row_max" value="1">
+          <div id="family-container" class="schools-container">
+
+            <div class="schools-header-row">
+              <span>Name <span class="required-mark">*</span></span>
+              <span>Relationship <span class="required-mark">*</span></span>
+              <span>Age <span class="required-mark">*</span></span>
+              <span>Occupation / Source of Income <span class="required-mark">*</span></span>
+              <span></span>
+            </div>
+
+            <div class="school-row">
+              <div class="school-field"><label class="school-mobile-label">Name <span class="required-mark">*</span></label><input type="text" name="family_name_1" required placeholder="e.g. Juan Dela Cruz" value="{{ family_data.0.name|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Relationship <span class="required-mark">*</span></label><input type="text" name="family_relationship_1" required placeholder="e.g. Father, Mother, Sibling" value="{{ family_data.0.relationship|default:'' }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Age <span class="required-mark">*</span></label><input type="number" name="family_age_1" required placeholder="e.g. 45" min="0" max="120" value="{{ family_data.0.age|default:'' }}"></div>
+              <div class="school-field school-field-address"><label class="school-mobile-label">Occupation <span class="required-mark">*</span></label><input type="text" name="family_occupation_1" required placeholder="e.g. Farmer, Teacher, N/A" value="{{ family_data.0.occupation|default:'' }}"></div>
+              <div class="school-field school-delete-cell"></div>
+            </div>
+
+            {% for member in family_data|slice:"1:" %}
+            <div class="school-row" data-extra-row="{{ forloop.counter|add:1 }}">
+              <div class="school-field"><label class="school-mobile-label">Name <span class="required-mark">*</span></label><input type="text" name="family_name_{{ forloop.counter|add:1 }}" required placeholder="e.g. Juan Dela Cruz" value="{{ member.name }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Relationship <span class="required-mark">*</span></label><input type="text" name="family_relationship_{{ forloop.counter|add:1 }}" required placeholder="e.g. Father, Mother, Sibling" value="{{ member.relationship }}"></div>
+              <div class="school-field"><label class="school-mobile-label">Age <span class="required-mark">*</span></label><input type="number" name="family_age_{{ forloop.counter|add:1 }}" required placeholder="e.g. 45" min="0" max="120" value="{{ member.age }}"></div>
+              <div class="school-field school-field-address"><label class="school-mobile-label">Occupation <span class="required-mark">*</span></label><input type="text" name="family_occupation_{{ forloop.counter|add:1 }}" required placeholder="e.g. Farmer, Teacher, N/A" value="{{ member.occupation }}"></div>
+              <div class="school-field school-delete-cell">
+                <button type="button" class="btn-remove-row" title="Remove row">✕</button>
+              </div>
+            </div>
+            {% endfor %}
+
+          </div>
+          <button type="button" id="add-family-row" class="btn btn-outline" style="margin-top:0.5rem;">+ Add Row</button>
+        </div>
+
+        <div class="form-section">
           <h3>EDUCATIONAL INFORMATION OF THE APPLICANT</h3>
           <div class="grid-container">
             <div class="form-group">
@@ -212,6 +253,68 @@
 </div>
 
 <script>
+(function () {
+  // Family composition rows
+  var familyRowMax = Math.max(1, document.querySelectorAll('#family-container .school-row').length);
+  var familyContainer = document.getElementById('family-container');
+  var familyRowMaxInput = document.getElementById('family_row_max');
+  familyRowMaxInput.value = familyRowMax;
+
+  var familyFieldDefs = [
+    { key: 'name',         label: 'Name',                       placeholder: 'e.g. Juan Dela Cruz',         cls: '',                     type: 'text'   },
+    { key: 'relationship', label: 'Relationship',               placeholder: 'e.g. Father, Mother, Sibling', cls: '',                    type: 'text'   },
+    { key: 'age',          label: 'Age',                        placeholder: 'e.g. 45',                     cls: '',                     type: 'number' },
+    { key: 'occupation',   label: 'Occupation / Source of Income', placeholder: 'e.g. Farmer, Teacher, N/A', cls: 'school-field-address', type: 'text'  },
+  ];
+
+  document.getElementById('add-family-row').addEventListener('click', function () {
+    familyRowMax++;
+    familyRowMaxInput.value = familyRowMax;
+    var n = familyRowMax;
+    var row = document.createElement('div');
+    row.className = 'school-row';
+    row.dataset.extraRow = n;
+
+    familyFieldDefs.forEach(function (f) {
+      var fieldDiv = document.createElement('div');
+      fieldDiv.className = 'school-field' + (f.cls ? ' ' + f.cls : '');
+      var lbl = document.createElement('label');
+      lbl.className = 'school-mobile-label';
+      lbl.textContent = f.label + ' ';
+      var star = document.createElement('span');
+      star.className = 'required-mark';
+      star.textContent = '*';
+      lbl.appendChild(star);
+      var input = document.createElement('input');
+      input.type = f.type;
+      input.name = 'family_' + f.key + '_' + n;
+      input.placeholder = f.placeholder;
+      input.required = true;
+      if (f.type === 'number') { input.min = '0'; input.max = '120'; }
+      fieldDiv.appendChild(lbl);
+      fieldDiv.appendChild(input);
+      row.appendChild(fieldDiv);
+    });
+
+    var deleteField = document.createElement('div');
+    deleteField.className = 'school-field school-delete-cell';
+    var deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'btn-remove-row';
+    deleteBtn.title = 'Remove row';
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', function () { row.remove(); });
+    deleteField.appendChild(deleteBtn);
+    row.appendChild(deleteField);
+    familyContainer.appendChild(row);
+  });
+
+  // Wire up delete buttons for pre-filled extra rows
+  familyContainer.querySelectorAll('[data-extra-row] .btn-remove-row').forEach(function (btn) {
+    btn.addEventListener('click', function () { btn.closest('.school-row').remove(); });
+  });
+}());
+
 (function () {
   var rowMax = 4;
   var container = document.getElementById('schools-container');

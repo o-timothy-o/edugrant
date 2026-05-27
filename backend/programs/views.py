@@ -29,7 +29,7 @@ BARANGAY_CHOICES = [
 
 
 def _save_step1_data(request, application):
-    """Save Step 1 personal and educational data from POST."""
+    """Save Step 1 personal, family, and educational data from POST."""
     profile, _ = ApplicantProfile.objects.get_or_create(user=request.user)
     profile.first_name = request.POST.get('first_name', '').strip()
     profile.middle_name = request.POST.get('middle_name', '').strip()
@@ -44,6 +44,19 @@ def _save_step1_data(request, application):
     profile.religion = request.POST.get('religion', '').strip()
     profile.monthly_income = request.POST.get('monthly_income', '').strip()
     profile.save()
+
+    max_family_rows = min(int(request.POST.get('family_row_max', '1')), 50)
+    family_members = []
+    for i in range(1, max_family_rows + 1):
+        row = {
+            'name': request.POST.get(f'family_name_{i}', '').strip(),
+            'relationship': request.POST.get(f'family_relationship_{i}', '').strip(),
+            'age': request.POST.get(f'family_age_{i}', '').strip(),
+            'occupation': request.POST.get(f'family_occupation_{i}', '').strip(),
+        }
+        if any(row.values()):
+            family_members.append(row)
+    application.remarks = json.dumps(family_members)
 
     max_rows = min(int(request.POST.get('school_row_max', '4')), 50)
     schools_attended = []
@@ -353,12 +366,19 @@ def generic_application_step1_view(request, program_id):
 
     profile = getattr(request.user, 'applicant_profile', None)
     document_requirements = DocumentRequirement.objects.filter(program=program)
+    family_data = []
+    if application.remarks:
+        try:
+            family_data = json.loads(application.remarks)
+        except (json.JSONDecodeError, ValueError):
+            family_data = []
     context = {
         'program': program,
         'application': application,
         'profile': profile,
         'document_requirements': document_requirements,
         'barangay_choices': BARANGAY_CHOICES,
+        'family_data': family_data,
     }
     return render(request, 'programs/generic_application_step1.html', context)
 

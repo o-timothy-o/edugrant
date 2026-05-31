@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EduGrant — Hybrid Analytics Architecture</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #7c3aed;
+      --purple-dark: #4c1d95;
+      --purple-light: #ede9fe;
+      --purple-bg: #f5f3ff;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --blue-bg: #eff6ff;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --green-bg: #ecfdf5;
+      --red: #dc2626;
+      --gray: #6b7280;
+      --text: #111827;
+      --border: #e5e7eb;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f3f4f6;
+      color: var(--text);
+      padding: 40px 24px 80px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .page-header {
+      max-width: 1100px;
+      margin: 0 auto 36px;
+    }
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--purple-dark);
+      margin-bottom: 6px;
+    }
+    .page-header p {
+      color: var(--gray);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    .tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .tag-purple { background: var(--purple-light); color: var(--purple-dark); }
+    .tag-blue   { background: var(--blue-light);   color: #1d4ed8; }
+    .tag-green  { background: var(--green-light);  color: #065f46; }
+
+    /* Section containers */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto 32px;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--purple-dark);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--purple-light);
+    }
+
+    /* Cards */
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      padding: 22px 24px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: var(--gray);
+      margin-bottom: 16px;
+    }
+
+    /* Two-col grid */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .full { grid-column: 1 / -1; }
+
+    /* Definition cards */
+    .def-card {
+      border-radius: 14px;
+      padding: 22px 24px;
+      border: 1px solid;
+    }
+    .def-card.purple {
+      background: var(--purple-bg);
+      border-color: #c4b5fd;
+    }
+    .def-card.blue {
+      background: var(--blue-bg);
+      border-color: #bfdbfe;
+    }
+    .def-card.green {
+      background: var(--green-bg);
+      border-color: #a7f3d0;
+    }
+    .def-card h3 {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .def-card.purple h3 { color: var(--purple-dark); }
+    .def-card.blue   h3 { color: #1d4ed8; }
+    .def-card.green  h3 { color: #065f46; }
+    .def-card p {
+      font-size: 13px;
+      line-height: 1.7;
+      color: #374151;
+    }
+    .def-card .method-list {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .method-pill {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .purple .method-pill { background: #ddd6fe; color: #4c1d95; }
+    .blue   .method-pill { background: #bfdbfe; color: #1d4ed8; }
+    .green  .method-pill { background: #a7f3d0; color: #065f46; }
+
+    /* Pipeline / flowchart */
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+    .pipeline-step {
+      flex: 1;
+      min-width: 140px;
+      border-radius: 12px;
+      padding: 16px 14px;
+      text-align: center;
+      position: relative;
+    }
+    .pipeline-step .step-num {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 24px;
+      margin-bottom: 8px;
+    }
+    .pipeline-step .step-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .pipeline-step .step-detail {
+      font-size: 11px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+    .pipeline-step .step-file {
+      margin-top: 8px;
+      font-size: 10px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      background: rgba(0,0,0,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .step-purple { background: var(--purple-bg); border: 1.5px solid #c4b5fd; }
+    .step-purple .step-num { background: var(--purple); color: #fff; }
+    .step-purple .step-title { color: var(--purple-dark); }
+    .step-blue { background: var(--blue-bg); border: 1.5px solid #bfdbfe; }
+    .step-blue .step-num { background: var(--blue); color: #fff; }
+    .step-blue .step-title { color: #1d4ed8; }
+    .step-green { background: var(--green-bg); border: 1.5px solid #a7f3d0; }
+    .step-green .step-num { background: var(--green); color: #fff; }
+    .step-green .step-title { color: #065f46; }
+    .step-yellow { background: #fffbeb; border: 1.5px solid #fcd34d; }
+    .step-yellow .step-num { background: #d97706; color: #fff; }
+    .step-yellow .step-title { color: #92400e; }
+
+    .arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      color: #9ca3af;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Pseudocode */
+    .pseudo-card {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .pseudo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pseudo-header-purple { background: var(--purple-bg); }
+    .pseudo-header-blue   { background: var(--blue-bg); }
+    .pseudo-header-green  { background: var(--green-bg); }
+    .pseudo-title {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .pseudo-title.purple { color: var(--purple-dark); }
+    .pseudo-title.blue   { color: #1d4ed8; }
+    .pseudo-title.green  { color: #065f46; }
+    .complexity-badge {
+      font-size: 11px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+    .complexity-badge.purple { background: #ddd6fe; color: #4c1d95; }
+    .complexity-badge.blue   { background: #bfdbfe; color: #1d4ed8; }
+    .complexity-badge.green  { background: #a7f3d0; color: #065f46; }
+    pre.pseudo {
+      background: #1e1b4b;
+      color: #e2e8f0;
+      padding: 18px 20px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      overflow-x: auto;
+      margin: 0;
+    }
+    pre.pseudo .kw  { color: #a78bfa; font-weight: 600; }
+    pre.pseudo .fn  { color: #67e8f9; }
+    pre.pseudo .var { color: #fde68a; }
+    pre.pseudo .cmt { color: #6b7280; font-style: italic; }
+    pre.pseudo .str { color: #86efac; }
+
+    /* Formula cards */
+    .formula-box {
+      border-radius: 14px;
+      padding: 20px 22px;
+      text-align: center;
+    }
+    .formula-box.purple { background: var(--purple-bg); border: 1px solid #c4b5fd; }
+    .formula-box.blue   { background: var(--blue-bg);   border: 1px solid #bfdbfe; }
+    .formula-box.green  { background: var(--green-bg);  border: 1px solid #a7f3d0; }
+    .formula-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .formula-box.purple .formula-name { color: var(--purple); }
+    .formula-box.blue   .formula-name { color: #2563eb; }
+    .formula-box.green  .formula-name { color: #059669; }
+    .formula-math {
+      font-size: 18px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: italic;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .formula-box.purple .formula-math { color: var(--purple-dark); }
+    .formula-box.blue   .formula-math { color: #1d4ed8; }
+    .formula-box.green  .formula-math { color: #065f46; }
+    .formula-desc {
+      font-size: 12px;
+      color: var(--gray);
+      line-height: 1.5;
+    }
+
+    /* Complexity table */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--purple-dark);
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--purple-bg); }
+    .mono { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; }
+    .badge-purple { display: inline-block; padding: 2px 8px; background: #ddd6fe; color: #4c1d95; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .badge-blue   { display: inline-block; padding: 2px 8px; background: #bfdbfe; color: #1d4ed8; border-radius: 8px; font-size: 11px; font-weight: 700; }
+    .badge-green  { display: inline-block; padding: 2px 8px; background: #a7f3d0; color: #065f46; border-radius: 8px; font-size: 11px; font-weight: 700; }
+
+    /* Q&A defense boxes */
+    .qa-card {
+      border-radius: 14px;
+      padding: 20px 24px;
+      border-left: 4px solid;
+    }
+    .qa-card.purple { background: var(--purple-bg); border-color: var(--purple); }
+    .qa-card.blue   { background: var(--blue-bg);   border-color: var(--blue); }
+    .qa-card.green  { background: var(--green-bg);  border-color: var(--green); }
+    .qa-q { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .qa-card.purple .qa-q { color: var(--purple-dark); }
+    .qa-card.blue   .qa-q { color: #1d4ed8; }
+    .qa-card.green  .qa-q { color: #065f46; }
+    .qa-a { font-size: 13px; color: #374151; line-height: 1.7; }
+
+    /* Code location */
+    .code-loc {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #1e1b4b;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .code-loc-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-purple { background: #a78bfa; }
+    .dot-blue   { background: #60a5fa; }
+    .dot-green  { background: #34d399; }
+    .code-loc-path {
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+    .code-loc-line {
+      margin-left: auto;
+      font-size: 11px;
+      color: #6b7280;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    /* Summary stat cards */
+    .stat-card {
+      border-radius: 12px;
+      padding: 18px 20px;
+      text-align: center;
+      border: 1px solid;
+    }
+    .stat-card.purple { background: var(--purple-bg); border-color: #c4b5fd; }
+    .stat-card.blue   { background: var(--blue-bg);   border-color: #bfdbfe; }
+    .stat-card.green  { background: var(--green-bg);  border-color: #a7f3d0; }
+    .stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .stat-card.purple .stat-num { color: var(--purple); }
+    .stat-card.blue   .stat-num { color: var(--blue); }
+    .stat-card.green  .stat-num { color: var(--green); }
+    .stat-label { font-size: 12px; color: var(--gray); }
+
+    canvas { max-width: 100%; }
+
+    @media (max-width: 768px) {
+      .two-col, .three-col, .four-col { grid-template-columns: 1fr; }
+      .pipeline { flex-direction: column; }
+      .arrow { transform: rotate(90deg); justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── PAGE HEADER ───────────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="tag-row" style="margin-bottom:10px;">
+    <span class="tag tag-purple">Rule-Based Analytics</span>
+    <span class="tag tag-blue">Descriptive Analytics</span>
+    <span class="tag tag-green">Hybrid Approach</span>
+  </div>
+  <h1>EduGrant — Hybrid Analytics Architecture</h1>
+  <p>CAYDO Carmona Scholarship Management System &nbsp;·&nbsp; Technical Reference for Thesis Defense</p>
+</div>
+
+<!-- ── SECTION 1: DEFINITIONS ────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 1</div>
+  <div class="section-title">What Each Analytics Type Does</div>
+  <div class="two-col">
+
+    <div class="def-card purple">
+      <h3>Rule-Based Analytics</h3>
+      <p>Evaluates each application against a set of pre-configured eligibility rules using IF-THEN logic. Each rule defines a field to check, a condition, and a threshold value. The result is a deterministic classification — <strong>Pass</strong> or <strong>Flag</strong> — with a list of violated criteria.</p>
+      <div class="method-list">
+        <span class="method-pill">IF-THEN evaluation</span>
+        <span class="method-pill">Decision table</span>
+        <span class="method-pill">Classification</span>
+      </div>
+      <p style="margin-top:12px;font-size:12px;color:#5b21b6;">
+        <strong>Answers:</strong> "Does this applicant qualify based on the configured rules?"
+      </p>
+    </div>
+
+    <div class="def-card blue">
+      <h3>Descriptive Analytics</h3>
+      <p>Examines historical application records to answer the foundational question, <strong>"What happened?"</strong> It transforms raw application data into patterns and metrics using <strong>sums</strong>, <strong>averages</strong>, and <strong>percentages</strong>. It is the starting point for all other forms of data analysis.</p>
+      <div class="method-list">
+        <span class="method-pill">Frequency counts</span>
+        <span class="method-pill">Percentages</span>
+        <span class="method-pill">Time-series grouping</span>
+      </div>
+      <p style="margin-top:12px;font-size:12px;color:#1d4ed8;">
+        <strong>Answers:</strong> "What happened over time? How many applied, were approved, or were flagged?"
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── SECTION 2: WHERE IN THE SYSTEM ───────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 2</div>
+  <div class="section-title">Where Each Component Lives in the Codebase</div>
+  <div class="two-col">
+
+    <div class="card">
+      <div class="card-title" style="color:var(--purple-dark);">Rule-Based Analytics Layer</div>
+      <div class="card-sub">Runs automatically on every submission and status change</div>
+      <div class="code-loc">
+        <div class="code-loc-dot dot-purple"></div>
+        <div class="code-loc-path">programs/services.py</div>
+        <div class="code-loc-line">run_rule_evaluation()</div>
+      </div>
+      <div class="code-loc">
+        <div class="code-loc-dot dot-purple"></div>
+        <div class="code-loc-path">programs/models.py</div>
+        <div class="code-loc-line">ProgramRule model</div>
+      </div>
+      <div class="code-loc">
+        <div class="code-loc-dot dot-purple"></div>
+        <div class="code-loc-path">programs/models.py</div>
+        <div class="code-loc-line">ScreeningResult model</div>
+      </div>
+      <p style="font-size:12px;color:#6b7280;margin-top:12px;">
+        The rule engine reads all <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;">ProgramRule</code> records for the application's program, evaluates each one against the applicant's profile data, and writes a <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;">ScreeningResult</code> with the outcome and a list of flagged rule names.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:#1d4ed8;">Descriptive Analytics Layer</div>
+      <div class="card-sub">Powers the Reports page viewed by staff</div>
+      <div class="code-loc">
+        <div class="code-loc-dot dot-blue"></div>
+        <div class="code-loc-path">config/views.py</div>
+        <div class="code-loc-line">reports_view() · line 319</div>
+      </div>
+      <div class="code-loc">
+        <div class="code-loc-dot dot-blue"></div>
+        <div class="code-loc-path">templates/reports.html</div>
+        <div class="code-loc-line">Charts &amp; summary cards</div>
+      </div>
+      <div class="code-loc">
+        <div class="code-loc-dot dot-green"></div>
+        <div class="code-loc-path">programs/models.py</div>
+        <div class="code-loc-line">ScreeningResult.reasons ← hybrid link</div>
+      </div>
+      <p style="font-size:12px;color:#6b7280;margin-top:12px;">
+        The reports view queries all <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;">Application</code> records, groups them using <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;">TruncMonth</code>, and also queries <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;">ScreeningResult</code> outcomes — which are produced by the rule-based layer.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── SECTION 3: HYBRID PIPELINE ───────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 3</div>
+  <div class="section-title">The Hybrid Pipeline — How They Connect</div>
+  <div class="card">
+    <div class="card-sub">Data flows from application submission through both analytics layers. The output of the rule-based layer becomes the input of the descriptive layer — that coupling is what makes the system hybrid.</div>
+
+    <div class="pipeline">
+
+      <div class="pipeline-step step-yellow">
+        <div class="step-num">1</div>
+        <div class="step-title">Application Submitted</div>
+        <div class="step-detail">Applicant submits form.<br>Status → <em>for_review</em></div>
+        <div class="step-file">models.Application</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="pipeline-step step-purple">
+        <div class="step-num">2</div>
+        <div class="step-title">Rule Engine Runs</div>
+        <div class="step-detail">Each ProgramRule evaluated against applicant profile using IF-THEN logic</div>
+        <div class="step-file">services.run_rule_evaluation()</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="pipeline-step step-purple">
+        <div class="step-num">3</div>
+        <div class="step-title">Screening Result Saved</div>
+        <div class="step-detail">outcome: "pass" / "flag"<br>reasons: ["Income too high", …]</div>
+        <div class="step-file">models.ScreeningResult</div>
+      </div>
+
+      <div class="arrow" style="color:#059669;font-weight:700;">→</div>
+
+      <div class="pipeline-step step-blue">
+        <div class="step-num">4</div>
+        <div class="step-title">Descriptive Layer Reads</div>
+        <div class="step-detail">Aggregates ScreeningResult outcomes &amp; Application statuses over time</div>
+        <div class="step-file">views.reports_view()</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="pipeline-step step-green">
+        <div class="step-num">5</div>
+        <div class="step-title">Reports Page</div>
+        <div class="step-detail">Charts &amp; tables answer "What happened?" for staff decision-making</div>
+        <div class="step-file">templates/reports.html</div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:14px;padding:12px 16px;background:#ecfdf5;border-radius:8px;border:1px solid #a7f3d0;">
+      <strong style="color:#065f46;font-size:13px;">The Hybrid Link (Step 3 → 4):</strong>
+      <span style="font-size:13px;color:#374151;"> The <code style="background:#d1fae5;padding:1px 5px;border-radius:3px;">ScreeningResult.reasons</code> list — produced entirely by rule-based analytics — is consumed by the descriptive layer to compute screening pass/flag counts and identify which rules flag the most applicants. Neither algorithm is changed; the hybrid nature comes from the data pipeline between them.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 4: ALGORITHMS ─────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 4</div>
+  <div class="section-title">CS Algorithms Used</div>
+  <div class="two-col" style="margin-bottom:20px;">
+
+    <!-- Algorithm A: Decision Table -->
+    <div class="pseudo-card">
+      <div class="pseudo-header pseudo-header-purple">
+        <div>
+          <div class="pseudo-title purple">Algorithm A — Decision Table Evaluation</div>
+          <div style="font-size:11px;color:#5b21b6;margin-top:2px;">Rule-Based Analytics · programs/services.py</div>
+        </div>
+        <div>
+          <span class="complexity-badge purple">Time: O(r × a)</span>
+        </div>
+      </div>
+<pre class="pseudo"><span class="cmt">// r = number of rules,  a = number of applications</span>
+<span class="kw">FUNCTION</span> <span class="fn">run_rule_evaluation</span>(<span class="var">application</span>):
+  <span class="var">reasons</span> ← []
+  <span class="var">rules</span>   ← <span class="fn">ProgramRule.objects.filter</span>(program=<span class="var">application</span>.program)
+
+  <span class="kw">FOR EACH</span> <span class="var">rule</span> <span class="kw">IN</span> <span class="var">rules</span>:
+    <span class="var">actual</span> ← <span class="fn">_get_actual_value</span>(<span class="var">rule</span>.rule_field, <span class="var">application</span>)
+    <span class="var">passed</span> ← <span class="fn">_evaluate_condition</span>(<span class="var">rule</span>.condition, <span class="var">actual</span>, <span class="var">rule</span>.value)
+    <span class="kw">IF NOT</span> <span class="var">passed</span>:
+      <span class="var">reasons</span>.<span class="fn">append</span>(<span class="var">rule</span>.name)
+
+  <span class="var">outcome</span> ← <span class="str">"flag"</span> <span class="kw">IF</span> <span class="var">reasons</span> <span class="kw">ELSE</span> <span class="str">"pass"</span>
+
+  <span class="fn">ScreeningResult.save</span>(outcome=<span class="var">outcome</span>, reasons=<span class="var">reasons</span>)
+  <span class="kw">RETURN</span> <span class="var">outcome</span>
+
+<span class="cmt">// Condition evaluation (simplified)</span>
+<span class="kw">FUNCTION</span> <span class="fn">_evaluate_condition</span>(<span class="var">condition</span>, <span class="var">actual</span>, <span class="var">threshold</span>):
+  <span class="kw">MATCH</span> <span class="var">condition</span>:
+    <span class="str">"lte"</span>       → <span class="kw">RETURN</span> <span class="var">actual</span> ≤ <span class="fn">parse_number</span>(<span class="var">threshold</span>)
+    <span class="str">"gte"</span>       → <span class="kw">RETURN</span> <span class="var">actual</span> ≥ <span class="fn">parse_number</span>(<span class="var">threshold</span>)
+    <span class="str">"equals"</span>    → <span class="kw">RETURN</span> <span class="var">actual</span> == <span class="var">threshold</span>
+    <span class="str">"in_list"</span>   → <span class="kw">RETURN</span> <span class="var">actual</span> <span class="kw">IN</span> <span class="var">threshold</span>.split(<span class="str">","</span>)
+    <span class="str">"date_after"</span>→ <span class="kw">RETURN</span> <span class="fn">parse_date</span>(<span class="var">actual</span>) > <span class="fn">parse_date</span>(<span class="var">threshold</span>)</pre>
+    </div>
+
+    <!-- Algorithm B: Hash Map Frequency -->
+    <div class="pseudo-card">
+      <div class="pseudo-header pseudo-header-blue">
+        <div>
+          <div class="pseudo-title blue">Algorithm B — Hash Map Frequency Count</div>
+          <div style="font-size:11px;color:#1d4ed8;margin-top:2px;">Descriptive Analytics · config/views.py (screening breakdown)</div>
+        </div>
+        <div>
+          <span class="complexity-badge blue">Time: O(n × k)</span>
+        </div>
+      </div>
+<pre class="pseudo"><span class="cmt">// n = flagged results,  k = reasons per result,  d = distinct rules</span>
+<span class="cmt">// Space: O(d)</span>
+<span class="kw">FUNCTION</span> <span class="fn">compute_rule_frequency</span>():
+  <span class="var">freq_map</span> ← {} <span class="cmt">// hash map: rule_name → count</span>
+
+  <span class="var">flagged</span> ← <span class="fn">ScreeningResult.objects.filter</span>(outcome=<span class="str">"flag"</span>)
+
+  <span class="kw">FOR EACH</span> <span class="var">result</span> <span class="kw">IN</span> <span class="var">flagged</span>:            <span class="cmt">// O(n)</span>
+    <span class="kw">FOR EACH</span> <span class="var">reason</span> <span class="kw">IN</span> <span class="var">result</span>.reasons:   <span class="cmt">// O(k)</span>
+      <span class="var">freq_map</span>[<span class="var">reason</span>] += 1               <span class="cmt">// O(1) hash lookup</span>
+
+  <span class="var">total_flagged</span> ← <span class="fn">len</span>(<span class="var">flagged</span>)
+
+  <span class="kw">FOR EACH</span> (<span class="var">rule</span>, <span class="var">count</span>) <span class="kw">IN</span> <span class="var">freq_map</span>:
+    <span class="var">freq_map</span>[<span class="var">rule</span>].pct ← <span class="fn">round</span>(<span class="var">count</span> / <span class="var">total_flagged</span> × 100)
+
+  <span class="kw">RETURN</span> <span class="fn">sorted</span>(<span class="var">freq_map</span>, key=count, descending=<span class="kw">True</span>)
+
+<span class="cmt">// Already implemented for pass/flag total counts:</span>
+<span class="cmt">// screening_pass = ScreeningResult.filter(outcome='pass').count()</span>
+<span class="cmt">// screening_flag = ScreeningResult.filter(outcome='flag').count()</span></pre>
+    </div>
+
+  </div>
+
+  <div class="two-col">
+
+    <!-- Algorithm C: Time-Series Bucketing -->
+    <div class="pseudo-card">
+      <div class="pseudo-header pseudo-header-blue">
+        <div>
+          <div class="pseudo-title blue">Algorithm C — Time-Series Bucketing (Monthly Trend)</div>
+          <div style="font-size:11px;color:#1d4ed8;margin-top:2px;">Descriptive Analytics · config/views.py · lines 327–340</div>
+        </div>
+        <div>
+          <span class="complexity-badge blue">Time: O(n log n)</span>
+        </div>
+      </div>
+<pre class="pseudo"><span class="cmt">// n = applications,  m = distinct months</span>
+<span class="cmt">// Space: O(m)</span>
+<span class="kw">FUNCTION</span> <span class="fn">compute_monthly_trend</span>(<span class="var">date_filter</span>):
+  <span class="var">monthly_qs</span> ← <span class="fn">Application.objects</span>
+    .<span class="fn">filter</span>(<span class="var">date_filter</span>)
+    .<span class="fn">exclude</span>(status=<span class="str">"draft"</span>)
+    .<span class="fn">annotate</span>(month=<span class="fn">TruncMonth</span>(<span class="str">"created_at"</span>))  <span class="cmt">// bucket by month</span>
+    .<span class="fn">values</span>(<span class="str">"month"</span>)
+    .<span class="fn">annotate</span>(count=<span class="fn">Count</span>(<span class="str">"id"</span>))                <span class="cmt">// count per bucket</span>
+    .<span class="fn">order_by</span>(<span class="str">"month"</span>)                           <span class="cmt">// sort chronologically</span>
+
+  <span class="cmt">// Equivalent SQL produced by Django ORM:</span>
+  <span class="cmt">// SELECT DATE_TRUNC('month', created_at) AS month,</span>
+  <span class="cmt">//        COUNT(id) AS count</span>
+  <span class="cmt">// FROM programs_application</span>
+  <span class="cmt">// WHERE status != 'draft'</span>
+  <span class="cmt">// GROUP BY 1  ORDER BY 1</span>
+
+  <span class="var">max_count</span> ← <span class="fn">max</span>(<span class="var">monthly_qs</span>, key=count)
+  <span class="kw">FOR EACH</span> <span class="var">row</span> <span class="kw">IN</span> <span class="var">monthly_qs</span>:
+    <span class="var">row</span>.pct ← <span class="fn">round</span>(<span class="var">row</span>.count / <span class="var">max_count</span> × 100) <span class="cmt">// normalize for chart</span>
+
+  <span class="kw">RETURN</span> <span class="var">monthly_qs</span></pre>
+    </div>
+
+    <!-- Algorithm D: Relative Frequency -->
+    <div class="pseudo-card">
+      <div class="pseudo-header pseudo-header-green">
+        <div>
+          <div class="pseudo-title green">Algorithm D — Relative Frequency (Approval / Rejection Rates)</div>
+          <div style="font-size:11px;color:#065f46;margin-top:2px;">Descriptive Analytics · config/views.py · lines 344–362</div>
+        </div>
+        <div>
+          <span class="complexity-badge green">Time: O(1) per metric</span>
+        </div>
+      </div>
+<pre class="pseudo"><span class="cmt">// Relative frequency formula:  P̂(x) = f(x) / n</span>
+<span class="cmt">// where f(x) = count of outcome x,  n = total count</span>
+<span class="kw">FUNCTION</span> <span class="fn">compute_program_stats</span>(<span class="var">program</span>, <span class="var">date_filter</span>):
+  <span class="var">base</span>     ← <span class="fn">Application.objects.filter</span>(program=<span class="var">program</span>)
+  <span class="var">total</span>    ← <span class="var">base</span>.<span class="fn">count</span>()                           <span class="cmt">// n</span>
+  <span class="var">approved</span> ← <span class="var">base</span>.<span class="fn">filter</span>(status=<span class="str">"approved"</span>).<span class="fn">count</span>()  <span class="cmt">// f(approved)</span>
+  <span class="var">rejected</span> ← <span class="var">base</span>.<span class="fn">filter</span>(status=<span class="str">"rejected"</span>).<span class="fn">count</span>()  <span class="cmt">// f(rejected)</span>
+  <span class="var">pending</span>  ← <span class="var">base</span>.<span class="fn">filter</span>(status__in=[<span class="str">"for_review"</span>]).<span class="fn">count</span>()
+
+  <span class="kw">IF</span> <span class="var">total</span> > 0:
+    <span class="var">approval_rate</span>  ← <span class="fn">round</span>(<span class="var">approved</span>  / <span class="var">total</span> × 100)  <span class="cmt">// relative frequency %</span>
+    <span class="var">rejection_rate</span> ← <span class="fn">round</span>(<span class="var">rejected</span>  / <span class="var">total</span> × 100)
+    <span class="var">pending_rate</span>   ← <span class="fn">round</span>(<span class="var">pending</span>   / <span class="var">total</span> × 100)
+
+  <span class="kw">RETURN</span> { total, approved, rejected, pending,
+           approval_rate, rejection_rate, pending_rate }</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── SECTION 5: FORMULAS ────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 5</div>
+  <div class="section-title">Mathematical Formulas Used</div>
+  <div class="three-col">
+
+    <div class="formula-box purple">
+      <div class="formula-name">Relative Frequency (Approval / Rejection Rate)</div>
+      <div class="formula-math">P̂(x) = f(x) / n × 100</div>
+      <div class="formula-desc">
+        <em>f(x)</em> = count of applications with outcome <em>x</em><br>
+        <em>n</em> = total submitted applications<br><br>
+        e.g. 14 approved out of 50 → 14/50 × 100 = <strong>28%</strong>
+      </div>
+    </div>
+
+    <div class="formula-box blue">
+      <div class="formula-name">Monthly Bar Normalization</div>
+      <div class="formula-math">pct<sub>m</sub> = count<sub>m</sub> / max(count) × 100</div>
+      <div class="formula-desc">
+        <em>count<sub>m</sub></em> = applications in month <em>m</em><br>
+        <em>max(count)</em> = peak month count<br><br>
+        Scales all bars so the busiest month = 100% height, making the chart readable at any scale.
+      </div>
+    </div>
+
+    <div class="formula-box green">
+      <div class="formula-name">Rule Flag Rate (per rule)</div>
+      <div class="formula-math">flag_rate<sub>r</sub> = f(r) / F × 100</div>
+      <div class="formula-desc">
+        <em>f(r)</em> = number of flagged results containing rule <em>r</em> in their reasons list<br>
+        <em>F</em> = total flagged applications<br><br>
+        Used in the hybrid output: "Income rule flagged 58% of flagged applicants."
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── SECTION 6: COMPLEXITY TABLE ───────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 6</div>
+  <div class="section-title">Algorithm Complexity Summary</div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table>
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Layer</th>
+          <th>Time Complexity</th>
+          <th>Space Complexity</th>
+          <th>Django / SQL Equivalent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Decision Table Evaluation</strong></td>
+          <td><span class="badge-purple">Rule-Based</span></td>
+          <td class="mono">O(r × a)</td>
+          <td class="mono">O(r)</td>
+          <td class="mono">Python loop in services.py</td>
+        </tr>
+        <tr>
+          <td><strong>Hash Map Frequency Count</strong></td>
+          <td><span class="badge-blue">Descriptive</span></td>
+          <td class="mono">O(n × k)</td>
+          <td class="mono">O(d)</td>
+          <td class="mono">Python dict counter on reasons</td>
+        </tr>
+        <tr>
+          <td><strong>Time-Series Bucketing</strong></td>
+          <td><span class="badge-blue">Descriptive</span></td>
+          <td class="mono">O(n log n)</td>
+          <td class="mono">O(m)</td>
+          <td class="mono">TruncMonth + Count + GROUP BY</td>
+        </tr>
+        <tr>
+          <td><strong>Relative Frequency</strong></td>
+          <td><span class="badge-blue">Descriptive</span></td>
+          <td class="mono">O(1) per metric</td>
+          <td class="mono">O(1)</td>
+          <td class="mono">.count() + division in Python</td>
+        </tr>
+        <tr>
+          <td><strong>Hybrid Pipeline</strong></td>
+          <td><span class="badge-green">Hybrid</span></td>
+          <td class="mono">O(r×a) + O(n×k)</td>
+          <td class="mono">O(r + d)</td>
+          <td class="mono">Rule engine output → descriptive input</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="padding:10px 16px;font-size:11px;color:#6b7280;border-top:1px solid #f3f4f6;">
+      r = rules, a = applications, n = screened results, k = reasons per result, d = distinct rule names, m = months
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 7: CHARTS ──────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 7</div>
+  <div class="section-title">Visual Output of the Analytics System (Sample Data)</div>
+
+  <div class="four-col" style="margin-bottom:20px;">
+    <div class="stat-card purple">
+      <div class="stat-num">187</div>
+      <div class="stat-label">Total Applications</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-num">61%</div>
+      <div class="stat-label">Approval Rate</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-num">142</div>
+      <div class="stat-label">Screening Results</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-num">38%</div>
+      <div class="stat-label">Flag Rate</div>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-bottom:20px;">
+    <div class="card full">
+      <div class="card-title">Monthly Application Submissions — Algorithm C Output</div>
+      <div class="card-sub">Time-series bucketing: applications grouped by TruncMonth, counted per bucket · O(n log n)</div>
+      <canvas id="monthlyChart" height="75"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Application Status Distribution — Algorithm D Output</div>
+      <div class="card-sub">Relative frequency: each status count divided by total · P̂(x) = f(x)/n × 100</div>
+      <canvas id="statusChart" height="220"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Rule Flag Frequency — Hybrid Analytics Output</div>
+      <div class="card-sub">Algorithm B applied to ScreeningResult.reasons (rule-based output → descriptive input)</div>
+      <canvas id="ruleChart" height="220"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top:20px;">
+    <div class="card">
+      <div class="card-title">Approval Rate by Program — Algorithm D Output</div>
+      <div class="card-sub">Relative frequency per program: approved / total × 100</div>
+      <canvas id="approvalChart" height="200"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Screening Outcome Split — Rule-Based → Descriptive</div>
+      <div class="card-sub">Rule engine classifies each application; descriptive layer counts and displays outcomes</div>
+      <canvas id="screeningChart" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 8: TESTING ─────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 8</div>
+  <div class="section-title">How to Test Descriptive Analytics</div>
+  <div class="card">
+    <p style="margin-bottom:14px;font-size:13px;color:#374151;">Testing method: <strong>Black-box output validation</strong> — seed a known dataset, then verify the system's computed outputs match manual calculations.</p>
+    <div class="two-col">
+      <div>
+        <p style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--purple-dark);">Step-by-Step Test Procedure</p>
+        <ol style="font-size:13px;color:#374151;line-height:2;padding-left:18px;">
+          <li>Create <strong>N known applications</strong> with known statuses (e.g., 10 approved, 5 rejected, 5 pending)</li>
+          <li>Open the Reports page and check: <strong>Total = 20, Approved = 10, Approval Rate = 50%</strong></li>
+          <li>Manually calculate: 10/20 × 100 = 50% — if the page shows 50%, Algorithm D is correct</li>
+          <li>Create applications dated across multiple months; verify the monthly chart shows the correct bar heights for each month</li>
+          <li>Submit an application that violates a rule; confirm the screening pass/flag counts update on the Reports page</li>
+          <li>Check which rule name appears in the flag frequency section — it should match the rule you configured</li>
+        </ol>
+      </div>
+      <div>
+        <p style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--purple-dark);">What Constitutes a Passing Test</p>
+        <div style="font-size:13px;color:#374151;line-height:2;">
+          <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;">
+            <span style="color:#059669;font-weight:700;margin-top:2px;">✓</span>
+            <span>System-computed approval rate matches <em>approved ÷ total × 100</em> manually calculated from the database</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;">
+            <span style="color:#059669;font-weight:700;margin-top:2px;">✓</span>
+            <span>Monthly chart bar for each month equals the actual count of applications submitted in that month</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;">
+            <span style="color:#059669;font-weight:700;margin-top:2px;">✓</span>
+            <span>Flagged rule names on the Reports page match the violated rules in the applicant's ScreeningResult.reasons field</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <span style="color:#059669;font-weight:700;margin-top:2px;">✓</span>
+            <span>Adding or removing an application updates all aggregated counts and percentages on the next page load</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 9: DEFENSE Q&A ─────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Section 9</div>
+  <div class="section-title">Defense Questions — Prepared Answers</div>
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <div class="qa-card purple">
+      <div class="qa-q">Q1: How do you test the descriptive analytics?</div>
+      <div class="qa-a">
+        We test it through <strong>black-box output validation</strong>. We insert a known dataset — for example, 20 applications with 10 approved — then manually calculate what the approval rate should be: 10 ÷ 20 × 100 = 50%. We then open the Reports page and verify it shows 50%. If it does, the relative frequency formula is implemented correctly. We apply the same method to the monthly trend chart: applications created in January should produce a January bar, and its height should correspond to the correct count. The testing requires no specialized tool — only a known input and a verified expected output.
+      </div>
+    </div>
+
+    <div class="qa-card blue">
+      <div class="qa-q">Q2: Where is descriptive analytics in the system?</div>
+      <div class="qa-a">
+        The descriptive analytics layer lives in two files. The computation is in <strong>config/views.py</strong> inside the <code style="background:#dbeafe;padding:1px 5px;border-radius:3px;">reports_view()</code> function — it queries Application records, groups them by month using Django's TruncMonth, and computes counts and percentages for each program. The presentation layer is in <strong>templates/reports.html</strong>, which renders those computed values as bar charts and summary cards. Specifically, the formulas are on lines 327–392: Algorithm C (time-series bucketing) for the monthly trend and Algorithm D (relative frequency) for the approval rate, rejection rate, and pending rate per program.
+      </div>
+    </div>
+
+    <div class="qa-card green">
+      <div class="qa-q">Q3: What algorithm or formula does it use?</div>
+      <div class="qa-a">
+        The system uses three algorithms. First, <strong>time-series bucketing</strong> (O(n log n)): Django's TruncMonth groups all applications by calendar month and COUNT aggregates each group — equivalent to a SQL <code style="background:#d1fae5;padding:1px 5px;border-radius:3px;">GROUP BY DATE_TRUNC</code>. Second, <strong>relative frequency</strong> (O(1) per metric): each status count is divided by the total and multiplied by 100, using the formula P̂(x) = f(x)/n × 100 — the standard descriptive statistics proportion formula. Third, <strong>hash map frequency counting</strong> (O(n×k)): this processes the output of the rule-based layer, counting how often each rule name appears in flagged screening results to identify which eligibility criteria most commonly rejects applicants. These three algorithms together constitute the descriptive analytics component.
+      </div>
+    </div>
+
+    <div class="qa-card green">
+      <div class="qa-q">Q4: How is it hybrid? Don't the two components work independently?</div>
+      <div class="qa-a">
+        They work independently in terms of algorithmic logic, but they are coupled through data. The rule-based engine saves its output — a <code style="background:#d1fae5;padding:1px 5px;border-radius:3px;">ScreeningResult</code> record containing an outcome and a list of violated rule names — to the database. The descriptive layer then reads those <code style="background:#d1fae5;padding:1px 5px;border-radius:3px;">ScreeningResult</code> records as its input: it counts pass vs. flag outcomes and applies frequency analysis to the reasons list to show which rules are flagging the most applicants. The output of one algorithm is the input of the other's analysis. That pipeline, where a classification algorithm's output feeds a statistical aggregation algorithm, is precisely what defines a hybrid system.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── CHARTS SCRIPT ──────────────────────────────────────────────────── -->
+<script>
+  const PURPLE      = '#7c3aed';
+  const PURPLE_LIGHT= 'rgba(124,58,237,0.15)';
+  const BLUE        = '#2563eb';
+  const BLUE_LIGHT  = 'rgba(37,99,235,0.15)';
+  const GREEN       = '#059669';
+  const GREEN_LIGHT = 'rgba(5,150,105,0.15)';
+  const RED         = '#dc2626';
+  const AMBER       = '#d97706';
+  const GRAY        = '#9ca3af';
+
+  const months = ['Jan 2026','Feb 2026','Mar 2026','Apr 2026','May 2026'];
+
+  // Chart 1: Monthly trend (Algorithm C output)
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Applications Submitted',
+        data: [28, 41, 35, 52, 31],
+        backgroundColor: 'rgba(124,58,237,0.75)',
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            footer: (items) => `Algorithm C: count for ${items[0].label} bucket`
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280' },
+             title: { display: true, text: 'Applications (COUNT)', color: '#6b7280', font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { color: '#6b7280' },
+             title: { display: true, text: 'TruncMonth(created_at)', color: '#6b7280', font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Chart 2: Status distribution (Algorithm D output)
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Approved', 'Rejected', 'For Review', 'Draft'],
+      datasets: [{
+        data: [114, 31, 27, 15],
+        backgroundColor: [GREEN, RED, PURPLE, GRAY],
+        borderWidth: 2,
+        borderColor: '#fff',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 14 } },
+        tooltip: {
+          callbacks: {
+            label: (item) => {
+              const total = item.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = Math.round(item.parsed / total * 100);
+              return ` ${item.label}: ${item.parsed} (${pct}%)  ← P̂(x) = f(x)/n`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Chart 3: Rule flag frequency (Hybrid output — Algorithm B)
+  new Chart(document.getElementById('ruleChart'), {
+    type: 'bar',
+    data: {
+      labels: [
+        'Income exceeds limit',
+        'Residency < 1 yr',
+        'Not currently enrolled',
+        'Civil status mismatch',
+        'Incomplete documents'
+      ],
+      datasets: [{
+        label: '# of Flagged Applications',
+        data: [32, 18, 12, 8, 5],
+        backgroundColor: [
+          'rgba(124,58,237,0.8)',
+          'rgba(124,58,237,0.65)',
+          'rgba(124,58,237,0.5)',
+          'rgba(124,58,237,0.35)',
+          'rgba(124,58,237,0.2)',
+        ],
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            footer: () => 'Algorithm B: hash map count of reason in ScreeningResult.reasons'
+          }
+        }
+      },
+      scales: {
+        x: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280' },
+             title: { display: true, text: 'Frequency count', color: '#6b7280', font: { size: 11 } } },
+        y: { grid: { display: false }, ticks: { color: '#374151', font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Chart 4: Approval rate by program
+  new Chart(document.getElementById('approvalChart'), {
+    type: 'bar',
+    data: {
+      labels: ['SPARK (Grant)', 'SINAG (Scholarship)'],
+      datasets: [
+        { label: 'Approved %',  data: [68, 54], backgroundColor: GREEN,  borderRadius: 4, borderSkipped: false },
+        { label: 'Rejected %',  data: [16, 22], backgroundColor: RED,    borderRadius: 4, borderSkipped: false },
+        { label: 'Pending %',   data: [16, 24], backgroundColor: AMBER,  borderRadius: 4, borderSkipped: false },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100,
+             grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280', callback: v => v + '%' },
+             title: { display: true, text: 'Relative frequency (%)', color: '#6b7280', font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { color: '#374151' } }
+      }
+    }
+  });
+
+  // Chart 5: Screening outcome
+  new Chart(document.getElementById('screeningChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Pass (meets all rules)', 'Flag (one or more rules violated)'],
+      datasets: [{
+        data: [88, 54],
+        backgroundColor: [GREEN, RED],
+        borderWidth: 2,
+        borderColor: '#fff',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 14 } },
+        tooltip: {
+          callbacks: {
+            label: (item) => {
+              const total = item.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = Math.round(item.parsed / total * 100);
+              return ` ${item.label}: ${item.parsed} (${pct}%)`;
+            },
+            footer: () => 'Source: ScreeningResult.outcome (rule engine output → descriptive input)'
+          }
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

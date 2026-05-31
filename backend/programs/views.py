@@ -353,12 +353,18 @@ def generic_application_step1_view(request, program_id):
             'program': program,
         })
 
-    application, _ = Application.objects.get_or_create(
+    application = Application.objects.filter(
         applicant=request.user,
         program=program,
         status='draft',
-        defaults={'status': 'draft'},
-    )
+        is_archived=False,
+    ).first()
+    if application is None:
+        application = Application.objects.create(
+            applicant=request.user,
+            program=program,
+            status='draft',
+        )
 
     if request.method == 'POST':
         _save_step1_data(request, application)

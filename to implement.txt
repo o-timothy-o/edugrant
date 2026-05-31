@@ -1,0 +1,11 @@
+PENDING IMPLEMENTATIONS
+=======================
+
+1. SCREENING OUTCOMES CHARTS (Reports Page)
+   - Add query in reports_view (config/views.py) to break down ScreeningResult pass/flag counts
+     by PROGRAM and by MONTH (using TruncMonth)
+   - Add two new Chart.js charts to templates/reports.html:
+       a. Stacked bar: pass vs. flag count per program
+       b. Line/bar chart: pass vs. flag count per month over time
+   - Purpose: makes the Hash Map Frequency Count algorithm visually demonstrable on the admin
+     portal; also strengthens the hybrid analytics argument (rule-based output → descriptive layer)

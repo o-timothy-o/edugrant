@@ -11,7 +11,7 @@ from .views import (
     archive_program_view, restore_program_view, archived_list_view,
     export_applications_csv, export_programs_csv, export_applicants_csv,
     view_applications_report, view_programs_report, view_applicants_report,
-    program_rules_view, edit_rule_view, delete_rule_view,
+    program_rules_view, edit_rule_view, delete_rule_view, all_applications_view,
 )
 
 urlpatterns = [
@@ -20,6 +20,7 @@ urlpatterns = [
     path("dashboard/", admin_dashboard_view, name="admin_dashboard"),
     path("applicants/", users_list_view, name="users_list"),
     path("applications/", applicants_list_view, name="applicants_list"),
+    path("applications/all/", all_applications_view, name="all_applications"),
     path("applications/<int:application_id>/archive/", archive_application_view, name="archive_application"),
     path("applications/<int:application_id>/restore/", restore_application_view, name="restore_application"),
     path("reports/", reports_view, name="reports"),

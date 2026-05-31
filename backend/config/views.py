@@ -365,6 +365,58 @@ def reports_view(request):
     screening_flag = ScreeningResult.objects.filter(outcome='flag').count()
     screening_total = screening_pass + screening_flag
 
+    # Screening outcomes per program
+    screening_by_program = []
+    for prog in all_programs:
+        s_pass = ScreeningResult.objects.filter(application__program=prog, outcome='pass').count()
+        s_flag = ScreeningResult.objects.filter(application__program=prog, outcome='flag').count()
+        s_total = s_pass + s_flag
+        screening_by_program.append({
+            'program': prog,
+            'pass': s_pass,
+            'flag': s_flag,
+            'total': s_total,
+            'pass_rate': round(s_pass / s_total * 100) if s_total else 0,
+            'flag_rate': round(s_flag / s_total * 100) if s_total else 0,
+        })
+
+    # Screening outcomes per month
+    screening_monthly_qs = (
+        ScreeningResult.objects
+        .annotate(month=TruncMonth('created_at'))
+        .values('month', 'outcome')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    screening_monthly_map = {}
+    for row in screening_monthly_qs:
+        key = row['month']
+        if key not in screening_monthly_map:
+            label_str = key.strftime('%b %Y') if key else ''
+            screening_monthly_map[key] = {'month_label': label_str, 'pass': 0, 'flag': 0}
+        screening_monthly_map[key][row['outcome']] = row['count']
+    screening_monthly_data = sorted(screening_monthly_map.values(), key=lambda x: x['month_label'])
+
+    # Rejection reason frequency (diagnostic analytics)
+    REJECTION_LABELS = dict(Application.RejectionReason.choices)
+    rejection_qs = (
+        Application.objects
+        .filter(df, status='rejected')
+        .exclude(rejection_reason='')
+        .values('rejection_reason')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    total_with_reason = sum(r['count'] for r in rejection_qs)
+    rejection_reason_data = [
+        {
+            'reason': REJECTION_LABELS.get(r['rejection_reason'], r['rejection_reason']),
+            'count': r['count'],
+            'pct': round(r['count'] / total_with_reason * 100) if total_with_reason else 0,
+        }
+        for r in rejection_qs
+    ]
+
     total_applications = Application.objects.filter(df).exclude(status='draft').count()
     total_approved = Application.objects.filter(df, status='approved').count()
     total_rejected = Application.objects.filter(df, status='rejected').count()
@@ -377,6 +429,9 @@ def reports_view(request):
         'screening_pass': screening_pass,
         'screening_flag': screening_flag,
         'screening_total': screening_total,
+        'screening_by_program': screening_by_program,
+        'screening_monthly_data': screening_monthly_data,
+        'rejection_reason_data': rejection_reason_data,
         'total_applications': total_applications,
         'total_approved': total_approved,
         'total_rejected': total_rejected,
@@ -390,6 +445,46 @@ def reports_view(request):
         'available_years': available_years,
     }
     return render(request, 'reports.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def all_applications_view(request):
+    qs = (
+        Application.objects
+        .filter(is_archived=False)
+        .exclude(status='draft')
+        .select_related('applicant', 'program')
+        .order_by('-created_at')
+    )
+
+    status_filter  = request.GET.get('status', '')
+    program_filter = request.GET.get('program', '')
+    search         = request.GET.get('q', '').strip()
+
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+    if program_filter:
+        qs = qs.filter(program_id=program_filter)
+    if search:
+        qs = qs.filter(
+            Q(applicant__first_name__icontains=search) |
+            Q(applicant__last_name__icontains=search) |
+            Q(applicant__email__icontains=search)
+        )
+
+    programs = Program.objects.filter(is_archived=False).order_by('name')
+    status_choices = [s for s in Application.ApplicationStatus.choices if s[0] != 'draft']
+
+    context = {
+        'applications': qs,
+        'programs': programs,
+        'status_choices': status_choices,
+        'status_filter': status_filter,
+        'program_filter': program_filter,
+        'search': search,
+        'total': qs.count(),
+    }
+    return render(request, 'all_applications.html', context)
 
 
 @staff_member_required(login_url="staff_login")

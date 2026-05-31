@@ -267,7 +267,7 @@
         <h2>Admin Actions</h2>
         <p class="review-actions-hint">Update the status of this application. This action will be saved immediately.</p>
 
-        <form method="post">
+        <form method="post" id="mainActionForm">
           {% csrf_token %}
           <div class="review-action-buttons">
             <button type="submit" name="action" value="awaiting_physical" class="btn review-btn-await">
@@ -278,7 +278,7 @@
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
               Fully Approve
             </button>
-            <button type="submit" name="action" value="rejected" class="btn review-btn-reject">
+            <button type="button" class="btn review-btn-reject" data-bs-toggle="modal" data-bs-target="#rejectModal">
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
               Reject
             </button>
@@ -325,4 +325,49 @@
 
   </div>
 </div>
+
+<!-- Reject with Reason Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(to right,#ef4444,#b91c1c);color:#fff;border-radius:12px 12px 0 0;">
+        <h5 class="modal-title" id="rejectModalLabel">Reject Application</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="rejected">
+        <div class="modal-body" style="padding:24px;">
+          <p style="margin-bottom:16px;">Please select the reason for rejecting this application.</p>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Rejection Reason <span style="color:#ef4444;">*</span></label>
+            <select name="rejection_reason" id="rejectionReasonSelect" class="form-select" required>
+              <option value="">— Select a reason —</option>
+              <option value="income">Income exceeds program limit</option>
+              <option value="residency">Does not meet residency requirement</option>
+              <option value="not_enrolled">Not currently enrolled</option>
+              <option value="incomplete">Incomplete or invalid documents</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="mb-3" id="otherReasonGroup" style="display:none;">
+            <label class="form-label" style="font-weight:600;font-size:13px;">Please specify</label>
+            <input type="text" name="rejection_reason_other" id="rejectionReasonOther" class="form-control" placeholder="Describe the reason...">
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:16px 24px;">
+          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('rejectionReasonSelect').addEventListener('change', function() {
+    document.getElementById('otherReasonGroup').style.display = this.value === 'other' ? '' : 'none';
+    document.getElementById('rejectionReasonOther').required = this.value === 'other';
+  });
+</script>
 {% endblock %}

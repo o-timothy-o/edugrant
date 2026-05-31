@@ -1,11 +1,26 @@
 PENDING IMPLEMENTATIONS
 =======================
 
-1. SCREENING OUTCOMES CHARTS (Reports Page)
-   - Add query in reports_view (config/views.py) to break down ScreeningResult pass/flag counts
-     by PROGRAM and by MONTH (using TruncMonth)
-   - Add two new Chart.js charts to templates/reports.html:
-       a. Stacked bar: pass vs. flag count per program
-       b. Line/bar chart: pass vs. flag count per month over time
-   - Purpose: makes the Hash Map Frequency Count algorithm visually demonstrable on the admin
-     portal; also strengthens the hybrid analytics argument (rule-based output → descriptive layer)
+All items below have been implemented.
+
+1. SCREENING OUTCOMES CHARTS (Reports Page) — DONE
+   - Added screening by program (pass/flag rate bars) to reports.html
+   - Added screening by month table to reports.html
+   - Added queries in reports_view (config/views.py)
+
+2. DIAGNOSTIC ANALYTICS — Rejection Reason Tracking & Distribution — DONE
+   - Added rejection_reason + rejection_reason_other fields to Application model
+   - Migration: 0013_application_rejection_reason.py
+   - Reject button on application_review.html now opens a modal requiring a reason
+   - "Other" option reveals a free-text input
+   - Rejection reason saved in programs/views.py action handler
+   - Rejection reason Pareto chart (horizontal bars) added to reports.html
+   - Frequency distribution query added to reports_view (config/views.py)
+
+3. ALL APPLICATIONS — Custom Staff View — DONE
+   - New view: all_applications_view in config/views.py
+   - New URL: /applications/all/ (name: all_applications)
+   - New template: templates/all_applications.html
+     - Filter by status, program, or search by name/email
+     - Shows rejection reason as sub-label under status for rejected apps
+   - Fixed dashboard link: admin_dashboard.html line 61 now uses {% url 'all_applications' %}

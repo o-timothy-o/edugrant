@@ -250,6 +250,9 @@ def application_review_view(request, application_id):
         action = request.POST.get('action')
         if action in ['approved', 'rejected', 'for_review', 'awaiting_physical']:
             application.status = action
+            if action == 'rejected':
+                application.rejection_reason = request.POST.get('rejection_reason', '')
+                application.rejection_reason_other = request.POST.get('rejection_reason_other', '').strip()
             application.save()
             ApplicationStatusLog.objects.create(application=application, status=action, changed_by=request.user)
             send_status_notification(application, action)

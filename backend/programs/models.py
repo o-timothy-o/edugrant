@@ -76,10 +76,21 @@ class Application(models.Model):
         choices=ApplicationStatus.choices,
         default=ApplicationStatus.DRAFT,
     )
+    class RejectionReason(models.TextChoices):
+        INCOME       = "income",        "Income exceeds program limit"
+        RESIDENCY    = "residency",     "Does not meet residency requirement"
+        NOT_ENROLLED = "not_enrolled",  "Not currently enrolled"
+        INCOMPLETE   = "incomplete",    "Incomplete or invalid documents"
+        OTHER        = "other",         "Other"
+
     submitted_at = models.DateTimeField(null=True, blank=True)
     remarks = models.TextField(blank=True)
     educational_data = models.JSONField(default=dict, blank=True)
     is_archived = models.BooleanField(default=False)
+    rejection_reason = models.CharField(
+        max_length=32, choices=RejectionReason.choices, blank=True, default='',
+    )
+    rejection_reason_other = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

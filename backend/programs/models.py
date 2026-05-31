@@ -135,7 +135,7 @@ class ApplicationDocument(models.Model):
         choices=DocStatus.choices,
         default=DocStatus.MISSING,
     )
-    file = models.FileField(upload_to="application_docs/%Y/%m/", blank=True, null=True)
+    file = models.FileField(upload_to="application_docs/%Y/%m/", blank=True, null=True, max_length=500)
     issue_notes = models.CharField(max_length=255, blank=True)
 
     class Meta:

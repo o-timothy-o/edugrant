@@ -207,20 +207,20 @@
       {% if stats.total > 0 %}
       <div class="report-stat-bars">
         <div class="report-stat-bar-row">
-          <span class="report-stat-bar-label">Approved</span>
+          <a href="{% url 'all_applications' %}?status=approved&program={{ stats.program.id }}" class="report-stat-bar-label" style="text-decoration:none;color:inherit;">Approved</a>
           <div class="report-stat-bar-track">
             <div class="report-stat-bar-fill" style="width:{{ stats.approval_rate }}%; background:#16a34a;"></div>
           </div>
           <span class="report-stat-bar-rate">{{ stats.approval_rate }}%</span>
-          <span class="report-stat-bar-count">({{ stats.approved }})</span>
+          <a href="{% url 'all_applications' %}?status=approved&program={{ stats.program.id }}" class="report-stat-bar-count" style="text-decoration:none;color:#16a34a;font-weight:600;">({{ stats.approved }})</a>
         </div>
         <div class="report-stat-bar-row">
-          <span class="report-stat-bar-label">Rejected</span>
+          <a href="{% url 'all_applications' %}?status=rejected&program={{ stats.program.id }}" class="report-stat-bar-label" style="text-decoration:none;color:inherit;">Rejected</a>
           <div class="report-stat-bar-track">
             <div class="report-stat-bar-fill" style="width:{{ stats.rejection_rate }}%; background:#dc2626;"></div>
           </div>
           <span class="report-stat-bar-rate">{{ stats.rejection_rate }}%</span>
-          <span class="report-stat-bar-count">({{ stats.rejected }})</span>
+          <a href="{% url 'all_applications' %}?status=rejected&program={{ stats.program.id }}" class="report-stat-bar-count" style="text-decoration:none;color:#dc2626;font-weight:600;">({{ stats.rejected }})</a>
         </div>
         <div class="report-stat-bar-row">
           <span class="report-stat-bar-label">Pending</span>

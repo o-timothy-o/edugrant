@@ -391,7 +391,7 @@ def all_applications_view(request):
         Application.objects
         .filter(is_archived=False)
         .exclude(status='draft')
-        .select_related('applicant', 'program')
+        .select_related('applicant', 'program', 'screening_result')
         .order_by('-created_at')
     )
 

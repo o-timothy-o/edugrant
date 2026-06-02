@@ -66,6 +66,7 @@
           <th>Applicant</th>
           <th>Program</th>
           <th>Status</th>
+          <th>Screening Result</th>
           <th>Submitted</th>
           <th></th>
         </tr>
@@ -84,8 +85,26 @@
           </td>
           <td>
             <span class="app-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
-            {% if app.status == 'rejected' and app.rejection_reason %}
-            <p style="font-size:11px;color:#6b7280;margin:3px 0 0;">{{ app.rejection_reason_labels|join:", " }}</p>
+            {% if app.status == 'rejected' %}
+              {% if app.rejection_reason %}
+              <p style="font-size:11px;color:#6b7280;margin:3px 0 0;">{{ app.rejection_reason_labels|join:", " }}</p>
+              {% else %}
+              <p style="font-size:11px;color:#9ca3af;margin:3px 0 0;font-style:italic;">No reason recorded</p>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            {% if app.screening_result %}
+              {% if app.screening_result.outcome == 'pass' %}
+              <span style="font-size:12px;font-weight:600;color:#059669;">Pass</span>
+              {% else %}
+              <span style="font-size:12px;font-weight:600;color:#dc2626;">Flag</span>
+              {% if app.screening_result.reasons %}
+              <p style="font-size:11px;color:#6b7280;margin:3px 0 0;">{{ app.screening_result.reasons|join:", " }}</p>
+              {% endif %}
+              {% endif %}
+            {% else %}
+            <span style="font-size:12px;color:#9ca3af;">—</span>
             {% endif %}
           </td>
           <td class="admin-date">{{ app.created_at|date:"M j, Y" }}</td>

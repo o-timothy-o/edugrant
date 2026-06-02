@@ -80,6 +80,7 @@ class Application(models.Model):
         INCOME       = "income",        "Income exceeds program limit"
         RESIDENCY    = "residency",     "Does not meet residency requirement"
         NOT_ENROLLED = "not_enrolled",  "Not currently enrolled"
+        EMPLOYMENT   = "employment",    "Does not meet employment status requirement"
         INCOMPLETE   = "incomplete",    "Incomplete or invalid documents"
         OTHER        = "other",         "Other"
 

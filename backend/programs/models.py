@@ -87,10 +87,13 @@ class Application(models.Model):
     remarks = models.TextField(blank=True)
     educational_data = models.JSONField(default=dict, blank=True)
     is_archived = models.BooleanField(default=False)
-    rejection_reason = models.CharField(
-        max_length=32, choices=RejectionReason.choices, blank=True, default='',
-    )
+    rejection_reason = models.JSONField(default=list, blank=True)
     rejection_reason_other = models.CharField(max_length=255, blank=True, default='')
+
+    @property
+    def rejection_reason_labels(self):
+        labels = dict(self.RejectionReason.choices)
+        return [labels.get(r, r) for r in (self.rejection_reason or [])]
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

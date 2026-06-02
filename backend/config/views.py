@@ -398,24 +398,26 @@ def reports_view(request):
     screening_monthly_data = sorted(screening_monthly_map.values(), key=lambda x: x['month_label'])
 
     # Rejection reason frequency (diagnostic analytics)
+    # rejection_reason is now a JSONField list — count each reason across all rejected apps
     REJECTION_LABELS = dict(Application.RejectionReason.choices)
-    rejection_qs = (
-        Application.objects
-        .filter(df, status='rejected')
-        .exclude(rejection_reason='')
-        .values('rejection_reason')
-        .annotate(count=Count('id'))
-        .order_by('-count')
+    rejected_apps = Application.objects.filter(df, status='rejected')
+    reason_counter = {}
+    for app in rejected_apps:
+        for reason in (app.rejection_reason or []):
+            reason_counter[reason] = reason_counter.get(reason, 0) + 1
+    total_rejected = rejected_apps.count()
+    rejection_reason_data = sorted(
+        [
+            {
+                'reason': REJECTION_LABELS.get(r, r),
+                'count': c,
+                'pct': round(c / total_rejected * 100) if total_rejected else 0,
+            }
+            for r, c in reason_counter.items()
+        ],
+        key=lambda x: x['count'],
+        reverse=True,
     )
-    total_with_reason = sum(r['count'] for r in rejection_qs)
-    rejection_reason_data = [
-        {
-            'reason': REJECTION_LABELS.get(r['rejection_reason'], r['rejection_reason']),
-            'count': r['count'],
-            'pct': round(r['count'] / total_with_reason * 100) if total_with_reason else 0,
-        }
-        for r in rejection_qs
-    ]
 
     total_applications = Application.objects.filter(df).exclude(status='draft').count()
     total_approved = Application.objects.filter(df, status='approved').count()

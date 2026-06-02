@@ -251,7 +251,7 @@ def application_review_view(request, application_id):
         if action in ['approved', 'rejected', 'for_review', 'awaiting_physical']:
             application.status = action
             if action == 'rejected':
-                application.rejection_reason = request.POST.get('rejection_reason', '')
+                application.rejection_reason = request.POST.getlist('rejection_reason')
                 application.rejection_reason_other = request.POST.get('rejection_reason_other', '').strip()
             application.save()
             ApplicationStatusLog.objects.create(application=application, status=action, changed_by=request.user)
@@ -259,7 +259,7 @@ def application_review_view(request, application_id):
             if action == 'for_review':
                 run_rule_evaluation(application)
             messages.success(request, f'Application has been marked as {application.get_status_display()}.')
-            return redirect('admin_dashboard')
+            return redirect('all_applications')
         elif action == 'update_doc':
             doc_id = request.POST.get('doc_id')
             new_status = request.POST.get('new_status')
@@ -289,6 +289,7 @@ def application_review_view(request, application_id):
         'profile': profile,
         'educational_data': application.educational_data,
         'status_log_map': status_log_map,
+        'rejection_reason_choices': Application.RejectionReason.choices,
     }
     return render(request, 'programs/application_review.html', context)
 

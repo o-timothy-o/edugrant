@@ -85,7 +85,7 @@
           <td>
             <span class="app-status-badge status-{{ app.status }}">{{ app.get_status_display }}</span>
             {% if app.status == 'rejected' and app.rejection_reason %}
-            <p style="font-size:11px;color:#6b7280;margin:3px 0 0;">{{ app.get_rejection_reason_display }}</p>
+            <p style="font-size:11px;color:#6b7280;margin:3px 0 0;">{{ app.rejection_reason_labels|join:", " }}</p>
             {% endif %}
           </td>
           <td class="admin-date">{{ app.created_at|date:"M j, Y" }}</td>

@@ -340,15 +340,17 @@
         <div class="modal-body" style="padding:24px;">
           <p style="margin-bottom:16px;">Please select the reason for rejecting this application.</p>
           <div class="mb-3">
-            <label class="form-label" style="font-weight:600;font-size:13px;">Rejection Reason <span style="color:#ef4444;">*</span></label>
-            <select name="rejection_reason" id="rejectionReasonSelect" class="form-select" required>
-              <option value="">— Select a reason —</option>
-              <option value="income">Income exceeds program limit</option>
-              <option value="residency">Does not meet residency requirement</option>
-              <option value="not_enrolled">Not currently enrolled</option>
-              <option value="incomplete">Incomplete or invalid documents</option>
-              <option value="other">Other</option>
-            </select>
+            <label class="form-label" style="font-weight:600;font-size:13px;">Rejection Reason(s) <span style="color:#ef4444;">*</span></label>
+            <p style="font-size:12px;color:#6b7280;margin-bottom:10px;">Select all that apply.</p>
+            <div id="rejectionCheckboxes">
+              {% for value, label in rejection_reason_choices %}
+              <div class="form-check" style="margin-bottom:8px;">
+                <input class="form-check-input rejection-check" type="checkbox"
+                  name="rejection_reason" value="{{ value }}" id="rr_{{ value }}">
+                <label class="form-check-label" style="font-size:13px;" for="rr_{{ value }}">{{ label }}</label>
+              </div>
+              {% endfor %}
+            </div>
           </div>
           <div class="mb-3" id="otherReasonGroup" style="display:none;">
             <label class="form-label" style="font-weight:600;font-size:13px;">Please specify</label>
@@ -365,9 +367,20 @@
 </div>
 
 <script>
-  document.getElementById('rejectionReasonSelect').addEventListener('change', function() {
-    document.getElementById('otherReasonGroup').style.display = this.value === 'other' ? '' : 'none';
-    document.getElementById('rejectionReasonOther').required = this.value === 'other';
+  document.querySelectorAll('.rejection-check').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      var otherChecked = document.getElementById('rr_other').checked;
+      document.getElementById('otherReasonGroup').style.display = otherChecked ? '' : 'none';
+      document.getElementById('rejectionReasonOther').required = otherChecked;
+    });
+  });
+
+  document.getElementById('rejectModal').querySelector('form').addEventListener('submit', function(e) {
+    var checked = document.querySelectorAll('.rejection-check:checked');
+    if (checked.length === 0) {
+      e.preventDefault();
+      alert('Please select at least one rejection reason.');
+    }
   });
 </script>
 {% endblock %}

@@ -12,6 +12,9 @@ from .views import (
     export_applications_csv, export_programs_csv, export_applicants_csv,
     view_applications_report, view_programs_report, view_applicants_report,
     program_rules_view, edit_rule_view, delete_rule_view, all_applications_view,
+    screening_analytics_view, rejection_reasons_view,
+    export_screening_csv, export_rejection_reasons_csv,
+    view_screening_report, view_rejection_reasons_report,
 )
 
 urlpatterns = [
@@ -30,6 +33,12 @@ urlpatterns = [
     path("reports/view/applications/", view_applications_report, name="view_applications_report"),
     path("reports/view/programs/", view_programs_report, name="view_programs_report"),
     path("reports/view/applicants/", view_applicants_report, name="view_applicants_report"),
+    path("reports/screening/", screening_analytics_view, name="screening_analytics"),
+    path("reports/rejection-reasons/", rejection_reasons_view, name="rejection_reasons"),
+    path("reports/export/screening/", export_screening_csv, name="export_screening_csv"),
+    path("reports/export/rejection-reasons/", export_rejection_reasons_csv, name="export_rejection_reasons_csv"),
+    path("reports/view/screening/", view_screening_report, name="view_screening_report"),
+    path("reports/view/rejection-reasons/", view_rejection_reasons_report, name="view_rejection_reasons_report"),
     path("manage/programs/", program_list_view, name="program_list"),
     path("manage/programs/add/", add_program_view, name="add_program"),
     path("manage/programs/<int:program_id>/edit/", edit_program_view, name="edit_program"),

@@ -361,64 +361,6 @@ def reports_view(request):
             'draft_rate': round(draft / total * 100) if total else 0,
         })
 
-    screening_pass = ScreeningResult.objects.filter(outcome='pass').count()
-    screening_flag = ScreeningResult.objects.filter(outcome='flag').count()
-    screening_total = screening_pass + screening_flag
-
-    # Screening outcomes per program
-    screening_by_program = []
-    for prog in all_programs:
-        s_pass = ScreeningResult.objects.filter(application__program=prog, outcome='pass').count()
-        s_flag = ScreeningResult.objects.filter(application__program=prog, outcome='flag').count()
-        s_total = s_pass + s_flag
-        screening_by_program.append({
-            'program': prog,
-            'pass': s_pass,
-            'flag': s_flag,
-            'total': s_total,
-            'pass_rate': round(s_pass / s_total * 100) if s_total else 0,
-            'flag_rate': round(s_flag / s_total * 100) if s_total else 0,
-        })
-
-    # Screening outcomes per month
-    screening_monthly_qs = (
-        ScreeningResult.objects
-        .annotate(month=TruncMonth('created_at'))
-        .values('month', 'outcome')
-        .annotate(count=Count('id'))
-        .order_by('month')
-    )
-    screening_monthly_map = {}
-    for row in screening_monthly_qs:
-        key = row['month']
-        if key not in screening_monthly_map:
-            label_str = key.strftime('%b %Y') if key else ''
-            screening_monthly_map[key] = {'month_label': label_str, 'pass': 0, 'flag': 0}
-        screening_monthly_map[key][row['outcome']] = row['count']
-    screening_monthly_data = sorted(screening_monthly_map.values(), key=lambda x: x['month_label'])
-
-    # Rejection reason frequency (diagnostic analytics)
-    # rejection_reason is now a JSONField list — count each reason across all rejected apps
-    REJECTION_LABELS = dict(Application.RejectionReason.choices)
-    rejected_apps = Application.objects.filter(df, status='rejected')
-    reason_counter = {}
-    for app in rejected_apps:
-        for reason in (app.rejection_reason or []):
-            reason_counter[reason] = reason_counter.get(reason, 0) + 1
-    total_rejected = rejected_apps.count()
-    rejection_reason_data = sorted(
-        [
-            {
-                'reason': REJECTION_LABELS.get(r, r),
-                'count': c,
-                'pct': round(c / total_rejected * 100) if total_rejected else 0,
-            }
-            for r, c in reason_counter.items()
-        ],
-        key=lambda x: x['count'],
-        reverse=True,
-    )
-
     total_applications = Application.objects.filter(df).exclude(status='draft').count()
     total_approved = Application.objects.filter(df, status='approved').count()
     total_rejected = Application.objects.filter(df, status='rejected').count()
@@ -428,12 +370,6 @@ def reports_view(request):
         'monthly_data': monthly_data,
         'max_monthly': max_monthly,
         'all_program_stats': all_program_stats,
-        'screening_pass': screening_pass,
-        'screening_flag': screening_flag,
-        'screening_total': screening_total,
-        'screening_by_program': screening_by_program,
-        'screening_monthly_data': screening_monthly_data,
-        'rejection_reason_data': rejection_reason_data,
         'total_applications': total_applications,
         'total_approved': total_approved,
         'total_rejected': total_rejected,
@@ -683,3 +619,212 @@ def view_applicants_report(request):
         'total': users.count(),
     }
     return render(request, 'reports/applicants_report.html', context)
+
+
+def _screening_by_program_data(program_filter=''):
+    all_programs = Program.objects.filter(is_archived=False).order_by('name')
+    programs_to_show = all_programs.filter(id=program_filter) if program_filter else all_programs
+    result = []
+    for prog in programs_to_show:
+        s_pass = ScreeningResult.objects.filter(application__program=prog, outcome='pass').count()
+        s_flag = ScreeningResult.objects.filter(application__program=prog, outcome='flag').count()
+        s_total = s_pass + s_flag
+        result.append({
+            'program': prog,
+            'pass': s_pass,
+            'flag': s_flag,
+            'total': s_total,
+            'pass_rate': round(s_pass / s_total * 100) if s_total else 0,
+            'flag_rate': round(s_flag / s_total * 100) if s_total else 0,
+        })
+    return result
+
+
+@staff_member_required(login_url="staff_login")
+def screening_analytics_view(request):
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date)
+    label = _filter_label(filter_type, year, month, from_date, to_date)
+    program_filter = request.GET.get('program', '')
+
+    year_vals = Application.objects.values_list('created_at__year', flat=True).distinct().order_by('-created_at__year')
+    available_years = list(year_vals) or [timezone.now().year]
+
+    all_programs = Program.objects.filter(is_archived=False).order_by('name')
+    screening_by_program = _screening_by_program_data(program_filter)
+
+    base_monthly_qs = ScreeningResult.objects.filter(df)
+    if program_filter:
+        base_monthly_qs = base_monthly_qs.filter(application__program_id=program_filter)
+    screening_monthly_qs = (
+        base_monthly_qs
+        .annotate(month=TruncMonth('created_at'))
+        .values('month', 'outcome')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    screening_monthly_map = {}
+    for row in screening_monthly_qs:
+        key = row['month']
+        if key not in screening_monthly_map:
+            screening_monthly_map[key] = {'month_label': key.strftime('%b %Y') if key else '', 'pass': 0, 'flag': 0}
+        screening_monthly_map[key][row['outcome']] = row['count']
+    screening_monthly_data = sorted(screening_monthly_map.values(), key=lambda x: x['month_label'])
+
+    context = {
+        'screening_by_program': screening_by_program,
+        'screening_monthly_data': screening_monthly_data,
+        'all_programs': all_programs,
+        'program_filter': program_filter,
+        'filter_type': filter_type,
+        'active_year': year,
+        'active_month': month,
+        'active_from_date': from_date,
+        'active_to_date': to_date,
+        'filter_label': label,
+        'available_years': available_years,
+    }
+    return render(request, 'reports/screening.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def rejection_reasons_view(request):
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date)
+    label = _filter_label(filter_type, year, month, from_date, to_date)
+    program_filter = request.GET.get('program', '')
+
+    year_vals = Application.objects.values_list('created_at__year', flat=True).distinct().order_by('-created_at__year')
+    available_years = list(year_vals) or [timezone.now().year]
+
+    all_programs = Program.objects.filter(is_archived=False).order_by('name')
+    REJECTION_LABELS = dict(Application.RejectionReason.choices)
+    rejected_apps = Application.objects.filter(df, status='rejected')
+    if program_filter:
+        rejected_apps = rejected_apps.filter(program_id=program_filter)
+
+    reason_counter = {}
+    for app in rejected_apps:
+        for reason in (app.rejection_reason or []):
+            reason_counter[reason] = reason_counter.get(reason, 0) + 1
+    total_rejected = rejected_apps.count()
+    rejection_reason_data = sorted(
+        [
+            {
+                'reason': REJECTION_LABELS.get(r, r),
+                'count': c,
+                'pct': round(c / total_rejected * 100) if total_rejected else 0,
+            }
+            for r, c in reason_counter.items()
+        ],
+        key=lambda x: x['count'],
+        reverse=True,
+    )
+
+    context = {
+        'rejection_reason_data': rejection_reason_data,
+        'total_rejected': total_rejected,
+        'all_programs': all_programs,
+        'program_filter': program_filter,
+        'filter_type': filter_type,
+        'active_year': year,
+        'active_month': month,
+        'active_from_date': from_date,
+        'active_to_date': to_date,
+        'filter_label': label,
+        'available_years': available_years,
+    }
+    return render(request, 'reports/rejection_reasons.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def export_screening_csv(request):
+    program_filter = request.GET.get('program', '')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="screening_outcomes.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Program', 'Pass', 'Flag', 'Total', 'Pass Rate (%)', 'Flag Rate (%)'])
+    for row in _screening_by_program_data(program_filter):
+        writer.writerow([
+            row['program'].name,
+            row['pass'], row['flag'], row['total'],
+            row['pass_rate'], row['flag_rate'],
+        ])
+    return response
+
+
+@staff_member_required(login_url="staff_login")
+def export_rejection_reasons_csv(request):
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date)
+    program_filter = request.GET.get('program', '')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="rejection_reasons.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Reason', 'Count', 'Percentage (%)'])
+    REJECTION_LABELS = dict(Application.RejectionReason.choices)
+    rejected_apps = Application.objects.filter(df, status='rejected')
+    if program_filter:
+        rejected_apps = rejected_apps.filter(program_id=program_filter)
+    reason_counter = {}
+    for app in rejected_apps:
+        for reason in (app.rejection_reason or []):
+            reason_counter[reason] = reason_counter.get(reason, 0) + 1
+    total = rejected_apps.count()
+    for r, c in sorted(reason_counter.items(), key=lambda x: x[1], reverse=True):
+        writer.writerow([
+            REJECTION_LABELS.get(r, r), c,
+            round(c / total * 100, 1) if total else 0,
+        ])
+    return response
+
+
+@staff_member_required(login_url="staff_login")
+def view_screening_report(request):
+    program_filter = request.GET.get('program', '')
+    all_programs = Program.objects.filter(is_archived=False).order_by('name')
+    selected_program = None
+    if program_filter:
+        selected_program = all_programs.filter(id=program_filter).first()
+    context = {
+        'screening_by_program': _screening_by_program_data(program_filter),
+        'report_date': timezone.now(),
+        'filter_label': selected_program.name if selected_program else 'All Programs',
+    }
+    return render(request, 'reports/screening_report.html', context)
+
+
+@staff_member_required(login_url="staff_login")
+def view_rejection_reasons_report(request):
+    filter_type, year, month, from_date, to_date = _get_filter_params(request)
+    df = _date_filter(filter_type, year, month, from_date, to_date)
+    label = _filter_label(filter_type, year, month, from_date, to_date)
+    program_filter = request.GET.get('program', '')
+    REJECTION_LABELS = dict(Application.RejectionReason.choices)
+    rejected_apps = Application.objects.filter(df, status='rejected')
+    if program_filter:
+        rejected_apps = rejected_apps.filter(program_id=program_filter)
+    reason_counter = {}
+    for app in rejected_apps:
+        for reason in (app.rejection_reason or []):
+            reason_counter[reason] = reason_counter.get(reason, 0) + 1
+    total_rejected = rejected_apps.count()
+    rejection_reason_data = sorted(
+        [
+            {
+                'reason': REJECTION_LABELS.get(r, r),
+                'count': c,
+                'pct': round(c / total_rejected * 100, 1) if total_rejected else 0,
+            }
+            for r, c in reason_counter.items()
+        ],
+        key=lambda x: x['count'],
+        reverse=True,
+    )
+    context = {
+        'rejection_reason_data': rejection_reason_data,
+        'total_rejected': total_rejected,
+        'report_date': timezone.now(),
+        'filter_label': label,
+    }
+    return render(request, 'reports/rejection_reasons_report.html', context)

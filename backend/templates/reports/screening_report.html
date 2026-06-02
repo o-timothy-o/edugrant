@@ -1,0 +1,61 @@
+{% extends "reports/report_base.html" %}
+
+{% block page_title %}Screening Analytics Report{% endblock %}
+{% block doc_title %}Screening Analytics{% endblock %}
+
+{% block download_btn %}
+<a href="{% url 'export_screening_csv' %}{% if program_filter %}?program={{ program_filter }}{% endif %}"
+   class="toolbar-btn toolbar-btn-outline">
+  &#8659; Export CSV
+</a>
+{% endblock %}
+
+{% block report_body %}
+
+{% if screening_by_program %}
+<div class="report-summary-row">
+  {% for s in screening_by_program %}
+  <div class="report-summary-stat">
+    <div class="report-summary-stat-label">{{ s.program.short_name|default:s.program.name }}</div>
+    <div class="report-summary-stat-value">{{ s.total }}</div>
+    <div style="font-size:11px;color:#6b7280;margin-top:2px;">screened</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="report-table-wrap">
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Program</th>
+        <th class="num-col" style="color:#059669;">Pass</th>
+        <th class="num-col" style="color:#059669;">Pass Rate</th>
+        <th class="num-col" style="color:#dc2626;">Flag</th>
+        <th class="num-col" style="color:#dc2626;">Flag Rate</th>
+        <th class="num-col">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in screening_by_program %}
+      <tr>
+        <td>{{ s.program.name }}</td>
+        <td class="num-col" style="color:#059669;font-weight:600;">{{ s.pass }}</td>
+        <td class="num-col">{{ s.pass_rate }}%</td>
+        <td class="num-col" style="color:#dc2626;font-weight:600;">{{ s.flag }}</td>
+        <td class="num-col">{{ s.flag_rate }}%</td>
+        <td class="num-col">{{ s.total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="report-empty">No screening results found.</p>
+{% endif %}
+
+<p class="report-footer-note">
+  Pass = application cleared all program rules. Flag = one or more rules were violated.
+  Generated on {{ report_date|date:"F j, Y, g:i a" }}.
+</p>
+
+{% endblock %}

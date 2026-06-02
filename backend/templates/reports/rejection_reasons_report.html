@@ -1,0 +1,59 @@
+{% extends "reports/report_base.html" %}
+
+{% block page_title %}Rejection Reasons Report{% endblock %}
+{% block doc_title %}Rejection Reasons{% endblock %}
+
+{% block download_btn %}
+<a href="{% url 'export_rejection_reasons_csv' %}?{{ request.GET.urlencode }}"
+   class="toolbar-btn toolbar-btn-outline">
+  &#8659; Export CSV
+</a>
+{% endblock %}
+
+{% block report_body %}
+
+<div class="report-summary-row">
+  <div class="report-summary-stat">
+    <div class="report-summary-stat-label">Rejected Applications</div>
+    <div class="report-summary-stat-value">{{ total_rejected }}</div>
+  </div>
+  <div class="report-summary-stat">
+    <div class="report-summary-stat-label">Distinct Reasons</div>
+    <div class="report-summary-stat-value">{{ rejection_reason_data|length }}</div>
+  </div>
+</div>
+
+{% if rejection_reason_data %}
+<div class="report-table-wrap">
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Rejection Reason</th>
+        <th class="num-col">Count</th>
+        <th class="num-col">Percentage (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rejection_reason_data %}
+      <tr>
+        <td style="color:#6b7280;">{{ forloop.counter }}</td>
+        <td>{{ row.reason }}</td>
+        <td class="num-col" style="font-weight:600;">{{ row.count }}</td>
+        <td class="num-col" style="color:#dc2626;font-weight:600;">{{ row.pct }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="report-empty">No rejection reasons recorded for this period.</p>
+{% endif %}
+
+<p class="report-footer-note">
+  An application may have multiple rejection reasons. Percentages are relative to
+  {{ total_rejected }} rejected application{{ total_rejected|pluralize }}.
+  Generated on {{ report_date|date:"F j, Y, g:i a" }}.
+</p>
+
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Rejection Reasons{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub">
+        <a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> ›
+        <a href="{% url 'reports' %}" class="review-breadcrumb">Reports</a> › Rejection Reasons
+      </p>
+      <h1 class="admin-dashboard-title">Rejection Reasons</h1>
+    </div>
+    <div class="report-export-group">
+      <span class="report-export-label">Export / Print</span>
+      <a href="{% url 'export_rejection_reasons_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline btn-sm">Export CSV</a>
+      <a href="{% url 'view_rejection_reasons_report' %}?{{ request.GET.urlencode }}" class="btn btn-outline btn-sm" target="_blank">View Report</a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="report-filter-form" id="reportFilterForm">
+    <div class="report-filter-row">
+
+      <label class="report-filter-label">Filter by:</label>
+
+      <select name="filter_type" id="filterType" class="report-filter-select">
+        <option value="" {% if not filter_type %}selected{% endif %}>All Time</option>
+        <option value="year" {% if filter_type == 'year' %}selected{% endif %}>By Year</option>
+        <option value="month" {% if filter_type == 'month' %}selected{% endif %}>By Month</option>
+        <option value="range" {% if filter_type == 'range' %}selected{% endif %}>Date Range</option>
+      </select>
+
+      <div id="yearInput" class="report-filter-group" {% if filter_type != 'year' and filter_type != 'month' %}style="display:none"{% endif %}>
+        <select name="year" class="report-filter-select">
+          {% for y in available_years %}
+          <option value="{{ y }}" {% if active_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div id="monthInput" class="report-filter-group" {% if filter_type != 'month' %}style="display:none"{% endif %}>
+        <select name="month" class="report-filter-select">
+          <option value="1"  {% if active_month == '1'  %}selected{% endif %}>January</option>
+          <option value="2"  {% if active_month == '2'  %}selected{% endif %}>February</option>
+          <option value="3"  {% if active_month == '3'  %}selected{% endif %}>March</option>
+          <option value="4"  {% if active_month == '4'  %}selected{% endif %}>April</option>
+          <option value="5"  {% if active_month == '5'  %}selected{% endif %}>May</option>
+          <option value="6"  {% if active_month == '6'  %}selected{% endif %}>June</option>
+          <option value="7"  {% if active_month == '7'  %}selected{% endif %}>July</option>
+          <option value="8"  {% if active_month == '8'  %}selected{% endif %}>August</option>
+          <option value="9"  {% if active_month == '9'  %}selected{% endif %}>September</option>
+          <option value="10" {% if active_month == '10' %}selected{% endif %}>October</option>
+          <option value="11" {% if active_month == '11' %}selected{% endif %}>November</option>
+          <option value="12" {% if active_month == '12' %}selected{% endif %}>December</option>
+        </select>
+      </div>
+
+      <div id="rangeInput" class="report-filter-group report-filter-range" {% if filter_type != 'range' %}style="display:none"{% endif %}>
+        <input type="date" name="from_date" value="{{ active_from_date }}" class="report-filter-date" placeholder="From">
+        <span class="report-filter-range-sep">to</span>
+        <input type="date" name="to_date" value="{{ active_to_date }}" class="report-filter-date" placeholder="To">
+      </div>
+
+      <div class="report-filter-group">
+        <select name="program" class="report-filter-select">
+          <option value="">All Programs</option>
+          {% for prog in all_programs %}
+          <option value="{{ prog.id }}" {% if program_filter == prog.id|stringformat:"s" %}selected{% endif %}>
+            {{ prog.short_name|default:prog.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+      {% if filter_type or program_filter %}
+      <a href="{% url 'rejection_reasons' %}" class="btn btn-outline btn-sm">Clear</a>
+      {% endif %}
+
+    </div>
+    {% if filter_type %}
+    <p class="report-filter-active">Showing: <strong>{{ filter_label }}</strong></p>
+    {% endif %}
+  </form>
+
+  <script>
+  (function () {
+    var typeEl = document.getElementById('filterType');
+    var yearEl = document.getElementById('yearInput');
+    var monthEl = document.getElementById('monthInput');
+    var rangeEl = document.getElementById('rangeInput');
+    function setGroup(el, visible) {
+      el.style.display = visible ? '' : 'none';
+      el.querySelectorAll('input, select').forEach(function (i) { i.disabled = !visible; });
+    }
+    function update() {
+      var t = typeEl.value;
+      setGroup(yearEl,  t === 'year' || t === 'month');
+      setGroup(monthEl, t === 'month');
+      setGroup(rangeEl, t === 'range');
+    }
+    typeEl.addEventListener('change', update);
+    update();
+  })();
+  </script>
+
+  <!-- Summary -->
+  {% if total_rejected %}
+  <p style="font-size:13px;color:#6b7280;margin-bottom:16px;">
+    Based on <strong>{{ total_rejected }}</strong> rejected application{{ total_rejected|pluralize }}.
+    An application may have multiple rejection reasons.
+  </p>
+  {% endif %}
+
+  <!-- Pareto chart -->
+  <div class="admin-card" style="margin-bottom:20px;">
+    <div class="admin-card-header">
+      <h2>Rejection Reason Distribution</h2>
+      <span class="report-chart-sub">Pareto order — most common first</span>
+    </div>
+    {% if rejection_reason_data %}
+    <div class="report-stat-bars">
+      {% for row in rejection_reason_data %}
+      <div class="report-stat-bar-row">
+        <span class="report-stat-bar-label">{{ row.reason }}</span>
+        <div class="report-stat-bar-track">
+          <div class="report-stat-bar-fill" style="width:{{ row.pct }}%;background:#dc2626;"></div>
+        </div>
+        <span class="report-stat-bar-rate">{{ row.pct }}%</span>
+        <span class="report-stat-bar-count">({{ row.count }})</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Data table for export reference -->
+    <div style="margin-top:20px;overflow-x:auto;">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Reason</th>
+            <th>Count</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rejection_reason_data %}
+          <tr>
+            <td style="font-size:12px;color:#6b7280;">{{ forloop.counter }}</td>
+            <td>{{ row.reason }}</td>
+            <td style="font-weight:600;">{{ row.count }}</td>
+            <td style="color:#dc2626;font-weight:600;">{{ row.pct }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="admin-empty">No rejection reasons recorded yet. Reasons are captured when an admin rejects an application.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

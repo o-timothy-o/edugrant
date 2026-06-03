@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dataset Integrity Check{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+
+  <div class="admin-dashboard-header">
+    <div>
+      <p class="admin-dashboard-sub">
+        <a href="{% url 'admin_dashboard' %}" class="review-breadcrumb">Dashboard</a> ›
+        <a href="{% url 'reports' %}" class="review-breadcrumb">Reports</a> ›
+        Dataset Integrity
+      </p>
+      <h1 class="admin-dashboard-title">Dataset Integrity Check</h1>
+    </div>
+    <a href="{% url 'integrity_check' %}" class="btn btn-primary btn-sm">↻ Re-run Check</a>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="admin-stats-row" style="margin-bottom:24px;">
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background:rgba(22,163,74,0.1);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Checks Passed</p>
+        <p class="admin-stat-value" style="color:#16a34a;">{{ data.passed }} / {{ data.total }}</p>
+        <p class="admin-stat-caption">{% if data.failed == 0 %}All checks passed{% else %}{{ data.failed }} failed{% endif %}</p>
+      </div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background:rgba(124,58,237,0.1);">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+      </div>
+      <div>
+        <p class="admin-stat-label">Dimensions Covered</p>
+        <p class="admin-stat-value">5</p>
+        <p class="admin-stat-caption">Completeness · Validity · Consistency · Uniqueness · Referential Integrity</p>
+      </div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="admin-stat-icon" style="background:{% if data.failed == 0 %}rgba(22,163,74,0.1){% else %}rgba(220,38,38,0.08){% endif %};">
+        {% if data.failed == 0 %}
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        {% else %}
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        {% endif %}
+      </div>
+      <div>
+        <p class="admin-stat-label">Overall Status</p>
+        <p class="admin-stat-value" style="color:{% if data.failed == 0 %}#16a34a{% else %}#dc2626{% endif %};">
+          {% if data.failed == 0 %}Healthy{% else %}Issues Found{% endif %}
+        </p>
+        <p class="admin-stat-caption">{% if data.failed == 0 %}No anomalies detected{% else %}{{ data.failed }} check(s) require attention{% endif %}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results by dimension -->
+  {% for dimension, checks in data.dimensions.items %}
+  <div class="admin-card" style="margin-bottom:16px;">
+    <div class="admin-card-header">
+      <h2>{{ dimension }}</h2>
+      {% with passed=0 %}
+      <span style="font-size:12px;color:#6b7280;">
+        {% for c in checks %}{% if c.passed %}{% endif %}{% endfor %}
+        {{ checks|length }} check{{ checks|length|pluralize }}
+      </span>
+      {% endwith %}
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      {% for check in checks %}
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:8px;background:{% if check.passed %}#f0fdf4{% else %}#fef2f2{% endif %};">
+        <div style="flex-shrink:0;margin-top:1px;">
+          {% if check.passed %}
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          {% else %}
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          {% endif %}
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:13px;font-weight:600;color:{% if check.passed %}#166534{% else %}#991b1b{% endif %};margin:0;">
+            {{ check.name }}
+          </p>
+          {% if not check.passed %}
+          <p style="font-size:12px;color:#dc2626;margin:3px 0 0;">{{ check.detail }}</p>
+          {% endif %}
+        </div>
+        <span style="flex-shrink:0;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;
+          {% if check.passed %}background:#dcfce7;color:#166534;{% else %}background:#fee2e2;color:#991b1b;{% endif %}">
+          {% if check.passed %}PASS{% else %}FAIL{% endif %}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Overall callout -->
+  <div class="admin-card" style="border-left:4px solid {% if data.failed == 0 %}#22c55e{% else %}#dc2626{% endif %};">
+    {% if data.failed == 0 %}
+    <p style="font-size:13px;color:#374151;margin:0;">
+      <strong style="color:#16a34a;">{{ data.passed }}/{{ data.total }} integrity checks passed.</strong>
+      The dataset contains no missing profiles, no unparseable field values, no orphaned records, and no duplicate submissions.
+      Analytics outputs are derived from a structurally sound dataset.
+    </p>
+    {% else %}
+    <p style="font-size:13px;color:#374151;margin:0;">
+      <strong style="color:#dc2626;">{{ data.failed }} check(s) failed.</strong>
+      Review the items above and resolve any anomalies before using analytics outputs for reporting.
+    </p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

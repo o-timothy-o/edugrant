@@ -868,3 +868,98 @@ def view_rejection_reasons_report(request):
         'filter_label': label,
     }
     return render(request, 'reports/rejection_reasons_report.html', context)
+
+
+# ---------------------------------------------------------------------------
+# Dataset Integrity Check
+# ---------------------------------------------------------------------------
+
+def _run_integrity_checks():
+    from accounts.models import ApplicantProfile
+    from programs.services import _extract_number
+
+    ACTIVE = [
+        Application.ApplicationStatus.SUBMITTED,
+        Application.ApplicationStatus.FOR_REVIEW,
+        Application.ApplicationStatus.APPROVED,
+        Application.ApplicationStatus.AWAITING_PHYSICAL,
+        Application.ApplicationStatus.REJECTED,
+    ]
+
+    def check(dimension, name, passed, detail=''):
+        return {'dimension': dimension, 'name': name, 'passed': passed, 'detail': detail}
+
+    results = []
+
+    # — Completeness —
+    active_ids = set(Application.objects.filter(status__in=ACTIVE).values_list('applicant_id', flat=True))
+    profile_ids = set(ApplicantProfile.objects.filter(user_id__in=active_ids).values_list('user_id', flat=True))
+    no_profile = len(active_ids - profile_ids)
+    results.append(check('Completeness', 'All applicants have a profile record', no_profile == 0, f'{no_profile} applicant(s) missing a profile'))
+
+    blank = ApplicantProfile.objects.filter(user_id__in=active_ids).filter(
+        Q(first_name='') | Q(last_name='') | Q(monthly_income='') | Q(residency_years='')
+    ).count()
+    results.append(check('Completeness', 'No blank critical fields (name, income, residency)', blank == 0, f'{blank} profile(s) with blank required fields'))
+
+    no_date = Application.objects.filter(status__in=ACTIVE, submitted_at__isnull=True).count()
+    results.append(check('Completeness', 'All submitted applications have a submission date', no_date == 0, f'{no_date} application(s) missing submitted_at'))
+
+    # — Validity —
+    profiles = list(ApplicantProfile.objects.filter(user_id__in=active_ids).only('monthly_income', 'residency_years'))
+    bad_income = sum(1 for p in profiles if p.monthly_income and _extract_number(p.monthly_income) is None)
+    results.append(check('Validity', 'monthly_income is a parseable numeric value', bad_income == 0, f'{bad_income} profile(s) with unparseable income'))
+
+    bad_res = sum(1 for p in profiles if p.residency_years and _extract_number(p.residency_years) is None)
+    results.append(check('Validity', 'residency_years is a parseable numeric value', bad_res == 0, f'{bad_res} profile(s) with unparseable residency'))
+
+    valid_statuses = {s for s, _ in Application.ApplicationStatus.choices}
+    bad_status = Application.objects.exclude(status__in=valid_statuses).count()
+    results.append(check('Validity', 'All application status values are valid', bad_status == 0, f'{bad_status} application(s) with invalid status'))
+
+    # — Consistency —
+    no_reason = sum(1 for a in Application.objects.filter(status=Application.ApplicationStatus.REJECTED).only('rejection_reason') if not a.rejection_reason)
+    results.append(check('Consistency', 'All rejected applications have a recorded rejection reason', no_reason == 0, f'{no_reason} rejected application(s) with no reason'))
+
+    total_active = Application.objects.filter(status__in=ACTIVE).count()
+    has_result = Application.objects.filter(status__in=ACTIVE, screening_result__isnull=False).count()
+    missing_sr = total_active - has_result
+    results.append(check('Consistency', 'All submitted applications have a screening result', missing_sr == 0, f'{missing_sr} application(s) missing a ScreeningResult'))
+
+    dup_approved = Application.objects.filter(status=Application.ApplicationStatus.APPROVED).values('applicant_id', 'program_id').annotate(cnt=Count('id')).filter(cnt__gt=1).count()
+    results.append(check('Consistency', 'No duplicate approved applications per applicant per program', dup_approved == 0, f'{dup_approved} pair(s) with duplicate approvals'))
+
+    # — Uniqueness —
+    dup_emails = User.objects.values('email').annotate(cnt=Count('id')).filter(cnt__gt=1).count()
+    results.append(check('Uniqueness', 'No duplicate user email addresses', dup_emails == 0, f'{dup_emails} email(s) used by multiple accounts'))
+
+    dup_subs = Application.objects.filter(status__in=ACTIVE).values('applicant_id', 'program_id').annotate(cnt=Count('id')).filter(cnt__gt=1).count()
+    results.append(check('Uniqueness', 'No applicant submitted more than once to the same program', dup_subs == 0, f'{dup_subs} (applicant, program) pair(s) with multiple submissions'))
+
+    # — Referential Integrity —
+    valid_prog_ids = set(Program.objects.values_list('id', flat=True))
+    orphan_apps = Application.objects.exclude(program_id__in=valid_prog_ids).count()
+    results.append(check('Referential Integrity', 'All applications reference an existing program', orphan_apps == 0, f'{orphan_apps} application(s) with missing program reference'))
+
+    valid_app_ids = set(Application.objects.values_list('id', flat=True))
+    orphan_sr = ScreeningResult.objects.exclude(application_id__in=valid_app_ids).count()
+    results.append(check('Referential Integrity', 'All screening results reference an existing application', orphan_sr == 0, f'{orphan_sr} orphaned ScreeningResult(s)'))
+
+    passed = sum(1 for r in results if r['passed'])
+    dimensions = {}
+    for r in results:
+        dimensions.setdefault(r['dimension'], []).append(r)
+
+    return {
+        'dimensions': dimensions,
+        'results': results,
+        'total': len(results),
+        'passed': passed,
+        'failed': len(results) - passed,
+    }
+
+
+@staff_member_required(login_url="staff_login")
+def integrity_check_view(request):
+    data = _run_integrity_checks()
+    return render(request, 'reports/integrity.html', {'data': data})

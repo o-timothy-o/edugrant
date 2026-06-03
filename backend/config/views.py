@@ -113,23 +113,36 @@ def applicants_list_view(request):
     status_filter = request.GET.get('status', '')
     search = request.GET.get('q', '').strip()
 
-    applications = Application.objects.filter(is_archived=False).select_related('applicant', 'program').order_by('-created_at')
+    qs = (
+        Application.objects
+        .filter(is_archived=False)
+        .select_related('applicant', 'program')
+        .order_by('-created_at')
+    )
 
     if program_filter:
-        applications = applications.filter(program__name=program_filter)
+        qs = qs.filter(program__name=program_filter)
     if status_filter:
-        applications = applications.filter(status=status_filter)
+        qs = qs.filter(status=status_filter)
     if search:
-        applications = applications.filter(
-            applicant__email__icontains=search
-        ) | applications.filter(
-            applicant__first_name__icontains=search
-        ) | applications.filter(
-            applicant__last_name__icontains=search
+        qs = qs.filter(
+            Q(applicant__email__icontains=search) |
+            Q(applicant__first_name__icontains=search) |
+            Q(applicant__last_name__icontains=search)
         )
-        applications = applications.filter(is_archived=False).select_related('applicant', 'program').order_by('-created_at')
 
     programs = Program.objects.filter(is_archived=False)
+
+    PAGE_SIZE = 20
+    try:
+        page = max(1, int(request.GET.get('page', 1)))
+    except (ValueError, TypeError):
+        page = 1
+
+    offset = (page - 1) * PAGE_SIZE
+    batch = list(qs[offset:offset + PAGE_SIZE + 1])
+    has_next = len(batch) > PAGE_SIZE
+    applications = batch[:PAGE_SIZE]
 
     context = {
         'applications': applications,
@@ -137,7 +150,9 @@ def applicants_list_view(request):
         'program_filter': program_filter,
         'status_filter': status_filter,
         'search': search,
-        'total': applications.count(),
+        'page': page,
+        'has_prev': page > 1,
+        'has_next': has_next,
         'status_choices': Application.ApplicationStatus.choices,
     }
     return render(request, 'applicants_list.html', context)

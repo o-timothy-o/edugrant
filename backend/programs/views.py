@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
@@ -125,6 +126,7 @@ def spark_application_step2_view(request, application_id):
                 doc.save()
 
         application.status = 'for_review'
+        application.submitted_at = timezone.now()
         application.save()
         ApplicationStatusLog.objects.create(application=application, status='for_review', changed_by=request.user)
         send_status_notification(application, 'for_review')
@@ -192,6 +194,7 @@ def sinag_application_step2_view(request, application_id):
                 doc.save()
 
         application.status = 'for_review'
+        application.submitted_at = timezone.now()
         application.save()
         ApplicationStatusLog.objects.create(application=application, status='for_review', changed_by=request.user)
         send_status_notification(application, 'for_review')
@@ -429,6 +432,7 @@ def generic_application_step2_view(request, program_id, application_id):
                 doc.save()
 
         application.status = 'for_review'
+        application.submitted_at = timezone.now()
         application.save()
         ApplicationStatusLog.objects.create(application=application, status='for_review', changed_by=request.user)
         send_status_notification(application, 'for_review')

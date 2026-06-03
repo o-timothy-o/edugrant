@@ -414,7 +414,6 @@ def all_applications_view(request):
     programs = Program.objects.filter(is_archived=False).order_by('name')
     status_choices = [s for s in Application.ApplicationStatus.choices if s[0] != 'draft']
 
-    total = qs.count()
     paginator = Paginator(qs, 50)
     page_obj = paginator.get_page(request.GET.get('page'))
 
@@ -426,27 +425,32 @@ def all_applications_view(request):
         'status_filter': status_filter,
         'program_filter': program_filter,
         'search': search,
-        'total': total,
+        'total': paginator.count,
     }
     return render(request, 'all_applications.html', context)
 
 
 @staff_member_required(login_url="staff_login")
 def admin_dashboard_view(request):
-    total_applicants = User.objects.filter(is_staff=False).count()
-    total_applications = Application.objects.filter(is_archived=False).count()
+    # Single aggregate query replaces 6 individual COUNT queries
+    app_stats = Application.objects.filter(is_archived=False).aggregate(
+        total=Count('id'),
+        submitted=Count('id', filter=Q(status='submitted')),
+        for_review=Count('id', filter=Q(status='for_review')),
+        approved=Count('id', filter=Q(status__in=['approved', 'awaiting_physical'])),
+        rejected=Count('id', filter=Q(status='rejected')),
+        draft=Count('id', filter=Q(status='draft')),
+    )
+
+    # Single annotated query replaces N per-program COUNT queries
     program_counts = [
-        {'program': prog, 'count': Application.objects.filter(program=prog, is_archived=False).count()}
-        for prog in Program.objects.filter(is_archived=False).order_by('name')
+        {'program': p, 'count': p.app_count}
+        for p in Program.objects.filter(is_archived=False).annotate(
+            app_count=Count('applications', filter=Q(applications__is_archived=False))
+        ).order_by('name')
     ]
 
-    status_counts = {
-        'submitted': Application.objects.filter(status='submitted', is_archived=False).count(),
-        'for_review': Application.objects.filter(status='for_review', is_archived=False).count(),
-        'approved': Application.objects.filter(status__in=['approved', 'awaiting_physical'], is_archived=False).count(),
-        'rejected': Application.objects.filter(status='rejected', is_archived=False).count(),
-        'draft': Application.objects.filter(status='draft', is_archived=False).count(),
-    }
+    total_applicants = User.objects.filter(is_staff=False).count()
 
     recent_applications = Application.objects.filter(is_archived=False).select_related(
         'applicant', 'program'
@@ -454,9 +458,15 @@ def admin_dashboard_view(request):
 
     context = {
         'total_applicants': total_applicants,
-        'total_applications': total_applications,
+        'total_applications': app_stats['total'],
         'program_counts': program_counts,
-        'status_counts': status_counts,
+        'status_counts': {
+            'submitted': app_stats['submitted'],
+            'for_review': app_stats['for_review'],
+            'approved': app_stats['approved'],
+            'rejected': app_stats['rejected'],
+            'draft': app_stats['draft'],
+        },
         'recent_applications': recent_applications,
     }
     return render(request, 'admin_dashboard.html', context)

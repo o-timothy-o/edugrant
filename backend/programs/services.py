@@ -145,14 +145,15 @@ def run_rule_evaluation(application):
             reasons.append(f"{rule.name}: {reason}")
             outcome = ScreeningResult.Outcome.FLAG
 
-    # 2. Conflict: applicant must not have prior approved assistance
+    # 2. Conflict: applicant must not have a prior approved application for the same program
     prior_approved = Application.objects.filter(
         applicant=application.applicant,
+        program=application.program,
         status=Application.ApplicationStatus.APPROVED,
     ).exclude(id=application.id)
 
     if prior_approved.exists():
-        reasons.append("Applicant has existing or prior approved scholarship/grant assistance")
+        reasons.append("Applicant already has an approved application for this program")
         outcome = ScreeningResult.Outcome.FLAG
 
     # 3. Completeness: all required documents submitted and valid

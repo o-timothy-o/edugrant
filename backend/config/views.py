@@ -362,7 +362,7 @@ def reports_view(request):
         })
 
     total_applications = Application.objects.filter(df).exclude(status='draft').count()
-    total_approved = Application.objects.filter(df, status='approved').count()
+    total_approved = Application.objects.filter(df, status__in=['approved', 'awaiting_physical']).count()
     total_rejected = Application.objects.filter(df, status='rejected').count()
     total_pending = Application.objects.filter(df, status__in=['submitted', 'for_review']).count()
 
@@ -437,7 +437,7 @@ def admin_dashboard_view(request):
     status_counts = {
         'submitted': Application.objects.filter(status='submitted', is_archived=False).count(),
         'for_review': Application.objects.filter(status='for_review', is_archived=False).count(),
-        'approved': Application.objects.filter(status='approved', is_archived=False).count(),
+        'approved': Application.objects.filter(status__in=['approved', 'awaiting_physical'], is_archived=False).count(),
         'rejected': Application.objects.filter(status='rejected', is_archived=False).count(),
         'draft': Application.objects.filter(status='draft', is_archived=False).count(),
     }

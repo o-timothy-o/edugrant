@@ -1,4 +1,5 @@
 import csv
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
@@ -413,14 +414,19 @@ def all_applications_view(request):
     programs = Program.objects.filter(is_archived=False).order_by('name')
     status_choices = [s for s in Application.ApplicationStatus.choices if s[0] != 'draft']
 
+    total = qs.count()
+    paginator = Paginator(qs, 50)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
     context = {
-        'applications': qs,
+        'applications': page_obj,
+        'page_obj': page_obj,
         'programs': programs,
         'status_choices': status_choices,
         'status_filter': status_filter,
         'program_filter': program_filter,
         'search': search,
-        'total': qs.count(),
+        'total': total,
     }
     return render(request, 'all_applications.html', context)
 

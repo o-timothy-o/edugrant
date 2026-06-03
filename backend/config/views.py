@@ -414,18 +414,27 @@ def all_applications_view(request):
     programs = Program.objects.filter(is_archived=False).order_by('name')
     status_choices = [s for s in Application.ApplicationStatus.choices if s[0] != 'draft']
 
-    paginator = Paginator(qs, 50)
-    page_obj = paginator.get_page(request.GET.get('page'))
+    PAGE_SIZE = 20
+    try:
+        page = max(1, int(request.GET.get('page', 1)))
+    except (ValueError, TypeError):
+        page = 1
+
+    offset = (page - 1) * PAGE_SIZE
+    batch = list(qs[offset:offset + PAGE_SIZE + 1])
+    has_next = len(batch) > PAGE_SIZE
+    applications = batch[:PAGE_SIZE]
 
     context = {
-        'applications': page_obj,
-        'page_obj': page_obj,
+        'applications': applications,
         'programs': programs,
         'status_choices': status_choices,
         'status_filter': status_filter,
         'program_filter': program_filter,
         'search': search,
-        'total': paginator.count,
+        'page': page,
+        'has_prev': page > 1,
+        'has_next': has_next,
     }
     return render(request, 'all_applications.html', context)
 

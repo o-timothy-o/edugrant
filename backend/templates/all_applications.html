@@ -13,7 +13,7 @@
       </p>
       <h1 class="admin-dashboard-title">All Applications</h1>
     </div>
-    <span style="font-size:13px;color:#6b7280;">{{ total }} application{{ total|pluralize }}</span>
+    <span style="font-size:13px;color:#6b7280;">Page {{ page }}</span>
   </div>
 
   <!-- Filters -->
@@ -122,29 +122,19 @@
       </tbody>
     </table>
 
-    {% if page_obj.paginator.num_pages > 1 %}
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0 4px;flex-wrap:wrap;gap:10px;">
-      <span style="font-size:13px;color:#6b7280;">
-        Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ total }}
-      </span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        {% if page_obj.has_previous %}
-        <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if program_filter %}program={{ program_filter }}&{% endif %}{% if search %}q={{ search }}&{% endif %}page={{ page_obj.previous_page_number }}"
-           style="padding:5px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#374151;text-decoration:none;">← Prev</a>
+    {% if has_prev or has_next %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 14px;border-top:1px solid #f1f5f9;">
+      <div>
+        {% if has_prev %}
+        <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if program_filter %}program={{ program_filter }}&{% endif %}{% if search %}q={{ search }}&{% endif %}page={{ page|add:"-1" }}"
+           style="padding:6px 14px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#374151;text-decoration:none;">← Previous</a>
         {% endif %}
-
-        {% for num in page_obj.paginator.page_range %}
-          {% if page_obj.number == num %}
-          <span style="padding:5px 12px;border:1px solid #7c3aed;border-radius:6px;font-size:13px;font-weight:600;color:#7c3aed;background:#f3e8ff;">{{ num }}</span>
-          {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-          <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if program_filter %}program={{ program_filter }}&{% endif %}{% if search %}q={{ search }}&{% endif %}page={{ num }}"
-             style="padding:5px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#374151;text-decoration:none;">{{ num }}</a>
-          {% endif %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-        <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if program_filter %}program={{ program_filter }}&{% endif %}{% if search %}q={{ search }}&{% endif %}page={{ page_obj.next_page_number }}"
-           style="padding:5px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#374151;text-decoration:none;">Next →</a>
+      </div>
+      <span style="font-size:12px;color:#9ca3af;">Page {{ page }}</span>
+      <div>
+        {% if has_next %}
+        <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}{% if program_filter %}program={{ program_filter }}&{% endif %}{% if search %}q={{ search }}&{% endif %}page={{ page|add:"1" }}"
+           style="padding:6px 14px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#374151;text-decoration:none;">Next →</a>
         {% endif %}
       </div>
     </div>

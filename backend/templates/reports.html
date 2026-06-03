@@ -147,22 +147,66 @@
 
   <!-- Monthly submissions chart -->
   <div class="admin-card" style="margin-bottom:20px;">
-    <div class="admin-card-header">
+    <div class="admin-card-header" style="align-items:center;">
       <h2>Applications Over Time</h2>
-      <span class="report-chart-sub">by month submitted</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="chartYearPrev" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;color:#374151;line-height:1;">&#8592;</button>
+        <span id="chartYearLabel" style="font-weight:700;font-size:15px;color:#111827;min-width:44px;text-align:center;"></span>
+        <button id="chartYearNext" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;color:#374151;line-height:1;">&#8594;</button>
+        <span class="report-chart-sub">by month</span>
+      </div>
     </div>
     {% if monthly_data %}
-    <div class="report-bar-chart">
-      {% for d in monthly_data %}
-      <div class="report-bar-col">
-        <div class="report-bar-wrap">
-          <span class="report-bar-value">{{ d.count }}</span>
-          <div class="report-bar-fill" style="height: {{ d.pct }}%;"></div>
-        </div>
-        <span class="report-bar-label">{{ d.month_label }}</span>
-      </div>
-      {% endfor %}
-    </div>
+    <div class="report-bar-chart" id="yearBarChart"></div>
+    <script>
+    (function () {
+      var raw = [{% for d in monthly_data %}{ label: "{{ d.month_label }}", count: {{ d.count }} },{% endfor %}];
+
+      var byYear = {};
+      raw.forEach(function (d) {
+        var parts = d.label.split(' ');
+        var year = parts[1];
+        var month = parts[0];
+        if (!byYear[year]) byYear[year] = [];
+        byYear[year].push({ month: month, count: d.count });
+      });
+
+      var years = Object.keys(byYear).sort();
+      var idx = years.length - 1;
+
+      function render() {
+        var year = years[idx];
+        var data = byYear[year];
+        var max = Math.max.apply(null, data.map(function (d) { return d.count; })) || 1;
+
+        document.getElementById('chartYearLabel').textContent = year;
+        document.getElementById('chartYearPrev').style.opacity = idx === 0 ? '0.3' : '1';
+        document.getElementById('chartYearPrev').style.pointerEvents = idx === 0 ? 'none' : '';
+        document.getElementById('chartYearNext').style.opacity = idx === years.length - 1 ? '0.3' : '1';
+        document.getElementById('chartYearNext').style.pointerEvents = idx === years.length - 1 ? 'none' : '';
+
+        document.getElementById('yearBarChart').innerHTML = data.map(function (d) {
+          var pct = (d.count / max * 100).toFixed(1);
+          return '<div class="report-bar-col">'
+            + '<div class="report-bar-wrap">'
+            + '<span class="report-bar-value">' + d.count + '</span>'
+            + '<div class="report-bar-fill" style="height:' + pct + '%;"></div>'
+            + '</div>'
+            + '<span class="report-bar-label">' + d.month + '</span>'
+            + '</div>';
+        }).join('');
+      }
+
+      document.getElementById('chartYearPrev').addEventListener('click', function () {
+        if (idx > 0) { idx--; render(); }
+      });
+      document.getElementById('chartYearNext').addEventListener('click', function () {
+        if (idx < years.length - 1) { idx++; render(); }
+      });
+
+      render();
+    })();
+    </script>
     {% else %}
     <p class="admin-empty">No submitted applications yet.</p>
     {% endif %}

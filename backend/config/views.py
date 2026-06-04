@@ -885,65 +885,220 @@ def _run_integrity_checks():
         Application.ApplicationStatus.AWAITING_PHYSICAL,
         Application.ApplicationStatus.REJECTED,
     ]
+    RECORD_CAP = 20
 
-    def check(dimension, name, passed, detail=''):
-        return {'dimension': dimension, 'name': name, 'passed': passed, 'detail': detail}
+    def check(dimension, name, passed, detail='', records=None):
+        return {
+            'dimension': dimension,
+            'name': name,
+            'passed': passed,
+            'detail': detail,
+            'records': records or [],
+        }
+
+    def app_label(a):
+        prog = a.program.short_name or a.program.name
+        return f"#{a.id} — {a.applicant.email} ({prog})"
+
+    def review_url(app_id):
+        return f"/programs/application/{app_id}/review/"
 
     results = []
 
     # — Completeness —
     active_ids = set(Application.objects.filter(status__in=ACTIVE).values_list('applicant_id', flat=True))
     profile_ids = set(ApplicantProfile.objects.filter(user_id__in=active_ids).values_list('user_id', flat=True))
-    no_profile = len(active_ids - profile_ids)
-    results.append(check('Completeness', 'All applicants have a profile record', no_profile == 0, f'{no_profile} applicant(s) missing a profile'))
+    missing_ids = active_ids - profile_ids
+    missing_profile_records = [
+        {'label': u['email'], 'url': f"/applicants/?q={u['email']}"}
+        for u in User.objects.filter(id__in=missing_ids).values('email')[:RECORD_CAP]
+    ]
+    results.append(check(
+        'Completeness', 'All applicants have a profile record',
+        len(missing_ids) == 0, f'{len(missing_ids)} applicant(s) missing a profile',
+        missing_profile_records,
+    ))
 
-    blank = ApplicantProfile.objects.filter(user_id__in=active_ids).filter(
+    blank_profiles = (
+        ApplicantProfile.objects
+        .filter(user_id__in=active_ids)
+        .filter(Q(first_name='') | Q(last_name='') | Q(monthly_income='') | Q(residency_years=''))
+        .select_related('user')[:RECORD_CAP]
+    )
+    blank_records = []
+    for p in blank_profiles:
+        missing_fields = [f for f, v in [('First Name', p.first_name), ('Last Name', p.last_name), ('Income', p.monthly_income), ('Residency', p.residency_years)] if not v]
+        app = Application.objects.filter(applicant=p.user, status__in=ACTIVE).first()
+        blank_records.append({
+            'label': f"{p.user.email} — missing: {', '.join(missing_fields)}",
+            'url': review_url(app.id) if app else None,
+        })
+    blank_count = ApplicantProfile.objects.filter(user_id__in=active_ids).filter(
         Q(first_name='') | Q(last_name='') | Q(monthly_income='') | Q(residency_years='')
     ).count()
-    results.append(check('Completeness', 'No blank critical fields (name, income, residency)', blank == 0, f'{blank} profile(s) with blank required fields'))
+    results.append(check(
+        'Completeness', 'No blank critical fields (name, income, residency)',
+        blank_count == 0, f'{blank_count} profile(s) with blank required fields',
+        blank_records,
+    ))
 
-    no_date = Application.objects.filter(status__in=ACTIVE, submitted_at__isnull=True).count()
-    results.append(check('Completeness', 'All submitted applications have a submission date', no_date == 0, f'{no_date} application(s) missing submitted_at'))
+    no_date_qs = Application.objects.filter(status__in=ACTIVE, submitted_at__isnull=True).select_related('applicant', 'program')
+    no_date_records = [{'label': app_label(a), 'url': review_url(a.id)} for a in no_date_qs[:RECORD_CAP]]
+    results.append(check(
+        'Completeness', 'All submitted applications have a submission date',
+        no_date_qs.count() == 0, f'{no_date_qs.count()} application(s) missing submitted_at',
+        no_date_records,
+    ))
 
     # — Validity —
-    profiles = list(ApplicantProfile.objects.filter(user_id__in=active_ids).only('monthly_income', 'residency_years'))
-    bad_income = sum(1 for p in profiles if p.monthly_income and _extract_number(p.monthly_income) is None)
-    results.append(check('Validity', 'monthly_income is a parseable numeric value', bad_income == 0, f'{bad_income} profile(s) with unparseable income'))
-
-    bad_res = sum(1 for p in profiles if p.residency_years and _extract_number(p.residency_years) is None)
-    results.append(check('Validity', 'residency_years is a parseable numeric value', bad_res == 0, f'{bad_res} profile(s) with unparseable residency'))
+    profiles_qs = list(
+        ApplicantProfile.objects.filter(user_id__in=active_ids)
+        .select_related('user')
+        .only('monthly_income', 'residency_years', 'user__email', 'user__id')
+    )
+    bad_income_records = []
+    bad_res_records = []
+    for p in profiles_qs:
+        if p.monthly_income and _extract_number(p.monthly_income) is None:
+            app = Application.objects.filter(applicant=p.user, status__in=ACTIVE).first()
+            bad_income_records.append({
+                'label': f"{p.user.email} — value: \"{p.monthly_income}\"",
+                'url': review_url(app.id) if app else None,
+            })
+        if p.residency_years and _extract_number(p.residency_years) is None:
+            app = Application.objects.filter(applicant=p.user, status__in=ACTIVE).first()
+            bad_res_records.append({
+                'label': f"{p.user.email} — value: \"{p.residency_years}\"",
+                'url': review_url(app.id) if app else None,
+            })
+    results.append(check(
+        'Validity', 'monthly_income is a parseable numeric value',
+        len(bad_income_records) == 0, f'{len(bad_income_records)} profile(s) with unparseable income',
+        bad_income_records[:RECORD_CAP],
+    ))
+    results.append(check(
+        'Validity', 'residency_years is a parseable numeric value',
+        len(bad_res_records) == 0, f'{len(bad_res_records)} profile(s) with unparseable residency',
+        bad_res_records[:RECORD_CAP],
+    ))
 
     valid_statuses = {s for s, _ in Application.ApplicationStatus.choices}
-    bad_status = Application.objects.exclude(status__in=valid_statuses).count()
-    results.append(check('Validity', 'All application status values are valid', bad_status == 0, f'{bad_status} application(s) with invalid status'))
+    bad_status_qs = Application.objects.exclude(status__in=valid_statuses).select_related('applicant', 'program')
+    bad_status_records = [
+        {'label': f"{app_label(a)} — status: \"{a.status}\"", 'url': review_url(a.id)}
+        for a in bad_status_qs[:RECORD_CAP]
+    ]
+    results.append(check(
+        'Validity', 'All application status values are valid',
+        bad_status_qs.count() == 0, f'{bad_status_qs.count()} application(s) with invalid status',
+        bad_status_records,
+    ))
 
     # — Consistency —
-    no_reason = sum(1 for a in Application.objects.filter(status=Application.ApplicationStatus.REJECTED).only('rejection_reason') if not a.rejection_reason)
-    results.append(check('Consistency', 'All rejected applications have a recorded rejection reason', no_reason == 0, f'{no_reason} rejected application(s) with no reason'))
+    rejected_qs = Application.objects.filter(
+        status=Application.ApplicationStatus.REJECTED
+    ).select_related('applicant', 'program')
+    no_reason_apps = [a for a in rejected_qs if not getattr(a, 'rejection_reason', None) and not a.remarks]
+    no_reason_records = [
+        {'label': app_label(a), 'url': review_url(a.id)}
+        for a in no_reason_apps[:RECORD_CAP]
+    ]
+    results.append(check(
+        'Consistency', 'All rejected applications have a recorded rejection reason',
+        len(no_reason_apps) == 0, f'{len(no_reason_apps)} rejected application(s) with no reason',
+        no_reason_records,
+    ))
 
-    total_active = Application.objects.filter(status__in=ACTIVE).count()
-    has_result = Application.objects.filter(status__in=ACTIVE, screening_result__isnull=False).count()
-    missing_sr = total_active - has_result
-    results.append(check('Consistency', 'All submitted applications have a screening result', missing_sr == 0, f'{missing_sr} application(s) missing a ScreeningResult'))
+    missing_sr_qs = Application.objects.filter(
+        status__in=ACTIVE, screening_result__isnull=True
+    ).select_related('applicant', 'program')
+    missing_sr_records = [{'label': app_label(a), 'url': review_url(a.id)} for a in missing_sr_qs[:RECORD_CAP]]
+    results.append(check(
+        'Consistency', 'All submitted applications have a screening result',
+        missing_sr_qs.count() == 0, f'{missing_sr_qs.count()} application(s) missing a ScreeningResult',
+        missing_sr_records,
+    ))
 
-    dup_approved = Application.objects.filter(status=Application.ApplicationStatus.APPROVED).values('applicant_id', 'program_id').annotate(cnt=Count('id')).filter(cnt__gt=1).count()
-    results.append(check('Consistency', 'No duplicate approved applications per applicant per program', dup_approved == 0, f'{dup_approved} pair(s) with duplicate approvals'))
+    dup_approved_pairs = (
+        Application.objects.filter(status=Application.ApplicationStatus.APPROVED)
+        .values('applicant_id', 'program_id')
+        .annotate(cnt=Count('id'))
+        .filter(cnt__gt=1)
+    )
+    dup_approved_records = []
+    for pair in dup_approved_pairs[:RECORD_CAP]:
+        u = User.objects.filter(id=pair['applicant_id']).values('email').first()
+        p = Program.objects.filter(id=pair['program_id']).values('name', 'short_name').first()
+        email = u['email'] if u else f"User #{pair['applicant_id']}"
+        prog = (p['short_name'] or p['name']) if p else f"Program #{pair['program_id']}"
+        dup_approved_records.append({
+            'label': f"{email} — {prog} ({pair['cnt']} approved applications)",
+            'url': f"/applicants/?q={email}",
+        })
+    results.append(check(
+        'Consistency', 'No duplicate approved applications per applicant per program',
+        dup_approved_pairs.count() == 0, f'{dup_approved_pairs.count()} pair(s) with duplicate approvals',
+        dup_approved_records,
+    ))
 
     # — Uniqueness —
-    dup_emails = User.objects.values('email').annotate(cnt=Count('id')).filter(cnt__gt=1).count()
-    results.append(check('Uniqueness', 'No duplicate user email addresses', dup_emails == 0, f'{dup_emails} email(s) used by multiple accounts'))
+    dup_email_qs = User.objects.values('email').annotate(cnt=Count('id')).filter(cnt__gt=1)
+    dup_email_records = [
+        {'label': f"{e['email']} ({e['cnt']} accounts)", 'url': f"/applicants/?q={e['email']}"}
+        for e in dup_email_qs[:RECORD_CAP]
+    ]
+    results.append(check(
+        'Uniqueness', 'No duplicate user email addresses',
+        dup_email_qs.count() == 0, f'{dup_email_qs.count()} email(s) used by multiple accounts',
+        dup_email_records,
+    ))
 
-    dup_subs = Application.objects.filter(status__in=ACTIVE).values('applicant_id', 'program_id').annotate(cnt=Count('id')).filter(cnt__gt=1).count()
-    results.append(check('Uniqueness', 'No applicant submitted more than once to the same program', dup_subs == 0, f'{dup_subs} (applicant, program) pair(s) with multiple submissions'))
+    dup_sub_pairs = (
+        Application.objects.filter(status__in=ACTIVE)
+        .values('applicant_id', 'program_id')
+        .annotate(cnt=Count('id'))
+        .filter(cnt__gt=1)
+    )
+    dup_sub_records = []
+    for pair in dup_sub_pairs[:RECORD_CAP]:
+        u = User.objects.filter(id=pair['applicant_id']).values('email').first()
+        p = Program.objects.filter(id=pair['program_id']).values('name', 'short_name').first()
+        email = u['email'] if u else f"User #{pair['applicant_id']}"
+        prog = (p['short_name'] or p['name']) if p else f"Program #{pair['program_id']}"
+        dup_sub_records.append({
+            'label': f"{email} — {prog} ({pair['cnt']} submissions)",
+            'url': f"/applicants/?q={email}",
+        })
+    results.append(check(
+        'Uniqueness', 'No applicant submitted more than once to the same program',
+        dup_sub_pairs.count() == 0, f'{dup_sub_pairs.count()} (applicant, program) pair(s) with multiple submissions',
+        dup_sub_records,
+    ))
 
     # — Referential Integrity —
     valid_prog_ids = set(Program.objects.values_list('id', flat=True))
-    orphan_apps = Application.objects.exclude(program_id__in=valid_prog_ids).count()
-    results.append(check('Referential Integrity', 'All applications reference an existing program', orphan_apps == 0, f'{orphan_apps} application(s) with missing program reference'))
+    orphan_app_qs = Application.objects.exclude(program_id__in=valid_prog_ids).select_related('applicant')
+    orphan_app_records = [
+        {'label': f"#{a.id} — {a.applicant.email} (program #{a.program_id} not found)", 'url': None}
+        for a in orphan_app_qs[:RECORD_CAP]
+    ]
+    results.append(check(
+        'Referential Integrity', 'All applications reference an existing program',
+        orphan_app_qs.count() == 0, f'{orphan_app_qs.count()} application(s) with missing program reference',
+        orphan_app_records,
+    ))
 
     valid_app_ids = set(Application.objects.values_list('id', flat=True))
-    orphan_sr = ScreeningResult.objects.exclude(application_id__in=valid_app_ids).count()
-    results.append(check('Referential Integrity', 'All screening results reference an existing application', orphan_sr == 0, f'{orphan_sr} orphaned ScreeningResult(s)'))
+    orphan_sr_qs = ScreeningResult.objects.exclude(application_id__in=valid_app_ids)
+    orphan_sr_records = [
+        {'label': f"ScreeningResult #{sr.id} (application #{sr.application_id} not found)", 'url': None}
+        for sr in orphan_sr_qs[:RECORD_CAP]
+    ]
+    results.append(check(
+        'Referential Integrity', 'All screening results reference an existing application',
+        orphan_sr_qs.count() == 0, f'{orphan_sr_qs.count()} orphaned ScreeningResult(s)',
+        orphan_sr_records,
+    ))
 
     passed = sum(1 for r in results if r['passed'])
     dimensions = {}

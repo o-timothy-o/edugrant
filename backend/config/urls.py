@@ -15,7 +15,6 @@ from .views import (
     screening_analytics_view, rejection_reasons_view,
     export_screening_csv, export_rejection_reasons_csv,
     view_screening_report, view_rejection_reasons_report,
-    integrity_check_view,
 )
 
 urlpatterns = [
@@ -40,7 +39,6 @@ urlpatterns = [
     path("reports/export/rejection-reasons/", export_rejection_reasons_csv, name="export_rejection_reasons_csv"),
     path("reports/view/screening/", view_screening_report, name="view_screening_report"),
     path("reports/view/rejection-reasons/", view_rejection_reasons_report, name="view_rejection_reasons_report"),
-    path("reports/integrity/", integrity_check_view, name="integrity_check"),
     path("manage/programs/", program_list_view, name="program_list"),
     path("manage/programs/add/", add_program_view, name="add_program"),
     path("manage/programs/<int:program_id>/edit/", edit_program_view, name="edit_program"),
